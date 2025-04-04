@@ -1,0 +1,16 @@
+---
+interface Props {
+  src: string;
+  alt: string;
+}
+
+const { src, alt } = Astro.props;
+---
+
+<div class="w-40 md:w-52 lg:w-40 mx-2 transition-transform transform hover:scale-105 cursor-pointer">
+  <img
+    src={src}
+    alt={alt}
+    class="w-full h-auto aspect-[3/4] object-cover rounded-lg shadow-md"
+  />
+</div>

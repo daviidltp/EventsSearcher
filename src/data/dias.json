@@ -1,0 +1,63 @@
+[
+    {
+      "titulo": "Domingo de Ramos",
+      "procesiones": [
+        {
+          "nombre": "La Borriquita",
+          "imagenCaratula": "src/assets/imagenes/borriquita.jpeg",
+          "imagenExtendida": "src/assets/imagenes/borriquita-extended.jpeg",
+          "posicionImagen": "bottom"
+        }
+      ]
+    },
+    {
+      "titulo": "Lunes Santo",
+      "procesiones": []
+    },
+    {
+      "titulo": "Martes Santo",
+      "procesiones": []
+    },
+    {
+      "titulo": "Miércoles Santo",
+      "procesiones": [
+        {
+            "nombre": "Oración en el huerto",
+            "imagenCaratula": "src/assets/imagenes/oracion-huerto.jpg",
+            "imagenExtendida": "src/assets/imagenes/oracion-huerto-extended.jpg",
+            "posicionImagen": "top"
+        }
+      ]
+    },
+    {
+      "titulo": "Jueves Santo",
+      "procesiones": [
+        {
+          "nombre": "Amor y Auxilio",
+          "imagenCaratula": "src/assets/imagenes/amor-y-auxilio.jpeg",
+          "imagenExtendida": "src/assets/imagenes/amor-y-auxilio-extended.jpeg",
+          "posicionImagen": "top"
+        }
+      ]
+    },
+    {
+      "titulo": "Viernes Santo",
+      "procesiones": [
+        {
+          "nombre": "Amor y Auxilio",
+          "imagenCaratula": "src/assets/imagenes/amor-y-auxilio.jpeg",
+          "imagenExtendida": "src/assets/imagenes/amor-y-auxilio-extended.jpeg",
+          "posicionImagen": "top"
+        }
+      ]
+    },
+    {
+      "titulo": "Sábado Santo",
+      "procesiones": []
+    },
+    {
+      "titulo": "Domingo de Resurrección",
+      "procesiones": []
+    }
+  ]
+  

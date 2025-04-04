@@ -1,0 +1,41 @@
+---
+interface Props {
+  titulo: string;
+  imagenNormal: string;
+  imagenExtendida: string;
+  posicionImagen: string;
+}
+
+const { titulo, imagenNormal, imagenExtendida, posicionImagen } = Astro.props;
+---
+
+<section class="relative w-full h-screen overflow-hidden">
+  <!-- Imagen responsiva con <picture> -->
+  <picture>
+    <source srcset={imagenExtendida} media="(min-width: 768px)" />
+    <img
+      src={imagenNormal}
+      alt={titulo}
+      class={`absolute top-0 left-0 w-full h-full object-cover object-${posicionImagen}`}
+    />
+  </picture>
+
+  <!-- Título en la esquina superior izquierda con sombra intensa -->
+  <h2 class="absolute top-4 left-4 text-white text-4xl font-extrabold drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] z-10">
+    {titulo}
+  </h2>
+
+  <!-- Botón: centrado en móvil, abajo derecha en desktop -->
+  <div class="absolute md:bottom-4 bottom-15 w-full flex justify-center md:justify-end md:pr-10">
+    <button class="flex items-center gap-3 bg-white bg-opacity-80 text-black font-semibold 
+                   px-10 py-4 text-lg sm:text-xl rounded-full shadow-md 
+                   hover:bg-opacity-100 transition
+                   md:px-6 md:py-3 md:text-base">
+      ¡Síguela en directo!
+      <span class="relative flex h-4 w-4">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-600 opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-4 w-4 bg-red-600"></span>
+      </span>
+    </button>
+  </div>
+</section>

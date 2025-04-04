@@ -1,11 +1,36 @@
 ---
-import Welcome from '../components/Welcome.astro';
 import Layout from '../layouts/Layout.astro';
+import SeccionDia from '../components/SeccionDia.astro';
+import SeccionDiaActual from '../components/SeccionDiaActual.astro';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import ScreenWidth from '../components/ScreenWidth.jsx';
+
+
+import dias from '../data/dias.json';
+
+// Cambia este índice para ver un día diferente (0 a 7)
+const diaActualIndex = 4;
+
+const diaActual = dias[diaActualIndex];	
 ---
-
 <Layout>
-	<Welcome />
+  <SeccionDiaActual
+    titulo={diaActual.titulo}
+    imagenNormal={diaActual.procesiones[0]?.imagenCaratula ?? ''}
+    imagenExtendida={diaActual.procesiones[0]?.imagenExtendida ?? ''}
+	posicionImagen={diaActual.procesiones[0]?.posicionImagen ?? 'center'}
+  />
+
+
+  {dias.map((dia, index) =>
+    index !== diaActualIndex && dia.procesiones.length > 0 ? (
+      <SeccionDia
+        titulo={dia.titulo}
+        imagenes={dia.procesiones.map((p) => ({
+          src: p.imagenCaratula,
+          alt: p.nombre
+        }))}
+      />
+    ) : null
+  )}
 </Layout>
