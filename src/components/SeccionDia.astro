@@ -11,9 +11,14 @@ import Caratula from './Caratula.astro';
 
 <section class="text-left py-6 px-5">
     <h2 class="text-3xl font-bold mb-4">{titulo}</h2>
-    <div class="flex justify-start gap-1 flex-wrap">
-      {imagenes.map((imagen) => (
-        <Caratula src={imagen.src} alt={imagen.alt} />
-      ))}
+    <div class="-mx-5">
+      <div class="flex overflow-x-auto overflow-y-hidden gap-4 flex-nowrap scrollbar-hide px-5">
+        {imagenes.map((imagen) => (
+          <div class="flex-shrink-0">
+            <Caratula src={imagen.src} alt={imagen.alt} />
+          </div>
+        ))}
+      </div>
     </div>
   </section>
+  

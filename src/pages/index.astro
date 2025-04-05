@@ -9,7 +9,7 @@ import ScreenWidth from '../components/ScreenWidth.jsx';
 import dias from '../data/dias.json';
 
 // Cambia este índice para ver un día diferente (0 a 7)
-const diaActualIndex = 4;
+const diaActualIndex = 0;
 
 const diaActual = dias[diaActualIndex];	
 ---
@@ -23,7 +23,7 @@ const diaActual = dias[diaActualIndex];
 
 
   {dias.map((dia, index) =>
-    index !== diaActualIndex && dia.procesiones.length > 0 ? (
+    index >= diaActualIndex && dia.procesiones.length > 0 ? (
       <SeccionDia
         titulo={dia.titulo}
         imagenes={dia.procesiones.map((p) => ({
