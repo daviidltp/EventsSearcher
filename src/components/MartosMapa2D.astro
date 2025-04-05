@@ -1,0 +1,449 @@
+---
+interface Props {
+  route?: Array<[number, number]>;
+  points?: Array<{
+    position: [number, number],
+    title: string,
+    description?: string
+  }>;
+  title?: string;
+}
+
+const { 
+  route = [], 
+  points = [], 
+  title = "Martos - Semana Santa" 
+} = Astro.props;
+
+// Centro de Martos
+const MARTOS_CENTER = [37.7219, -3.9699];
+
+// Convertimos los datos a JSON para pasarlos al cliente
+const routeJSON = JSON.stringify(route);
+const pointsJSON = JSON.stringify(points);
+---
+
+<div class="map-container w-full h-screen relative">
+  <div id="map" class="absolute inset-0 z-10"></div>
+  
+  <!-- UI overlay - Título a la derecha -->
+  <div class="absolute top-4 right-4 bg-black/60 text-white p-3 rounded-lg z-20">
+    <h2 class="text-xl font-bold">{title}</h2>
+  </div>
+  
+  <!-- Control de porcentaje -->
+  <div class="absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-white/80 rounded-lg p-3 z-20 shadow-lg flex flex-col items-center w-64">
+    <p class="text-sm font-semibold mb-2">Progreso de la procesión</p>
+    <div class="flex items-center w-full">
+      <input type="range" id="progress-slider" min="0" max="100" value="0" class="w-full accent-blue-600">
+      <span id="percentage-display" class="ml-2 text-sm font-bold">0%</span>
+    </div>
+  </div>
+  
+  <!-- Controles - Botones abajo a la derecha -->
+  <div class="absolute bottom-8 right-4 z-20 flex flex-col gap-2">
+    <!-- Botón de reproducir/pausar animación -->
+    <button id="play-btn" class="p-2 bg-white rounded-full shadow-lg" title="Reproducir animación">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+      </svg>
+    </button>
+    
+    <!-- Botón de volver -->
+    <button id="back-btn" class="p-2 bg-white rounded-full shadow-lg" title="Volver">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- Importar CSS de Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+
+<!-- Scripts necesarios -->
+<script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script define:vars={{ routeJSON, pointsJSON, MARTOS_CENTER }}>
+  // Parsear datos JSON
+  const route = JSON.parse(routeJSON);
+  const points = JSON.parse(pointsJSON);
+  let map, routeLayer, completedRouteLayer, animatedMarker;
+  let isPaused = true;
+  let animationId = null;
+  let currentPosition = 0;
+  let percentageComplete = 0;
+  
+  // Inicializar cuando la página esté cargada
+  window.onload = initMap;
+  
+  function initMap() {
+    // Crear mapa base con Leaflet
+    map = L.map('map', {
+      center: MARTOS_CENTER,
+      zoom: 16,
+      minZoom: 14,
+      maxZoom: 19
+    });
+    
+    // Añadir capa base de imágenes satelitales
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+      maxZoom: 19
+    }).addTo(map);
+    
+    // Añadir capa de etiquetas para que los nombres de calles sean visibles
+    L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/toner-labels/{z}/{x}/{y}{r}.png', {
+      attribution: 'Map labels by <a href="http://stamen.com">Stamen Design</a>',
+      subdomains: 'abcd',
+      minZoom: 13,
+      maxZoom: 19,
+      opacity: 0.7
+    }).addTo(map);
+    
+    // Si hay ruta, preparar las capas para la animación
+    if (route && route.length > 0) {
+      // Capa para la ruta completa (gris)
+      routeLayer = L.polyline(route, {
+        color: '#666666',
+        weight: 4,
+        opacity: 0.5,
+        dashArray: '5, 5'
+      }).addTo(map);
+      
+      // Capa para la parte de la ruta ya recorrida (color destacado)
+      completedRouteLayer = L.polyline([], {
+        color: 'gold',
+        weight: 6,
+        opacity: 0.9,
+        // Efecto de línea brillante
+        className: 'route-glow'
+      }).addTo(map);
+      
+      // Centrar el mapa en la ruta
+      map.fitBounds(routeLayer.getBounds(), { padding: [30, 30] });
+      
+      // Crear el icono del paso procesional más colorido y animado
+      const pasoColoridoSVG = `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+          <!-- Base del paso -->
+          <rect x="10" y="32" width="28" height="8" fill="#8B4513" stroke="#5D2906" stroke-width="1"/>
+          
+          <!-- Estructura del paso -->
+          <rect x="12" y="24" width="24" height="8" fill="#CD7F32" stroke="#8B4513" stroke-width="1"/>
+          
+          <!-- Figura superior (virgen/cristo) -->
+          <rect x="18" y="12" width="12" height="12" rx="2" fill="#DAA520" stroke="#B8860B" stroke-width="1"/>
+          
+          <!-- Detalles ornamentales (flores) -->
+          <circle cx="15" cy="28" r="2" fill="#FF6347"/>
+          <circle cx="21" cy="28" r="2" fill="#FF0000"/>
+          <circle cx="27" cy="28" r="2" fill="#9932CC"/>
+          <circle cx="33" cy="28" r="2" fill="#FF6347"/>
+          
+          <!-- Velas -->
+          <rect x="14" y="18" width="2" height="6" fill="#F5F5DC" stroke="#DAA520" stroke-width="0.5"/>
+          <rect x="32" y="18" width="2" height="6" fill="#F5F5DC" stroke="#DAA520" stroke-width="0.5"/>
+          <circle cx="15" cy="18" r="1" fill="#FFD700"/>
+          <circle cx="33" cy="18" r="1" fill="#FFD700"/>
+          
+          <!-- Luces -->
+          <circle cx="15" cy="18" r="2" fill="#FFFF00" opacity="0.7" class="light-pulse"/>
+          <circle cx="33" cy="18" r="2" fill="#FFFF00" opacity="0.7" class="light-pulse"/>
+        </svg>
+      `;
+      
+      // Crear el div icon con el SVG animado
+      const tronoIcon = L.divIcon({
+        className: 'custom-paso-marker',
+        html: `
+          <div class="paso-container">
+            ${pasoColoridoSVG}
+            <div class="paso-shadow"></div>
+          </div>
+        `,
+        iconSize: [48, 48],
+        iconAnchor: [24, 36] // Ajuste para que el punto de anclaje esté abajo del centro
+      });
+      
+      // Crear el marcador en la posición inicial
+      animatedMarker = L.marker(route[0], { icon: tronoIcon }).addTo(map);
+      
+      // Añadir marcadores de inicio y fin
+      L.marker(route[0], {
+        icon: createCustomIcon('green', 'Inicio')
+      }).addTo(map).bindPopup('<strong>Punto de Inicio</strong>');
+      
+      L.marker(route[route.length - 1], {
+        icon: createCustomIcon('red', 'Fin') 
+      }).addTo(map).bindPopup('<strong>Punto Final</strong>');
+    }
+    
+    // Añadir puntos de interés
+    points.forEach(point => {
+      L.marker(point.position, {
+        icon: createIglesiaIcon(point.title)
+      }).addTo(map).bindPopup(`
+        <strong>${point.title}</strong>
+        ${point.description ? `<br>${point.description}` : ''}
+      `);
+    });
+    
+    // Configurar eventos para los botones
+    document.getElementById('play-btn').addEventListener('click', toggleAnimation);
+    document.getElementById('back-btn').addEventListener('click', () => window.history.back());
+    
+    // Configurar el control de porcentaje
+    const slider = document.getElementById('progress-slider');
+    const percentageDisplay = document.getElementById('percentage-display');
+    
+    slider.addEventListener('input', function(e) {
+      percentageComplete = parseInt(e.target.value);
+      percentageDisplay.textContent = `${percentageComplete}%`;
+      
+      // Actualizar la visualización según el porcentaje
+      updateRouteByPercentage(percentageComplete);
+      
+      // Pausar la animación automática si estaba corriendo
+      if (!isPaused) {
+        toggleAnimation();
+      }
+    });
+    
+    // Inicializar la visualización con 0%
+    updateRouteByPercentage(0);
+  }
+  
+  // Función para actualizar la visualización según un porcentaje
+  function updateRouteByPercentage(percentage) {
+    if (!route || route.length < 2) return;
+    
+    // Convertir porcentaje a posición en la ruta
+    const totalLength = route.length - 1;
+    const targetPosition = (percentage / 100) * totalLength;
+    
+    // Calcular el índice actual y el siguiente
+    const currentIndex = Math.floor(targetPosition);
+    const nextIndex = Math.min(currentIndex + 1, route.length - 1);
+    const fraction = targetPosition - currentIndex;
+    
+    // Si el porcentaje es 0, reiniciar
+    if (percentage === 0) {
+      completedRouteLayer.setLatLngs([]);
+      animatedMarker.setLatLng(route[0]);
+      return;
+    }
+    
+    // Si el porcentaje es 100, completar toda la ruta
+    if (percentage === 100) {
+      completedRouteLayer.setLatLngs(route);
+      animatedMarker.setLatLng(route[route.length - 1]);
+      return;
+    }
+    
+    // Para porcentajes intermedios, interpolar entre puntos
+    const currentPoint = route[currentIndex];
+    const nextPoint = route[nextIndex];
+    
+    // Interpolar entre los dos puntos
+    const lat = currentPoint[0] + fraction * (nextPoint[0] - currentPoint[0]);
+    const lng = currentPoint[1] + fraction * (nextPoint[1] - currentPoint[1]);
+    
+    // Actualizar posición del marcador
+    animatedMarker.setLatLng([lat, lng]);
+    
+    // Actualizar la línea recorrida
+    const completedPath = route.slice(0, currentIndex + 1).concat([[lat, lng]]);
+    completedRouteLayer.setLatLngs(completedPath);
+    
+    // Centrar en la posición actual
+    map.panTo([lat, lng]);
+  }
+  
+  // Función para crear iconos personalizados
+  function createCustomIcon(color, title) {
+    return L.divIcon({
+      className: 'custom-marker',
+      html: `<div style="background-color: ${color}; width: 14px; height: 14px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.8);"></div>`,
+      iconSize: [20, 20],
+      iconAnchor: [10, 10],
+      popupAnchor: [0, -10]
+    });
+  }
+  
+  // Función para crear iconos de iglesias y templos
+  function createIglesiaIcon(title) {
+    // SVG de una iglesia/templo
+    const iglesiaSVG = `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="30" height="30" fill="#f0f0f0" stroke="#333333" stroke-width="0.5">
+        <!-- Base de la iglesia -->
+        <rect x="5" y="14" width="14" height="10" />
+        
+        <!-- Torre principal -->
+        <rect x="9" y="7" width="6" height="7" />
+        <polygon points="9,7 15,7 12,2" />
+        
+        <!-- Cruz -->
+        <path d="M12,1 L12,4 M10.5,2.5 L13.5,2.5" stroke="#E6C700" stroke-width="0.7" />
+        
+        <!-- Puerta -->
+        <rect x="10" y="18" width="4" height="6" fill="#8B4513" />
+        
+        <!-- Ventana -->
+        <circle cx="12" cy="11" r="1.5" fill="#2986cc" />
+      </svg>
+    `;
+    
+    // Crear el div icon con el SVG
+    return L.divIcon({
+      className: 'iglesia-marker',
+      html: `
+        <div class="iglesia-container">
+          ${iglesiaSVG}
+          <div class="marker-title">${title}</div>
+        </div>
+      `,
+      iconSize: [30, 30],
+      iconAnchor: [15, 30],
+      popupAnchor: [0, -30]
+    });
+  }
+  
+  // Función para alternar la animación (inicio/pausa)
+  function toggleAnimation() {
+    isPaused = !isPaused;
+    
+    // Actualizar el icono del botón
+    const playBtn = document.getElementById('play-btn');
+    if (isPaused) {
+      playBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+        </svg>
+      `;
+      cancelAnimationFrame(animationId);
+    } else {
+      playBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      `;
+      
+      // Si ya completó la ruta, reiniciar
+      if (percentageComplete >= 100) {
+        percentageComplete = 0;
+        document.getElementById('progress-slider').value = 0;
+        document.getElementById('percentage-display').textContent = '0%';
+        completedRouteLayer.setLatLngs([]);
+      }
+      
+      animateRoute();
+    }
+  }
+  
+  // Función para animar la ruta
+  function animateRoute() {
+    if (isPaused || percentageComplete >= 100) {
+      return;
+    }
+    
+    // Incrementar el porcentaje
+    percentageComplete += 0.1; // Ajuste este valor para controlar la velocidad
+    if (percentageComplete > 100) percentageComplete = 100;
+    
+    // Actualizar el slider y la visualización
+    const slider = document.getElementById('progress-slider');
+    const percentageDisplay = document.getElementById('percentage-display');
+    slider.value = percentageComplete;
+    percentageDisplay.textContent = `${Math.round(percentageComplete)}%`;
+    
+    // Actualizar la visualización
+    updateRouteByPercentage(percentageComplete);
+    
+    // Continuar la animación
+    animationId = requestAnimationFrame(animateRoute);
+  }
+</script>
+
+<style>
+  /* Estilos para asegurar que el mapa ocupe toda la pantalla */
+  :global(body), :global(html) {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+  }
+  
+  /* Personalizar los popups */
+  :global(.leaflet-popup-content-wrapper) {
+    border-radius: 8px;
+  }
+  
+  :global(.leaflet-popup-content) {
+    margin: 12px;
+  }
+  
+  /* Estilos para el paso procesional */
+  :global(.paso-container) {
+    position: relative;
+    animation: paso-motion 1.5s infinite alternate ease-in-out;
+  }
+  
+  :global(.paso-shadow) {
+    position: absolute;
+    bottom: -4px;
+    left: 25%;
+    width: 50%;
+    height: 6px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 50%;
+    z-index: -1;
+  }
+  
+  /* Animación del movimiento lateral del paso */
+  @keyframes paso-motion {
+    0% { transform: translate(-2px, 0) rotate(-1deg); }
+    50% { transform: translate(0, -1px); }
+    100% { transform: translate(2px, 0) rotate(1deg); }
+  }
+  
+  /* Animación de las luces del paso */
+  :global(.light-pulse) {
+    animation: light-pulse 2s infinite alternate;
+  }
+  
+  @keyframes light-pulse {
+    0% { opacity: 0.4; r: 1.8; }
+    50% { opacity: 0.8; r: 2.2; }
+    100% { opacity: 1; r: 2.5; }
+  }
+  
+  /* Efecto de brillo para la ruta */
+  :global(.route-glow) {
+    filter: drop-shadow(0 0 3px gold);
+  }
+
+  /* Estilos para los iconos de iglesias */
+  :global(.iglesia-container) {
+    position: relative;
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.5));
+  }
+
+  :global(.marker-title) {
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    background-color: rgba(0,0,0,0.6);
+    color: white;
+    font-size: 10px;
+    padding: 2px 4px;
+    border-radius: 2px;
+    visibility: hidden;
+  }
+
+  :global(.iglesia-container:hover .marker-title) {
+    visibility: visible;
+  }
+</style>
