@@ -33,7 +33,7 @@ const disenoDias = disenoDiasRaw as DisenoDia[];
 <Layout>
   <SeccionDiaActualIsla client:load 
   dias={dias} 
-  disenoDias={disenoDias} 
+  disenoDias={disenoDias}
   />
 
   {dias.map((dia, index) =>
@@ -42,7 +42,8 @@ const disenoDias = disenoDiasRaw as DisenoDia[];
         titulo={dia.titulo}
         imagenes={dia.procesiones.map((p) => ({
           src: p.imagenCaratula,
-          alt: p.nombre
+          alt: p.nombre,
+		  rutaId: p.nombre.toLowerCase().replace(/\s+/g, '-')
         }))}
       />
     ) : null

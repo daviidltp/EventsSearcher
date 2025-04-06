@@ -105,6 +105,7 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
       posicionTexto={diseno.posicionTexto}
       colorTexto={diseno.colorTexto}
       estaEnCalle={estaEnCalle}
+      rutaId={procesion.nombre?.toLowerCase().replace(/\s+/g, '-') ?? ''}
     />
   );
 }

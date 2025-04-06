@@ -7,15 +7,17 @@ interface Props {
   iglesia: string;
   horaSalida: string;
   horaLlegada: string;
-  posicionTexto: string;
-  colorTexto: string;
+  posicionTexto: string; // izquierda o derecha
+  colorTexto: string;    // blanco, negro, etc.
   estaEnCalle: boolean;
+  rutaId: string;
 }
 
 const colorClaseMap: Record<string, string> = {
   blanco: 'text-white',
   negro: 'text-black',
   rojo: 'text-red-500',
+  // Agrega más si necesitas
 };
 
 const posicionClaseMap: Record<string, string> = {
@@ -36,6 +38,7 @@ export default function SeccionDiaActual(props: Props) {
     posicionTexto,
     colorTexto,
     estaEnCalle,
+    rutaId
   } = props;
 
   const claseColorTexto = colorClaseMap[colorTexto] ?? 'text-white';
@@ -58,9 +61,9 @@ export default function SeccionDiaActual(props: Props) {
 
       {/* Título */}
       <h2
-        className={`absolute top-6 ${clasePosicionTexto} ${claseColorTexto} 
+        className={`absolute top-6 ${clasePosicionTexto} ${claseColorTexto} titulo-dinamico 
         font-serif tracking-wide uppercase drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)] 
-        z-10 max-w-[90%] leading-tight font-bold titulo-dinamico`}
+        z-10 max-w-[90%] leading-tight font-bold`}
         style={{
           fontSize: 'clamp(2.6rem, 8vw, 10rem)',
           lineHeight: '1.1',
@@ -70,7 +73,7 @@ export default function SeccionDiaActual(props: Props) {
         {titulo}
       </h2>
 
-      {/* Info */}
+      {/* Información */}
       <div className="absolute bottom-6 left-6 z-10 text-white space-y-1 text-lg drop-shadow-[0_1px_6px_rgba(0,0,0,0.8)] max-w-[80%]">
         <p className="text-2xl font-semibold">{hermandad}</p>
         <p className="text-base">{iglesia}</p>
@@ -78,9 +81,10 @@ export default function SeccionDiaActual(props: Props) {
           {horaSalida} - {horaLlegada}
         </p>
 
+        {/* Botón móvil */}
         {estaEnCalle && (
           <div className="mt-5 md:hidden">
-            <a href="/martos-2d">
+            <a href={`/martos-2d/${rutaId}`}>
               <button className="flex items-center gap-3 bg-white bg-opacity-80 text-black font-semibold 
                              px-5 py-2 text-md rounded-full shadow-md 
                              hover:bg-opacity-100 transition">
@@ -95,9 +99,10 @@ export default function SeccionDiaActual(props: Props) {
         )}
       </div>
 
+      {/* Botón escritorio */}
       {estaEnCalle && (
         <div className="hidden md:flex absolute bottom-6 right-6 z-10">
-          <a href="/martos-2d">
+          <a href={`/martos-2d/${rutaId}`}>
             <button className="flex items-center gap-3 bg-white bg-opacity-80 text-black font-semibold 
                            px-6 py-3 text-base rounded-full shadow-md 
                            hover:bg-opacity-100 transition cursor-pointer">
