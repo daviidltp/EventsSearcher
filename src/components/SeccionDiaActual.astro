@@ -61,12 +61,11 @@ const clasePosicionTexto = posicionClaseMap[posicionTexto] ?? 'left-6';
   <div class="absolute bottom-0 w-full h-2/3 bg-gradient-to-t from-black/90 to-transparent z-0"></div>
 
   <!-- Título -->
-    <h2 class={`absolute top-6 ${clasePosicionTexto} ${claseColorTexto} titulo-dinamico 
-      font-serif tracking-wide uppercase drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)] 
-      z-10 max-w-[90%] leading-tight font-bold`}>
+  <h2 class={`absolute top-6 ${clasePosicionTexto} ${claseColorTexto} titulo-dinamico 
+    font-serif tracking-wide uppercase drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)] 
+    z-10 max-w-[90%] leading-tight font-bold`}>
     {titulo}
-    </h2>
-
+  </h2>
 
   <!-- Información abajo izquierda -->
   <div class="absolute bottom-6 left-6 z-10 text-white space-y-1 text-lg drop-shadow-[0_1px_6px_rgba(0,0,0,0.8)] max-w-[80%]">
@@ -75,31 +74,39 @@ const clasePosicionTexto = posicionClaseMap[posicionTexto] ?? 'left-6';
     <p class="text-base">{horaSalida} - {horaLlegada}</p>
 
     <!-- Botón solo visible en móvil -->
-    <div class="mt-5 md:hidden">
-      <button class="flex items-center gap-3 bg-white bg-opacity-80 text-black font-semibold 
-                     px-5 py-2 text-md rounded-full shadow-md 
-                     hover:bg-opacity-100 transition">
-        ¡Síguela en directo!
-        <span class="relative flex h-4 w-4">
-          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-600 opacity-75"></span>
-          <span class="relative inline-flex rounded-full h-4 w-4 bg-red-600"></span>
-        </span>
-      </button>
-    </div>
+    {estaEnCalle && (
+      <div class="mt-5 md:hidden">
+        <a href="/martos-2d">
+          <button class="flex items-center gap-3 bg-white bg-opacity-80 text-black font-semibold 
+                         px-5 py-2 text-md rounded-full shadow-md 
+                         hover:bg-opacity-100 transition">
+            ¡Síguela en directo!
+            <span class="relative flex h-4 w-4">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-600 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-4 w-4 bg-red-600"></span>
+            </span>
+          </button>
+        </a>
+      </div>
+    )}
   </div>
 
   <!-- Botón escritorio -->
-  <div class="hidden md:flex absolute bottom-6 right-6 z-10">
-    <button class="flex items-center gap-3 bg-white bg-opacity-80 text-black font-semibold 
-                   px-6 py-3 text-base rounded-full shadow-md 
-                   hover:bg-opacity-100 transition">
-      ¡Síguela en directo!
-      <span class="relative flex h-4 w-4">
-        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-600 opacity-75"></span>
-        <span class="relative inline-flex rounded-full h-4 w-4 bg-red-600"></span>
-      </span>
-    </button>
-  </div>
+  {estaEnCalle && (
+    <div class="hidden md:flex absolute bottom-6 right-6 z-10">
+      <a href="/martos-2d">
+        <button class="flex items-center gap-3 bg-white bg-opacity-80 text-black font-semibold 
+                       px-6 py-3 text-base rounded-full shadow-md 
+                       hover:bg-opacity-100 transition cursor-pointer">
+          ¡Síguela en directo!
+          <span class="relative flex h-4 w-4">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-600 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-4 w-4 bg-red-600"></span>
+          </span>
+        </button>
+      </a>
+    </div>
+  )}
 </section>
 
 <style>
@@ -109,4 +116,3 @@ const clasePosicionTexto = posicionClaseMap[posicionTexto] ?? 'left-6';
     white-space: normal;
   }
 </style>
-
