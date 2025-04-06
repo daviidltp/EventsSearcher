@@ -6,39 +6,64 @@ import SeccionDiaActual from '../components/SeccionDiaActual.astro';
 import dias from '../data/dias.json';
 import disenoDias from '../data/disenoDias.json';
 
-// Cambia este índice para ver un día diferente (0 a 7)
-const diaActualIndex = 5;
+// Tipos para asegurar que TypeScript no se queje
+interface Procesion {
+  nombre: string;
+  parroquia: string;
+  horaSalida: string;
+  horaLlegada: string;
+  imagenCaratula: string;
+  imagenExtendida: string;
+  posicionImagen: string;
+}
+
+interface Dia {
+  titulo: string;
+  procesiones: Procesion[];
+}
+
+interface DisenoDia {
+  nombre: string;
+  posicionTexto: string;
+  colorTexto: string;
+}
+
+// Convertimos los datos importados al tipo correcto
+const diasData = dias as Dia[];
+const disenoDiasData = disenoDias as DisenoDia[];
+
+// Obtener el índice del día actual (0 = Domingo, ..., 6 = Sábado)
 const ahora = new Date();
-const horas = 14//ahora.getHours();
-const minutos = 10//ahora.getMinutes();
+const diaActualIndex = ahora.getDay();
+
+const horas = ahora.getHours();
+const minutos = ahora.getMinutes();
 const minutosActuales = horas * 60 + minutos;
 
-const diaActual = dias[diaActualIndex];
-const diseno = disenoDias[diaActualIndex];
+const diaActual = diasData[diaActualIndex];
+const diseno = disenoDiasData[diaActualIndex];
 
 let procesionesCandidatas = [];
 
-console.log(horas , minutos);
+console.log(horas, minutos);
 
 // Agrega procesiones del día actual
 procesionesCandidatas.push(...diaActual.procesiones.map(p => ({ ...p, index: diaActualIndex })));
 
 // Agrega procesiones del día anterior que sigan en la calle
 if (diaActualIndex > 0) {
-  const diaAnterior = dias[diaActualIndex - 1];
+  const diaAnterior = diasData[diaActualIndex - 1];
 
   const procesionesEnCurso = diaAnterior.procesiones.filter(p => {
     const [horaLlegada, minLlegada] = p.horaLlegada.split(":").map(Number);
     const llegadaMin = horaLlegada * 60 + minLlegada;
-
-    // Si llega después de la medianoche, y es ahora antes de esa hora
     return llegadaMin < 6 * 60 && minutosActuales <= llegadaMin;
   }).map(p => ({ ...p, index: diaActualIndex - 1 }));
 
   procesionesCandidatas.push(...procesionesEnCurso);
 }
 
-// Busca la más cercana a la hora actual
+// Busca la procesión más cercana a la hora actual
 let indexProcesion = 0;
 let minDiferencia = Infinity;
 let diaIndexFinal = diaActualIndex;
@@ -66,14 +91,11 @@ if (primeraProcesion) {
   const salidaMin = horaSalida * 60 + minSalida - 30;
   const llegadaMin = horaLlegada * 60 + minLlegada + 30;
 
-  // Si la llegada es después de medianoche (p.ej. 01:00 = 60 min) y la salida es antes (p.ej. 23:00 = 1380 min)
-  // y llega al día siguiente, ajustamos llegada
   const llegadaAjustada = llegadaMin < salidaMin ? llegadaMin + 1440 : llegadaMin;
   const minutosActualesAjustados = minutosActuales < salidaMin ? minutosActuales + 1440 : minutosActuales;
 
   estaEnCalle = minutosActualesAjustados >= salidaMin && minutosActualesAjustados <= llegadaAjustada;
 }
-
 
 ---
 
