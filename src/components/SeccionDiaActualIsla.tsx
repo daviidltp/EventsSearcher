@@ -31,64 +31,108 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
   const [procesion, setProcesion] = useState<Procesion | null>(null);
   const [diseno, setDiseno] = useState<DisenoDia | null>(null);
   const [estaEnCalle, setEstaEnCalle] = useState(false);
+  const [haTerminado, setHaTerminado] = useState(false);
 
   useEffect(() => {
     const ahora = new Date();
-    const diaActualIndex = 0;
-    const horas = ahora.getHours();
-    const minutos = ahora.getMinutes();
-    const minutosActuales = horas * 60 + minutos;
+    //ahora.setHours(ahora.getHours() - 72); // quitar esto si ya no estás en pruebas
 
-    let procesionesCandidatas: (Procesion & { index: number })[] = [];
+    let mejorProcesion: Procesion | null = null;
+    let mejorDiseno: DisenoDia | null = null;
+    let estaEnCalleActual = false;
 
-    const diaActual = dias[diaActualIndex];
-    procesionesCandidatas.push(...diaActual.procesiones.map(p => ({ ...p, index: diaActualIndex })));
+    let proximaProcesion: Procesion | null = null;
+    let proximoDiseno: DisenoDia | null = null;
+    let menorDiferenciaTiempo = Infinity;
 
-    if (diaActualIndex > 0) {
-      const diaAnterior = dias[diaActualIndex - 1];
-      const procesionesEnCurso = diaAnterior.procesiones.filter(p => {
-        const [horaLlegada, minLlegada] = p.horaLlegada.split(":").map(Number);
-        const llegadaMin = horaLlegada * 60 + minLlegada;
-        return llegadaMin < 6 * 60 && minutosActuales <= llegadaMin;
-      }).map(p => ({ ...p, index: diaActualIndex - 1 }));
+    const fechasPorDia: Record<number, Date> = {
+      0: new Date(2025, 3, 6),
+      1: new Date(2025, 3, 7),
+      2: new Date(2025, 3, 8),
+      3: new Date(2025, 3, 9),
+      4: new Date(2025, 3, 10),
+      5: new Date(2025, 3, 11),
+      6: new Date(2025, 3, 12),
+      7: new Date(2025, 3, 13),
+    };
 
-      procesionesCandidatas.push(...procesionesEnCurso);
+    const fechaFinSemanaSanta = new Date(fechasPorDia[7]);
+    fechaFinSemanaSanta.setHours(23, 59, 59, 999);
+
+    // 👇 si ya pasó el domingo de resurrección
+    if (ahora > fechaFinSemanaSanta) {
+      setHaTerminado(true);
+      return;
     }
 
-    let indexProcesion = 0;
-    let minDiferencia = Infinity;
-    let diaIndexFinal = diaActualIndex;
+    for (let diaIndex = 0; diaIndex < dias.length; diaIndex++) {
+      const dia = dias[diaIndex];
+      const diseno = disenoDias[diaIndex];
+      const fechaDelDia = fechasPorDia[diaIndex];
 
-    procesionesCandidatas.forEach((p, i) => {
-      const [hora, min] = p.horaSalida.split(":").map(Number);
-      const salidaMin = hora * 60 + min;
-      const diferencia = Math.abs(salidaMin - minutosActuales);
+      if (!fechaDelDia) continue;
 
-      if (diferencia < minDiferencia) {
-        minDiferencia = diferencia;
-        indexProcesion = i;
-        diaIndexFinal = p.index;
+      for (const procesion of dia.procesiones) {
+        const [hSalida, mSalida] = procesion.horaSalida.split(':').map(Number);
+        const [hLlegada, mLlegada] = procesion.horaLlegada.split(':').map(Number);
+
+        const fechaSalida = new Date(fechaDelDia);
+        fechaSalida.setHours(hSalida, mSalida, 0, 0);
+
+        const fechaLlegada = new Date(fechaDelDia);
+        fechaLlegada.setHours(hLlegada, mLlegada, 0, 0);
+
+        if (fechaLlegada <= fechaSalida) {
+          fechaLlegada.setDate(fechaLlegada.getDate() + 1);
+        }
+
+        const margenAntes = new Date(fechaSalida);
+        margenAntes.setMinutes(margenAntes.getMinutes() - 30);
+
+        const margenDespues = new Date(fechaLlegada);
+        margenDespues.setMinutes(margenDespues.getMinutes() + 30);
+
+        if (ahora >= margenAntes && ahora <= margenDespues) {
+          mejorProcesion = procesion;
+          mejorDiseno = diseno;
+          estaEnCalleActual = true;
+          break;
+        }
+
+        if (fechaSalida > ahora) {
+          const diferencia = fechaSalida.getTime() - ahora.getTime();
+          if (diferencia < menorDiferenciaTiempo) {
+            menorDiferenciaTiempo = diferencia;
+            proximaProcesion = procesion;
+            proximoDiseno = diseno;
+          }
+        }
       }
-    });
 
-    const primera = procesionesCandidatas[indexProcesion];
-    let enCalle = false;
-
-    if (primera) {
-      const [horaSalida, minSalida] = primera.horaSalida.split(":").map(Number);
-      const [horaLlegada, minLlegada] = primera.horaLlegada.split(":").map(Number);
-      const salidaMin = horaSalida * 60 + minSalida - 30;
-      const llegadaMin = horaLlegada * 60 + minLlegada + 30;
-      const llegadaAjustada = llegadaMin < salidaMin ? llegadaMin + 1440 : llegadaMin;
-      const minutosActualesAjustados = minutosActuales < salidaMin ? minutosActuales + 1440 : minutosActuales;
-
-      enCalle = minutosActualesAjustados >= salidaMin && minutosActualesAjustados <= llegadaAjustada;
+      if (mejorProcesion) break;
     }
 
-    setProcesion(primera ?? null);
-    setDiseno(disenoDias[diaIndexFinal] ?? null);
-    setEstaEnCalle(enCalle);
+    if (!mejorProcesion && proximaProcesion && proximoDiseno) {
+      mejorProcesion = proximaProcesion;
+      mejorDiseno = proximoDiseno;
+      estaEnCalleActual = false;
+    }
+
+    setProcesion(mejorProcesion);
+    setDiseno(mejorDiseno);
+    setEstaEnCalle(estaEnCalleActual);
   }, []);
+
+  // 👉 Si ha terminado, mostramos el mensaje de despedida
+  if (haTerminado) {
+    return (
+      <section className="relative w-full h-full min-h-screen bg-black flex items-center justify-center">
+        <h2 className="text-white text-center font-serif text-4xl md:text-6xl font-bold">
+          Hasta el año que viene 👋
+        </h2>
+      </section>
+    );
+  }
 
   if (!procesion || !diseno) return null;
 
@@ -109,3 +153,4 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
     />
   );
 }
+

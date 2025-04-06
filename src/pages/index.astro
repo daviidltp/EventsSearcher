@@ -37,7 +37,7 @@ const disenoDias = disenoDiasRaw as DisenoDia[];
   />
 
   {dias.map((dia, index) =>
-    index >= new Date().getDay() && dia.procesiones.length > 0 ? (
+    index >= 0 && dia.procesiones.length > 0 ? (
       <SeccionDia
         titulo={dia.titulo}
         imagenes={dia.procesiones.map((p) => ({
