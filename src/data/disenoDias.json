@@ -1,0 +1,43 @@
+{
+    "0": {
+      "nombre": "Domingo de Ramos",
+      "posicionTexto": "izquierda",
+      "colorTexto": "blanco"
+    },
+    "1": {
+      "nombre": "Lunes Santo",
+      "posicionTexto": "izquierda",
+      "colorTexto": "blanco"
+    },
+    "2": {
+      "nombre": "Martes Santo",
+      "posicionTexto": "izquierda",
+      "colorTexto": "blanco"
+    },
+    "3": {
+      "nombre": "Miércoles Santo",
+      "posicionTexto": "izquierda",
+      "colorTexto": "blanco"
+    },
+    "4": {
+      "nombre": "Jueves Santo",
+      "posicionTexto": "izquierda",
+      "colorTexto": "blanco"
+    },
+    "5": {
+      "nombre": "Viernes Santo",
+      "posicionTexto": "derecha",
+      "colorTexto": "blanco"
+    },
+    "6": {
+      "nombre": "Sábado Santo",
+      "posicionTexto": "izquierda",
+      "colorTexto": "blanco"
+    },
+    "7": {
+      "nombre": "Domingo de Resurrección",
+      "posicionTexto": "derecha",
+      "colorTexto": "blanco"
+    }
+  }
+  
