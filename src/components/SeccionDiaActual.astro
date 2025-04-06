@@ -11,6 +11,7 @@ interface Props {
   posicionTexto: string; // izquierda o derecha
   colorTexto: string;    // blanco, negro, etc.
   estaEnCalle: boolean;    // blanco, negro, etc.
+  rutaId: string;
 }
 
 const {
@@ -24,7 +25,8 @@ const {
   horaLlegada,
   colorTexto,
   posicionTexto,
-  estaEnCalle
+  estaEnCalle,
+  rutaId
 } = Astro.props;
 
 // Mapeo de colorTexto a clases Tailwind
@@ -76,7 +78,7 @@ const clasePosicionTexto = posicionClaseMap[posicionTexto] ?? 'left-6';
     <!-- Botón solo visible en móvil -->
     {estaEnCalle && (
       <div class="mt-5 md:hidden">
-        <a href="/martos-2d">
+        <a href={`/martos-2d/${rutaId}`}>
           <button class="flex items-center gap-3 bg-white bg-opacity-80 text-black font-semibold 
                          px-5 py-2 text-md rounded-full shadow-md 
                          hover:bg-opacity-100 transition">
@@ -94,7 +96,7 @@ const clasePosicionTexto = posicionClaseMap[posicionTexto] ?? 'left-6';
   <!-- Botón escritorio -->
   {estaEnCalle && (
     <div class="hidden md:flex absolute bottom-6 right-6 z-10">
-      <a href="/martos-2d">
+      <a href={`/martos-2d/${rutaId}`}>
         <button class="flex items-center gap-3 bg-white bg-opacity-80 text-black font-semibold 
                        px-6 py-3 text-base rounded-full shadow-md 
                        hover:bg-opacity-100 transition cursor-pointer">

@@ -1,53 +1,7 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import MartosMapa2D from '../components/MartosMapa2D.astro';
+// Si alguien accede directamente a /martos-2d, redirigir a una ruta predeterminada
+const defaultRoute = 'borriquita';
 
-// Definir una ruta de procesión en Martos
-const rutaProcecion = [
-  [37.7219, -3.9699], // Plaza de la Constitución
-  [37.7225, -3.9705],
-  [37.7230, -3.9710],
-  [37.7235, -3.9715],
-  [37.7240, -3.9720],
-  [37.7235, -3.9725],
-  [37.7230, -3.9720],
-  [37.7225, -3.9715],
-  [37.7219, -3.9699]  // Vuelve al inicio
-];
-
-// Puntos de interés en Martos (lugares religiosos)
-const puntosInteres = [
-  {
-    position: [37.7219, -3.9699],
-    title: "Plaza de la Constitución",
-    description: "Punto central de la ciudad"
-  },
-  {
-    position: [37.7230, -3.9710],
-    title: "Iglesia de Santa Marta",
-    description: "Templo principal de Martos"
-  },
-  {
-    position: [37.7240, -3.9720],
-    title: "Santuario de la Virgen de la Villa",
-    description: "Importante lugar de devoción"
-  },
-  {
-    position: [37.7196, -3.9698],
-    title: "Ermita de San Miguel",
-    description: "Antigua ermita del siglo XVII"
-  },
-  {
-    position: [37.7164, -3.9696],
-    title: "Parroquia de la Asunción",
-    description: "Iglesia parroquial"
-  }
-];
+// Esta página solo sirve como punto de entrada - redirigir a la versión con URL dinámica
+return Astro.redirect(`/martos-2d/${defaultRoute}`);
 ---
-<Layout>
-  <MartosMapa2D 
-    route={rutaProcecion}
-    points={puntosInteres}
-    title="Martos - Procesión del Jueves Santo"
-  />
-</Layout>

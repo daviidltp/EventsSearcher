@@ -101,17 +101,18 @@ if (primeraProcesion) {
 
 <Layout>
   <SeccionDiaActual
-    titulo={diseno.nombre}
-    imagenNormal={primeraProcesion?.imagenCaratula ?? ''}
-    imagenExtendida={primeraProcesion?.imagenExtendida ?? ''}
-    posicionImagen={primeraProcesion?.posicionImagen ?? 'center'}
-    hermandad={primeraProcesion?.nombre ?? ''}
-    iglesia={primeraProcesion?.parroquia ?? ''}
-    horaSalida={primeraProcesion?.horaSalida ?? ''}
-    horaLlegada={primeraProcesion?.horaLlegada ?? ''}
-    posicionTexto={diseno.posicionTexto}
-    colorTexto={diseno.colorTexto}
-    estaEnCalle={estaEnCalle}
+	titulo={diseno.nombre}
+	imagenNormal={primeraProcesion?.imagenCaratula ?? ''}
+	imagenExtendida={primeraProcesion?.imagenExtendida ?? ''}
+	posicionImagen={primeraProcesion?.posicionImagen ?? 'center'}
+	hermandad={primeraProcesion?.nombre ?? ''}
+	iglesia={primeraProcesion?.parroquia ?? ''}
+	horaSalida={primeraProcesion?.horaSalida ?? ''}
+	horaLlegada={primeraProcesion?.horaLlegada ?? ''}
+	posicionTexto={diseno.posicionTexto}
+	colorTexto={diseno.colorTexto}
+	estaEnCalle={estaEnCalle}
+	rutaId={primeraProcesion?.nombre?.toLowerCase().replace(/\s+/g, '-') ?? ''}
   />
 
   {dias.map((dia, index) =>
@@ -120,7 +121,8 @@ if (primeraProcesion) {
         titulo={dia.titulo}
         imagenes={dia.procesiones.map((p) => ({
           src: p.imagenCaratula,
-          alt: p.nombre
+          alt: p.nombre,
+		  rutaId: p.nombre.toLowerCase().replace(/\s+/g, '-')
         }))}
       />
     ) : null
