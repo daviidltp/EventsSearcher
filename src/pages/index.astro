@@ -1,12 +1,11 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import SeccionDia from '../components/SeccionDia.astro';
-import SeccionDiaActual from '../components/SeccionDiaActual.astro';
+import SeccionDiaActualIsla from '../components/SeccionDiaActualIsla.tsx';
 
-import dias from '../data/dias.json';
-import disenoDias from '../data/disenoDias.json';
+import diasRaw from '../data/dias.json';
+import disenoDiasRaw from '../data/disenoDias.json';
 
-// Tipos para asegurar que TypeScript no se queje
 interface Procesion {
   nombre: string;
   parroquia: string;
@@ -28,94 +27,17 @@ interface DisenoDia {
   colorTexto: string;
 }
 
-// Convertimos los datos importados al tipo correcto
-const diasData = dias as Dia[];
-const disenoDiasData = disenoDias as DisenoDia[];
-
-// Obtener el índice del día actual (0 = Domingo, ..., 6 = Sábado)
-const ahora = new Date();
-const diaActualIndex = ahora.getDay();
-
-const horas = ahora.getHours();
-const minutos = ahora.getMinutes();
-const minutosActuales = horas * 60 + minutos;
-
-const diaActual = diasData[diaActualIndex];
-const diseno = disenoDiasData[diaActualIndex];
-
-let procesionesCandidatas = [];
-
-console.log(horas, minutos);
-
-// Agrega procesiones del día actual
-procesionesCandidatas.push(...diaActual.procesiones.map(p => ({ ...p, index: diaActualIndex })));
-
-// Agrega procesiones del día anterior que sigan en la calle
-if (diaActualIndex > 0) {
-  const diaAnterior = diasData[diaActualIndex - 1];
-
-  const procesionesEnCurso = diaAnterior.procesiones.filter(p => {
-    const [horaLlegada, minLlegada] = p.horaLlegada.split(":").map(Number);
-    const llegadaMin = horaLlegada * 60 + minLlegada;
-    return llegadaMin < 6 * 60 && minutosActuales <= llegadaMin;
-  }).map(p => ({ ...p, index: diaActualIndex - 1 }));
-
-  procesionesCandidatas.push(...procesionesEnCurso);
-}
-
-// Busca la procesión más cercana a la hora actual
-let indexProcesion = 0;
-let minDiferencia = Infinity;
-let diaIndexFinal = diaActualIndex;
-
-procesionesCandidatas.forEach((p, i) => {
-  const [hora, min] = p.horaSalida.split(":").map(Number);
-  const salidaMin = hora * 60 + min;
-  const diferencia = Math.abs(salidaMin - minutosActuales);
-
-  if (diferencia < minDiferencia) {
-    minDiferencia = diferencia;
-    indexProcesion = i;
-    diaIndexFinal = p.index;
-  }
-});
-
-const primeraProcesion = procesionesCandidatas[indexProcesion];
-
-let estaEnCalle = false;
-
-if (primeraProcesion) {
-  const [horaSalida, minSalida] = primeraProcesion.horaSalida.split(":").map(Number);
-  const [horaLlegada, minLlegada] = primeraProcesion.horaLlegada.split(":").map(Number);
-
-  const salidaMin = horaSalida * 60 + minSalida - 30;
-  const llegadaMin = horaLlegada * 60 + minLlegada + 30;
-
-  const llegadaAjustada = llegadaMin < salidaMin ? llegadaMin + 1440 : llegadaMin;
-  const minutosActualesAjustados = minutosActuales < salidaMin ? minutosActuales + 1440 : minutosActuales;
-
-  estaEnCalle = minutosActualesAjustados >= salidaMin && minutosActualesAjustados <= llegadaAjustada;
-}
-
+const dias = diasRaw as Dia[];
+const disenoDias = disenoDiasRaw as DisenoDia[];
 ---
-
 <Layout>
-  <SeccionDiaActual
-    titulo={diseno.nombre}
-    imagenNormal={primeraProcesion?.imagenCaratula ?? ''}
-    imagenExtendida={primeraProcesion?.imagenExtendida ?? ''}
-    posicionImagen={primeraProcesion?.posicionImagen ?? 'center'}
-    hermandad={primeraProcesion?.nombre ?? ''}
-    iglesia={primeraProcesion?.parroquia ?? ''}
-    horaSalida={primeraProcesion?.horaSalida ?? ''}
-    horaLlegada={primeraProcesion?.horaLlegada ?? ''}
-    posicionTexto={diseno.posicionTexto}
-    colorTexto={diseno.colorTexto}
-    estaEnCalle={estaEnCalle}
+  <SeccionDiaActualIsla client:load 
+  dias={dias} 
+  disenoDias={disenoDias} 
   />
 
   {dias.map((dia, index) =>
-    index >= diaActualIndex && dia.procesiones.length > 0 ? (
+    index >= new Date().getDay() && dia.procesiones.length > 0 ? (
       <SeccionDia
         titulo={dia.titulo}
         imagenes={dia.procesiones.map((p) => ({
