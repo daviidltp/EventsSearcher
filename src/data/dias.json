@@ -3,7 +3,8 @@
       "titulo": "Domingo de Ramos",
       "procesiones": [
         {
-          "nombre": "Cofradía de Nuestro Padre Jesús en su Entrada Triunfal en Jerusalén",
+          "nombre" : "Borriquita",
+          "cofradia": "Cofradía de Nuestro Padre Jesús en su Entrada Triunfal en Jerusalén",
           "imagenCaratula": "src/assets/imagenes/borriquita.jpeg",
           "imagenExtendida": "src/assets/imagenes/borriquita-extended.jpeg",
           "posicionImagen": "bottom",
@@ -23,9 +24,10 @@
           ]
         },
         {
-          "nombre": "Hermandad del Stmo. Cristo de Humildad y Paciencia, María Santísima Madre de los Desamparados, San Juan Evangelista y Ntra. Sra. del Buen Remedio",
-          "imagenCaratula": "src/assets/imagenes/humildad-paciencia.jpeg",
-          "imagenExtendida": "src/assets/imagenes/humildad-paciencia-extended.jpeg",
+          "nombre" : "Humildad y Paciencia",
+          "cofradia": "Hermandad del Stmo. Cristo de Humildad y Paciencia, María Santísima Madre de los Desamparados, San Juan Evangelista y Ntra. Sra. del Buen Remedio",
+          "imagenCaratula": "src/assets/imagenes/humildad-paciencia.jpg",
+          "imagenExtendida": "src/assets/imagenes/humildad-paciencia-extended.jpg",
           "posicionImagen": "bottom",
           "horaSalida": "19:00",
           "horaLlegada": "00:00",
@@ -45,9 +47,10 @@
       "titulo": "Lunes Santo",
       "procesiones": [
         {
-          "nombre": "Faustiniana Hermandad de la Santa Vera Cruz y Cofradía de Penitencia y Silencio de Nuestro Padre Jesús de Pasión y Nuestra Señora María de Nazareth",
-          "imagenCaratula": "src/assets/imagenes/pasion-nazareth.jpg",
-          "imagenExtendida": "src/assets/imagenes/pasion-nazareth-extended.jpg",
+          "nombre" : "Santa Vera Cruz",
+          "cofradia": "Faustiniana Hermandad de la Santa Vera Cruz y Cofradía de Penitencia y Silencio de Nuestro Padre Jesús de Pasión y Nuestra Señora María de Nazareth",
+          "imagenCaratula": "src/assets/imagenes/vera-cruz.jpg",
+          "imagenExtendida": "src/assets/imagenes/vera-cruz-extended.jpg",
           "posicionImagen": "top",
           "horaSalida": "20:30",
           "horaLlegada": "00:30",
@@ -66,15 +69,17 @@
           ],
           "sitios_interes": ["Salida", "Entrada a su templo", "El discurrir silente por cualquier calle"]
         }
+        
       ]
     },
     {
       "titulo": "Martes Santo",
       "procesiones": [
         {
-          "nombre": "Cofradía de Nuestro Padre Jesús Cautivo de la Túnica Blanca y María Santísima de la Trinidad en su Mayor Dolor y Desamparo",
-          "imagenCaratula": "src/assets/imagenes/cautivo-trinidad.jpg",
-          "imagenExtendida": "src/assets/imagenes/cautivo-trinidad-extended.jpg",
+          "nombre" : "Nuestro Padre Jesús Cautivo",
+          "cofradia": "Cofradía de Nuestro Padre Jesús Cautivo de la Túnica Blanca y María Santísima de la Trinidad en su Mayor Dolor y Desamparo",
+          "imagenCaratula": "src/assets/imagenes/cautivo.jpg",
+          "imagenExtendida": "src/assets/imagenes/cautivo-extended.jpg",
           "posicionImagen": "top",
           "horaSalida": "19:30",
           "horaLlegada": "02:00",
@@ -100,7 +105,8 @@
       "titulo": "Miércoles Santo",
       "procesiones": [
         {
-          "nombre": "Hermandad y Cofradía de Nazarenos de la Oración de Jesús en el Huerto y María Santísima de la Amargura",
+          "nombre" : "Oración en el huerto",
+          "cofradia": "Hermandad y Cofradía de Nazarenos de la Oración de Jesús en el Huerto y María Santísima de la Amargura",
           "imagenCaratula": "src/assets/imagenes/oracion-huerto.jpg",
           "imagenExtendida": "src/assets/imagenes/oracion-huerto-extended.jpg",
           "posicionImagen": "top",
@@ -126,7 +132,8 @@
       "titulo": "Jueves Santo",
       "procesiones": [
         {
-          "nombre": "Cofradía del Santísimo Cristo del Amor, María Auxiliadora en su Desconsuelo y Misericordia, San Juan Evangelista y San Juan Bosco",
+          "nombre" : "Amor y Auxilio",
+          "cofradia": "Cofradía del Santísimo Cristo del Amor, María Auxiliadora en su Desconsuelo y Misericordia, San Juan Evangelista y San Juan Bosco",
           "imagenCaratula": "src/assets/imagenes/amor-y-auxilio.jpeg",
           "imagenExtendida": "src/assets/imagenes/amor-y-auxilio-extended.jpeg",
           "posicionImagen": "top",
@@ -146,9 +153,10 @@
           "sitios_interes": ["Salida", "Encuentro en la plaza Fuente Nueva", "Entrada a su templo"]
         },
         {
-          "nombre": "Cofradía del Santísimo Cristo de la Fe y del Consuelo",
-          "imagenCaratula": "src/assets/imagenes/fe-consuelo.jpg",
-          "imagenExtendida": "src/assets/imagenes/fe-consuelo-extended.jpg",
+          "nombre" : "Fe y Consuelo",
+          "cofradia": "Cofradía del Santísimo Cristo de la Fe y del Consuelo",
+          "imagenCaratula": "src/assets/imagenes/fe-y-consuelo.jpg",
+          "imagenExtendida": "src/assets/imagenes/fe-y-consuelo-extended.jpg",
           "posicionImagen": "bottom",
           "horaSalida": "23:00",
           "horaLlegada": "03:40",
@@ -169,7 +177,8 @@
         "titulo": "Viernes Santo",
         "procesiones": [
           {
-            "nombre": "Cofradía de Nuestro Padre Jesús Nazareno, María Santísima de los Dolores y María Magdalena",
+            "nombre" : "Jesús Nazareno",
+            "cofradia": "Cofradía de Nuestro Padre Jesús Nazareno, María Santísima de los Dolores y María Magdalena",
             "imagenCaratula": "src/assets/imagenes/jesus-nazareno.jpg",
             "imagenExtendida": "src/assets/imagenes/jesus-nazareno-extended.jpg",
             "posicionImagen": "top",
@@ -193,9 +202,10 @@
             ]
           },
           {
-            "nombre": "Cofradía del Santo Entierro de Cristo, María Santísima de los Dolores y San Juan Evangelista",
-            "imagenCaratula": "src/assets/imagenes/soledad.jpg",
-            "imagenExtendida": "src/assets/imagenes/soledad-extended.jpeg",
+            "nombre" : "Santo Entierro",
+            "cofradia": "Cofradía del Santo Entierro de Cristo, María Santísima de los Dolores y San Juan Evangelista",
+            "imagenCaratula": "src/assets/imagenes/santo-entierro.jpg",
+            "imagenExtendida": "src/assets/imagenes/santo-entierro-extended.jpg",
             "posicionImagen": "top",
             "horaSalida": "20:00",
             "horaLlegada": "01:30",
@@ -208,13 +218,39 @@
               "María Santísima de los Dolores": "Anónimo (siglo XIX)"
             },
             "itinerario": [
-              "plaza de la Constitución", "Real", "EI Llanete", "Campiña", "plaza Fuente Nueva", "San Francisco",
-              "Fuente del Baño", "Las Huertas", "La Fuente", "plaza de la Constitución"
+              "Plaza de la Constitución", "Real", "EI Llanete", "Campiña", "Plaza Fuente Nueva", "San Francisco",
+              "Fuente del Baño", "Las Huertas", "La Fuente", "Plaza de la Constitución"
             ],
             "sitios_interes": [
               "Salida", "El paso por la plaza Fuente Nueva", "Entrada a su templo"
             ]
-          }
+          },
+          {
+            "nombre": "Soledad",
+            "cofradia": "Seráfica Cofradía de María Santísima de la Soledad",
+            "imagenCaratula": "src/assets/imagenes/soledad.jpg",
+            "imagenExtendida": "src/assets/imagenes/soledad-extended.jpeg",
+            "posicionImagen": "top",
+            "horaSalida": "00:00",
+            "horaLlegada": "04:15",
+            "parroquia": "Iglesia de las RR. MM. Trinitarias",
+            "entradaCruzGuiaCarreraOficial": "01:50",
+            "salidaCruzGuiaCarreraOficial": "02:05",
+            "fundacion": "1580 aprox. (reorganizada en 1981)",
+            "autor_imagen": {
+              "María Santísima de la Soledad": "Anónimo"
+            },
+            "itinerario": [
+              "Real", "plaza de la Constitución", "La Fuente", "Las Huertas", "Fuente del Baño", "San Francisco",
+              "plaza Fuente Nueva", "Campiña", "EI Llanete", "Izquierda de San Miguel", "Cobatillas Bajas", 
+              "Clarín", "Molino Medel", "San Bartolomé", "Adarves", "plaza de la Constitución", "Real"
+            ],
+            "sitios_interes": [
+              "Salida", "La Fuente", "San Francisco", "Cobatillas Bajas", 
+              "Casa de Hermandad del Santo Entierro", "Adarves", "Entrada a su templo"
+            ]
+          }          
+          
         ]
       },
       {
@@ -225,9 +261,10 @@
         "titulo": "Domingo de Resurrección",
         "procesiones": [
           {
-            "nombre": "Hermandad de María Santísima de la Victoria",
-            "imagenCaratula": "src/assets/imagenes/victoria.jpg",
-            "imagenExtendida": "src/assets/imagenes/victoria-extended.jpg",
+            "nombre" : "Resurección y Esperanza",
+            "cofradia": "Hermandad de María Santísima de la Victoria",
+            "imagenCaratula": "src/assets/imagenes/resucitado.jpg",
+            "imagenExtendida": "src/assets/imagenes/resucitado-extended.jpg",
             "posicionImagen": "top",
             "horaSalida": "11:00",
             "horaLlegada": "14:00",

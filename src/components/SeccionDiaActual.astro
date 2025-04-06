@@ -4,13 +4,50 @@ interface Props {
   imagenNormal: string;
   imagenExtendida: string;
   posicionImagen: string;
+  hermandad: string;
+  iglesia: string;
+  horaSalida: string;
+  horaLlegada: string;
+  posicionTexto: string; // izquierda o derecha
+  colorTexto: string;    // blanco, negro, etc.
+  estaEnCalle: boolean;    // blanco, negro, etc.
 }
 
-const { titulo, imagenNormal, imagenExtendida, posicionImagen } = Astro.props;
+const {
+  titulo,
+  imagenNormal,
+  imagenExtendida,
+  posicionImagen,
+  hermandad,
+  iglesia,
+  horaSalida,
+  horaLlegada,
+  colorTexto,
+  posicionTexto,
+  estaEnCalle
+} = Astro.props;
+
+// Mapeo de colorTexto a clases Tailwind
+const colorClaseMap: Record<string, string> = {
+  blanco: 'text-white',
+  negro: 'text-black',
+  rojo: 'text-red-500',
+  // Agrega más si necesitas
+};
+
+const claseColorTexto = colorClaseMap[colorTexto] ?? 'text-white';
+
+// Mapeo de posición del texto
+const posicionClaseMap: Record<string, string> = {
+  izquierda: 'left-6',
+  derecha: 'right-6 text-right',
+};
+
+const clasePosicionTexto = posicionClaseMap[posicionTexto] ?? 'left-6';
 ---
 
-<section class="relative w-full h-screen overflow-hidden">
-  <!-- Imagen responsiva con <picture> -->
+<section class="relative w-full h-full overflow-hidden">
+  <!-- Imagen responsiva -->
   <picture>
     <source srcset={imagenExtendida} media="(min-width: 768px)" />
     <img
@@ -20,17 +57,42 @@ const { titulo, imagenNormal, imagenExtendida, posicionImagen } = Astro.props;
     />
   </picture>
 
-  <!-- Título en la esquina superior izquierda con sombra intensa -->
-  <h2 class="absolute top-4 left-4 text-white text-4xl font-extrabold drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] z-10">
-    {titulo}
-  </h2>
+  <!-- Capa sombra -->
+  <div class="absolute bottom-0 w-full h-2/3 bg-gradient-to-t from-black/90 to-transparent z-0"></div>
 
-  <!-- Botón: centrado en móvil, abajo derecha en desktop -->
-  <div class="absolute md:bottom-4 bottom-15 w-full flex justify-center md:justify-end md:pr-10">
+  <!-- Título -->
+    <h2 class={`absolute top-6 ${clasePosicionTexto} ${claseColorTexto} titulo-dinamico 
+      font-serif tracking-wide uppercase drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)] 
+      z-10 max-w-[90%] leading-tight font-bold`}>
+    {titulo}
+    </h2>
+
+
+  <!-- Información abajo izquierda -->
+  <div class="absolute bottom-6 left-6 z-10 text-white space-y-1 text-lg drop-shadow-[0_1px_6px_rgba(0,0,0,0.8)] max-w-[80%]">
+    <p class="text-2xl font-semibold">{hermandad}</p>
+    <p class="text-base">{iglesia}</p>
+    <p class="text-base">{horaSalida} - {horaLlegada}</p>
+
+    <!-- Botón solo visible en móvil -->
+    <div class="mt-5 md:hidden">
+      <button class="flex items-center gap-3 bg-white bg-opacity-80 text-black font-semibold 
+                     px-5 py-2 text-md rounded-full shadow-md 
+                     hover:bg-opacity-100 transition">
+        ¡Síguela en directo!
+        <span class="relative flex h-4 w-4">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-600 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-4 w-4 bg-red-600"></span>
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Botón escritorio -->
+  <div class="hidden md:flex absolute bottom-6 right-6 z-10">
     <button class="flex items-center gap-3 bg-white bg-opacity-80 text-black font-semibold 
-                   px-10 py-4 text-lg sm:text-xl rounded-full shadow-md 
-                   hover:bg-opacity-100 transition
-                   md:px-6 md:py-3 md:text-base">
+                   px-6 py-3 text-base rounded-full shadow-md 
+                   hover:bg-opacity-100 transition">
       ¡Síguela en directo!
       <span class="relative flex h-4 w-4">
         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-600 opacity-75"></span>
@@ -39,3 +101,12 @@ const { titulo, imagenNormal, imagenExtendida, posicionImagen } = Astro.props;
     </button>
   </div>
 </section>
+
+<style>
+  .titulo-dinamico {
+    font-size: clamp(2.6rem, 8vw, 10rem); /* Se adapta al ancho hasta un máximo de 6rem */
+    line-height: 1.1;
+    white-space: normal;
+  }
+</style>
+
