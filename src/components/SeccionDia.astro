@@ -1,7 +1,8 @@
 ---
 interface Props {
   titulo: string;
-  imagenes: { src: string; alt: string; rutaId: string }[];
+  
+  imagenes: { src: string; alt: string; descripcion: string; rutaId: string }[];
 }
 
 const { titulo, imagenes } = Astro.props;
@@ -22,7 +23,7 @@ import Caratula from './Caratula.astro';
     <div class="flex overflow-x-auto overflow-y-hidden gap-4 flex-nowrap scrollbar-hide px-5 no-scrollbar">
       {imagenes.map((imagen) => (
         <a href={`/martos-2d/${imagen.rutaId}`} class="relative">
-          <Caratula src={imagen.src} alt={imagen.alt} />
+          <Caratula src={imagen.src} titulo={imagen.alt} descripcion={imagen.descripcion} />
         </a>
         
       ))}

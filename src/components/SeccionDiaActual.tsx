@@ -44,6 +44,20 @@ export default function SeccionDiaActual(props: Props) {
   const claseColorTexto = colorClaseMap[colorTexto] ?? 'text-white';
   const clasePosicionTexto = posicionClaseMap[posicionTexto] ?? 'left-6';
 
+  // Para poner los titulos partidos en 2 partes:
+  const partes = titulo.split(' ');
+  let linea1 = '';
+  let linea2 = '';
+
+  if (partes.length === 2) {
+    // Dos palabras → una por línea
+    [linea1, linea2] = partes;
+  } else if (partes.length >= 3) {
+    // Tres o más → dos primeras en la primera línea, resto en la segunda
+    linea1 = `${partes[0]} ${partes[1]} `;
+    linea2 = partes.slice(2).join(' ');
+  }
+
   return (
     <section className="relative w-full h-full overflow-hidden">
       {/* Imagen responsiva */}
@@ -60,10 +74,26 @@ export default function SeccionDiaActual(props: Props) {
       <div className="absolute bottom-0 w-full h-2/3 bg-gradient-to-t from-black/90 to-transparent z-0"></div>
 
       {/* Título */}
+      {/* TÍTULO MÓVIL */}
       <h2
         className={`absolute top-6 ${clasePosicionTexto} ${claseColorTexto} titulo-dinamico 
-        font-serif tracking-wide uppercase drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)] 
-        z-10 max-w-[90%] leading-tight font-bold`}
+                    font-serif tracking-wide uppercase drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)] 
+                    z-10 max-w-[90%] leading-tight font-bold md:hidden`}
+        style={{
+          fontSize: 'clamp(2.6rem, 8vw, 10rem)',
+          lineHeight: '1.1',
+          whiteSpace: 'normal',
+        }}
+      >
+        <span className="block">{linea1}</span>
+        <span className="block">{linea2}</span>
+      </h2>
+
+      {/* TÍTULO ESCRITORIO */}
+      <h2
+        className={`absolute top-6 ${clasePosicionTexto} ${claseColorTexto} titulo-dinamico 
+                    font-serif tracking-wide uppercase drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)] 
+                    z-10 max-w-[90%] leading-tight font-bold hidden md:block`}
         style={{
           fontSize: 'clamp(2.6rem, 8vw, 10rem)',
           lineHeight: '1.1',
@@ -72,6 +102,7 @@ export default function SeccionDiaActual(props: Props) {
       >
         {titulo}
       </h2>
+
 
       {/* Información */}
       <div className="absolute bottom-6 left-6 z-10 text-white space-y-1 text-lg drop-shadow-[0_1px_6px_rgba(0,0,0,0.8)] max-w-[80%]">

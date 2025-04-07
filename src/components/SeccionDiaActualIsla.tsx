@@ -3,6 +3,8 @@ import SeccionDiaActual from './SeccionDiaActual';
 
 interface Procesion {
   nombre: string;
+  descripcion: string;
+  cofradia: string;
   parroquia: string;
   horaSalida: string;
   horaLlegada: string;
@@ -32,9 +34,10 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
   const [diseno, setDiseno] = useState<DisenoDia | null>(null);
   const [estaEnCalle, setEstaEnCalle] = useState(false);
   const [haTerminado, setHaTerminado] = useState(false);
-
+  const ahora = new Date();
+  ahora.setHours(ahora.getHours() + 24 * 4 + 14)
   useEffect(() => {
-    const ahora = new Date();
+    
     //ahora.setHours(ahora.getHours() - 72); // quitar esto si ya no estás en pruebas
 
     let mejorProcesion: Procesion | null = null;
@@ -123,6 +126,8 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
     setEstaEnCalle(estaEnCalleActual);
   }, []);
 
+  console.log(ahora);
+
   // 👉 Si ha terminado, mostramos el mensaje de despedida
   if (haTerminado) {
     return (
@@ -134,6 +139,9 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
     );
   }
 
+  
+
+
   if (!procesion || !diseno) return null;
 
   return (
@@ -142,7 +150,7 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
       imagenNormal={procesion.imagenCaratula}
       imagenExtendida={procesion.imagenExtendida}
       posicionImagen={procesion.posicionImagen}
-      hermandad={procesion.nombre}
+      hermandad={procesion.descripcion}
       iglesia={procesion.parroquia}
       horaSalida={procesion.horaSalida}
       horaLlegada={procesion.horaLlegada}

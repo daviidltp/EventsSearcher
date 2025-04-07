@@ -1,20 +1,24 @@
 ---
 interface Props {
   src: string;
-  alt: string;
+  titulo: string;
+  descripcion: string;
 }
 
-const { src, alt } = Astro.props;
+const { src, titulo, descripcion } = Astro.props;
 ---
 
-<div class="caratula w-50 md:w-64 lg:w-72 mx-2 rounded-lg shadow-md overflow-hidden relative cursor-pointer aspect-[3/4]">
-  <div class="w-full h-full overflow-hidden">
-    <img
-      src={src}
-      alt={alt}
-      class="imagen w-full h-full object-cover"
-    />
+<div class="w-50 md:w-64 lg:w-72 mx-2">
+  <div class="caratula rounded-lg shadow-md overflow-hidden relative cursor-pointer aspect-[3/4]">
+    <div class="w-full h-full overflow-hidden">
+      <img
+        src={src}
+        alt={titulo}
+        class="imagen w-full h-full object-cover"
+      />
+    </div>
   </div>
+  <p class="mt-2 text-start text-sm font-semibold">{descripcion}</p>
 </div>
 
 <style>

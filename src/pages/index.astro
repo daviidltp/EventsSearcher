@@ -8,6 +8,8 @@ import disenoDiasRaw from '../data/disenoDias.json';
 
 interface Procesion {
   nombre: string;
+  descripcion: string;
+  cofradia: string;
   parroquia: string;
   horaSalida: string;
   horaLlegada: string;
@@ -43,6 +45,7 @@ const disenoDias = disenoDiasRaw as DisenoDia[];
         imagenes={dia.procesiones.map((p) => ({
           src: p.imagenCaratula,
           alt: p.nombre,
+          descripcion: p.descripcion,
 		  rutaId: p.nombre.toLowerCase().replace(/\s+/g, '-')
         }))}
       />

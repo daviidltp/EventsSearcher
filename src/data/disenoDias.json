@@ -6,12 +6,12 @@
   },
   {
     "nombre": "Lunes Santo",
-    "posicionTexto": "izquierda",
+    "posicionTexto": "derecha",
     "colorTexto": "blanco"
   },
   {
     "nombre": "Martes Santo",
-    "posicionTexto": "izquierda",
+    "posicionTexto": "derecha",
     "colorTexto": "blanco"
   },
   {
@@ -21,7 +21,7 @@
   },
   {
     "nombre": "Jueves Santo",
-    "posicionTexto": "izquierda",
+    "posicionTexto": "derecha",
     "colorTexto": "blanco"
   },
   {
@@ -31,7 +31,7 @@
   },
   {
     "nombre": "Sábado Santo",
-    "posicionTexto": "izquierda",
+    "posicionTexto": "derecha",
     "colorTexto": "blanco"
   },
   {
