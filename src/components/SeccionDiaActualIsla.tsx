@@ -35,7 +35,7 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
   const [estaEnCalle, setEstaEnCalle] = useState(false);
   const [haTerminado, setHaTerminado] = useState(false);
   const ahora = new Date();
-  ahora.setHours(ahora.getHours() + 24 * 4 + 14)
+ // ahora.setHours(ahora.getHours() + 24 * 4 + 14)
   useEffect(() => {
     
     //ahora.setHours(ahora.getHours() - 72); // quitar esto si ya no estás en pruebas
