@@ -60,7 +60,7 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
         let ahora = FECHA_DEBUG_ACTIVA ? FECHA_DEBUG : new Date();
   
         if (!FECHA_DEBUG_ACTIVA) {
-          const response = await fetch('http://worldtimeapi.org/api/timezone/Europe/Madrid');
+          const response = await fetch('https://worldtimeapi.org/api/timezone/Europe/Madrid');
           const data = await response.json();
           ahora = new Date(data.datetime);
         }
