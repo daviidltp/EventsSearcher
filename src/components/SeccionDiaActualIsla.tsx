@@ -65,7 +65,7 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
           ahora = new Date(data.datetime);
         }
   
-        if (!ahora) return;
+        if (!ahora) ahora = new Date();
   
         // ... tu lógica actual a partir de aquí (la que usa `ahora`)
         // Copia todo el resto del código tal como está, pero usando `ahora` aquí dentro
