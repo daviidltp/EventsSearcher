@@ -59,10 +59,17 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
       try {
         let ahora = FECHA_DEBUG_ACTIVA ? FECHA_DEBUG : new Date();
   
-        if (!FECHA_DEBUG_ACTIVA) {
-          const response = await fetch('https://worldtimeapi.org/api/timezone/Europe/Madrid');
-          const data = await response.json();
-          ahora = new Date(data.datetime);
+        try {
+          if (FECHA_DEBUG_ACTIVA) {
+            ahora = FECHA_DEBUG;
+          } else {
+            const response = await fetch('https://worldtimeapi.org/api/timezone/Europe/Madrid');
+            const data = await response.json();
+            ahora = new Date(data.datetime);
+          }
+        } catch (error) {
+          console.warn('No se pudo obtener la hora de España desde la API. Usando la hora del navegador.', error);
+          ahora = new Date(); // Fallback a hora local del navegador
         }
   
         if (!ahora) ahora = new Date();
