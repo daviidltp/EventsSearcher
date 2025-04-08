@@ -1,4 +1,5 @@
 ---
+// Imports existentes
 import Layout from '../layouts/Layout.astro';
 import SeccionDia from '../components/SeccionDia.astro';
 import SeccionDiaActualIsla from '../components/SeccionDiaActualIsla.tsx';
@@ -34,8 +35,8 @@ const disenoDias = disenoDiasRaw as DisenoDia[];
 ---
 <Layout>
   <SeccionDiaActualIsla client:load 
-  dias={dias} 
-  disenoDias={disenoDias}
+    dias={dias} 
+    disenoDias={disenoDias}
   />
 
   {dias.map((dia, index) =>
@@ -46,9 +47,41 @@ const disenoDias = disenoDiasRaw as DisenoDia[];
           src: p.imagenCaratula,
           alt: p.nombre,
           descripcion: p.descripcion,
-		  rutaId: p.nombre.toLowerCase().replace(/\s+/g, '-')
+          rutaId: p.nombre.toLowerCase().replace(/\s+/g, '-')
         }))}
       />
     ) : null
   )}
+
+  <!-- FOOTER -->
+<footer class="w-full px-6 py-8 bg-black text-white text-sm text-center mt-10 space-y-4">
+  <!-- Creadores -->
+  <div class="flex flex-row justify-center items-center gap-6">
+    <div class="flex items-center gap-2">
+      <a href="https://instagram.com/daviidltp" target="_blank" rel="noopener noreferrer">
+        <img src="/assets/icons/instagram.svg" alt="Instagram" class="w-5 h-5" />
+      </a>
+      <span class="text-lg font-bold">David López</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <a href="https://instagram.com/_angelgallego001" target="_blank" rel="noopener noreferrer">
+        <img src="/assets/icons/instagram.svg" alt="Instagram" class="w-5 h-5" />
+      </a>
+      <span class="text-lg font-bold">Ángel Gallego</span>
+    </div>
+  </div>
+
+  <!-- Créditos -->
+  <div class="text-lg">
+    <span class="block">Todas las fotografías de esta página han</span>
+    <span>sido realizadas por <a href="https://lopezbueno.com/" target="_blank" rel="noopener noreferrer" class="underline hover:text-gray-300">Jose Manuel López Bueno</a></span>
+  </div>
+
+  <!-- Copyright -->
+  <div class="text-md pt-10 flex-col sm:flex-row justify-between flex w-full">
+    <p>© 2025 Semana Santa Martos. Todos los derechos reservados.</p>
+  </div>
+</footer>
+
+  
 </Layout>

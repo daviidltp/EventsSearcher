@@ -66,8 +66,18 @@ export default function SeccionDiaActual(props: Props) {
         <img
           src={imagenNormal}
           alt={titulo}
-          className={`absolute top-0 left-0 w-full h-full object-cover object-${posicionImagen}`}
+          
+          className={`absolute top-0 left-0 w-full h-full object-cover ${
+            posicionImagen === 'top'
+              ? 'object-top'
+              : posicionImagen === 'bottom'
+              ? 'object-bottom'
+              : posicionImagen === 'center'
+              ? 'object-center'
+              : 'object-center' // fallback
+          }`}
         />
+
       </picture>
 
       {/* Capa sombra */}

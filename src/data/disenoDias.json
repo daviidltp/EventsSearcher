@@ -21,17 +21,17 @@
   },
   {
     "nombre": "Jueves Santo",
-    "posicionTexto": "derecha",
+    "posicionTexto": "izquierda",
     "colorTexto": "blanco"
   },
   {
     "nombre": "Viernes Santo",
-    "posicionTexto": "derecha",
+    "posicionTexto": "izquierda",
     "colorTexto": "blanco"
   },
   {
     "nombre": "Sábado Santo",
-    "posicionTexto": "derecha",
+    "posicionTexto": "izquierda",
     "colorTexto": "blanco"
   },
   {
