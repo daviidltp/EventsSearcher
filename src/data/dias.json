@@ -1,311 +1,344 @@
 [
+  {
+    "titulo": "Domingo de Ramos",
+    "procesiones": [
     {
-      "titulo": "Domingo de Ramos",
-      "procesiones": [
-        {
-          "id" : "borriquita",
-          "nombre" : "Borriquita",
-          "descripcion": "Nuestro Padre Jesús en su Entrada Triunfal en Jerusalén",
-          "cofradia": "Cofradía de Nuestro Padre Jesús en su Entrada Triunfal en Jerusalén",
-          "imagenCaratula": "/assets/toWEBP/borriquita.webp",
-          "imagenExtendida": "/assets/toWEBP/borriquita-extended.webp",
-          "posicionImagen": "center",
-          "horaSalida": "11:00",
-          "horaLlegada": "14:00",
-          "parroquia": "Capilla del Colegio San Antonio de Padua",
-          "entradaCruzGuiaCarreraOficial": "11:40",
-          "salidaCruzGuiaCarreraOficial": "12:40",
-          "fundacion": "1960",
-          "autor_imagen": "Talleres de Olot (Gerona)",
-          "itinerario": [
-            "San Antonio de Padua", "avda. Europa", "Juan Ramón Jiménez", "plaza Fuente Nueva", "Campiña",
-            "Menor", "Carrera", "avda. San Amador", "Manuel Caballero", "avda. del Oro Verde", "San Antonio de Padua"
-          ],
-          "sitios_interes": [
-            "Salida", "Estación de Penitencia junto a la Iglesia parroquial de San Francisco", "Menor", "Entrada a su templo"
-          ]
-        },
-        {
-          "id": "humildad-y-paciencia",
-          "nombre" : "Humildad y Paciencia",
-          "descripcion": "Cristo de Humildad y Paciencia y María de los Desamparados",
-          "cofradia": "Hermandad del Stmo. Cristo de Humildad y Paciencia, María Santísima Madre de los Desamparados, San Juan Evangelista y Ntra. Sra. del Buen Remedio",
-          "imagenCaratula": "/assets/toWEBP/humildad-paciencia.webp",
-          "imagenExtendida": "/assets/toWEBP/humildad-paciencia-extended.webp",
-          "posicionImagen": "center",
-          "horaSalida": "19:00",
-          "horaLlegada": "00:00",
-          "parroquia": "Iglesia de las RR. MM. Trinitarias",
-          "entradaCruzGuiaCarreraOficial": "20:10",
-          "salidaCruzGuiaCarreraOficial": "21:00",
-          "fundacion": "1992",
-          "autor_imagen": "Francisco Romero Zafra",
-          "itinerario": [
-            "Real", "San José", "Dolores Torres", "plaza Fuente Nueva", "Carrera", "Pintor Zabaleta", "EI Llanete", "Real"
-          ],
-          "sitios_interes": ["Salida", "Entrada a su templo", "Carrera Oficial"]
-        }
-      ]
+      "id": "borriquita",
+      "nombre": "Borriquita",
+      "descripcion": "Nuestro Padre Jesús en su Entrada Triunfal en Jerusalén",
+      "cofradia": "Cofradía de Nuestro Padre Jesús en su Entrada Triunfal en Jerusalén",
+      "imagenCaratula": "/assets/toWEBP/borriquita.webp",
+      "imagenExtendida": "/assets/toWEBP/borriquita-extended.webp",
+      "posicionImagen": "center",
+      "horaSalida": "11:00",
+      "horaLlegada": "14:00",
+      "parroquia": "Capilla del Colegio San Antonio de Padua",
+      "entradaCruzGuiaCarreraOficial": "11:40",
+      "salidaCruzGuiaCarreraOficial": "12:40",
+      "fundacion": "1960",
+      "autor_imagen": "Talleres de Olot (Gerona)",
+      "itinerario": [
+      "San Antonio de Padua", "avda. Europa", "Juan Ramón Jiménez", "plaza Fuente Nueva", "Campiña",
+      "Menor", "Carrera", "avda. San Amador", "Manuel Caballero", "avda. del Oro Verde", "San Antonio de Padua"
+      ],
+      "sitios_interes": [
+      "Salida", "Estación de Penitencia junto a la Iglesia parroquial de San Francisco", "Menor", "Entrada a su templo"
+      ],
+      "diaSalida": "Domingo de Ramos"
     },
     {
-      "titulo": "Lunes Santo",
-      "procesiones": [
-        {
-          "id" : "santa-vera-cruz",
-          "nombre" : "Santa Vera Cruz",
-          "descripcion": "Cristo de la Santa Vera Cruz y María Santísima de Nazareth",
-          "cofradia": "Faustiniana Hermandad de la Santa Vera Cruz y Cofradía de Penitencia y Silencio de Nuestro Padre Jesús de Pasión y Nuestra Señora María de Nazareth",
-          "imagenCaratula": "/assets/toWEBP/vera-cruz.webp",
-          "imagenExtendida": "/assets/toWEBP/vera-cruz-extended.webp",
-          "posicionImagen": "center",
-          "horaSalida": "20:30",
-          "horaLlegada": "00:30",
-          "parroquia": "Parroquia de San Juan de Dios",
-          "entradaCruzGuiaCarreraOficial": "22:40",
-          "salidaCruzGuiaCarreraOficial": "23:00",
-          "fundacion": "1542. Reorganizada en 1991",
-          "autor_imagen": {
-            "Jesús de Pasión": "José Antonio Navarro Arteaga",
-            "María de Nazareth": "Luis Álvarez Duarte"
-          },
-          "itinerario": [
-            "Río Genil", "Río Tinto", "Ingeniero García Pimentel", "avda. Príncipe Felipe", "La Teja", "EI Llanete",
-            "Campiña", "plaza Fuente Nueva", "Carrera", "avda. Príncipe Felipe", "avda. de los Olivares",
-            "Ingeniero García Pimentel", "Río Tinto", "Río Genil"
-          ],
-          "sitios_interes": ["Salida", "Entrada a su templo", "El discurrir silente por cualquier calle"]
-        }
-        
-      ]
-    },
+      "id": "humildad-y-paciencia",
+      "nombre": "Humildad y Paciencia",
+      "descripcion": "Cristo de Humildad y Paciencia y María de los Desamparados",
+      "cofradia": "Hermandad del Stmo. Cristo de Humildad y Paciencia, María Santísima Madre de los Desamparados, San Juan Evangelista y Ntra. Sra. del Buen Remedio",
+      "imagenCaratula": "/assets/toWEBP/humildad-paciencia.webp",
+      "imagenExtendida": "/assets/toWEBP/humildad-paciencia-extended.webp",
+      "posicionImagen": "center",
+      "horaSalida": "19:00",
+      "horaLlegada": "00:00",
+      "parroquia": "Iglesia de las RR. MM. Trinitarias",
+      "entradaCruzGuiaCarreraOficial": "20:10",
+      "salidaCruzGuiaCarreraOficial": "21:00",
+      "fundacion": "1992",
+      "autor_imagen": "Francisco Romero Zafra",
+      "itinerario": [
+      "Real", "San José", "Dolores Torres", "plaza Fuente Nueva", "Carrera", "Pintor Zabaleta", "EI Llanete", "Real"
+      ],
+      "sitios_interes": ["Salida", "Entrada a su templo", "Carrera Oficial"],
+      "diaSalida": "Domingo de Ramos"
+    }
+    ]
+  },
+  {
+    "titulo": "Lunes Santo",
+    "procesiones": [
     {
-      "titulo": "Martes Santo",
-      "procesiones": [
-        {
-          "id" : "nuestro-padre-jesús-cautivo",
-          "nombre" : "Nuestro Padre Jesús Cautivo",
-          "descripcion": "Nuestro Padre Jesús Cautivo y María Santísima de la Trinidad",
-          "cofradia": "Cofradía de Nuestro Padre Jesús Cautivo de la Túnica Blanca y María Santísima de la Trinidad en su Mayor Dolor y Desamparo",
-          "imagenCaratula": "/assets/toWEBP/cautivo.webp",
-          "imagenExtendida": "/assets/images_big/cautivo-extended.jpg",
-          "posicionImagen": "top",
-          "horaSalida": "19:30",
-          "horaLlegada": "02:00",
-          "parroquia": "Iglesia de las RR. MM. Trinitarias",
-          "entradaCruzGuiaCarreraOficial": "22:45",
-          "salidaCruzGuiaCarreraOficial": "00:15",
-          "fundacion": "Siglo XVIII. Reorganizada el 8 de marzo de 1946",
-          "autor_imagen": {
-            "Jesús Cautivo": "José Navas-Parejo Pérez",
-            "María Santísima de la Trinidad": "Anónimo"
-          },
-          "itinerario": [
-            "Real", "plaza de la Constitución", "La Fuente", "Las Huertas", "Fuente del Baño", "San Francisco",
-            "plaza Fuente Nueva", "Campiña", "EI Llanete", "Real"
-          ],
-          "sitios_interes": [
-            "Salida", "La Fuente", "Encuentro en plaza Fuente Nueva", "Entrada a su templo"
-          ]
-        }
-      ]
-    },
-    {
-      "titulo": "Miércoles Santo",
-      "procesiones": [
-        {
-          "id" : "oración-en-el-huerto",
-          "nombre" : "Oración en el huerto",
-          "descripcion": "Oración en el Huerto y María de la Amargura",
-          "cofradia": "Hermandad y Cofradía de Nazarenos de la Oración de Jesús en el Huerto y María Santísima de la Amargura",
-          "imagenCaratula": "/assets/toWEBP/oracion-huerto.webp",
-          "imagenExtendida": "/assets/toWEBP/oracion-huerto-extended.webp",
-          "posicionImagen": "top",
-          "horaSalida": "20:00",
-          "horaLlegada": "01:45",
-          "parroquia": "Iglesia parroquial de San Amador y Santa Ana",
-          "entradaCruzGuiaCarreraOficial": "23:40",
-          "salidaCruzGuiaCarreraOficial": "00:30",
-          "fundacion": "1576",
-          "autor_imagen": {
-            "Jesús en el Huerto": "Francisco Romero Zafra",
-            "María Santísima de la Amargura": "Talleres de Olot"
-          },
-          "itinerario": [
-            "San Amador", "Carrera", "San Bartolomé", "plaza Fuente Nueva", "Las Huertas", "Fuente del Baño",
-            "plaza de la Constitución", "Real", "San Amador"
-          ],
-          "sitios_interes": ["Salida", "Encuentro en la plaza Fuente Nueva", "Entrada a su templo"]
-        }
-      ]
-    },
-    {
-      "titulo": "Jueves Santo",
-      "procesiones": [
-        {
-          "id" : "amor-y-auxilio",
-          "nombre" : "Amor y Auxilio",
-          "descripcion": "Cristo del Amor y María Auxiliadora en su Desconsuelo",
-          "cofradia": "Cofradía del Santísimo Cristo del Amor, María Auxiliadora en su Desconsuelo y Misericordia, San Juan Evangelista y San Juan Bosco",
-          "imagenCaratula": "/assets/toWEBP/amor-y-auxilio.webp",
-          "imagenExtendida": "/assets/toWEBP/amor-y-auxilio-extended.webp",
-          "posicionImagen": "top",
-          "horaSalida": "09:30",
-          "horaLlegada": "14:30",
-          "parroquia": "Parroquia de San Juan de Dios",
-          "entradaCruzGuiaCarreraOficial": "11:45",
-          "salidaCruzGuiaCarreraOficial": "12:30",
-          "fundacion": "1980",
-          "autor_imagen": {
-            "Cristo del Amor": "José Antonio Navarro Arteaga",
-            "María Auxiliadora": "Antonio Eslava Rubio"
-          },
-          "itinerario": [
-            "San Juan de Dios", "plaza Fuente Nueva", "Campiña", "Las Huertas", "plaza Constitución"
-          ],
-          "sitios_interes": ["Salida", "Encuentro en la plaza Fuente Nueva", "Entrada a su templo"]
-        },
-        {
-          "id" : "fe-y-consuelo",
-          "nombre" : "Fe y Consuelo",
-          "descripcion" : "Cristo de la Fe y del Consuelo",
-          "cofradia": "Cofradía del Santísimo Cristo de la Fe y del Consuelo",
-          "imagenCaratula": "/assets/toWEBP/fe-y-consuelo-variant.webp",
-          "imagenExtendida": "/assets/toWEBP/fe-y-consuelo-extended.webp",
-          "posicionImagen": "top",
-          "horaSalida": "23:00",
-          "horaLlegada": "03:40",
-          "parroquia": "Real Iglesia parroquial de Santa Marta",
-          "entradaCruzGuiaCarreraOficial": "01:35",
-          "salidaCruzGuiaCarreraOficial": "02:40",
-          "fundacion": "1947",
-          "autor_imagen": "Luis Vassallo Parodi",
-          "itinerario": [
-            "plaza de la Constitución", "La Fuente", "Las Huertas", "Fuente del Baño", "San Francisco", "plaza Fuente Nueva",
-            "Campiña", "EI Llanete", "Real", "plaza de la Constitución"
-          ],
-          "sitios_interes": ["Salida", "esquina de La Fuente y Las Huertas", "entrada a su templo"]
-        }
-      ]
-    },
-    {
-        "titulo": "Viernes Santo",
-        "procesiones": [
-          {
-            "id" : "jesús-nazareno",
-            "nombre" : "Jesús Nazareno",
-            "descripcion" : "Nuestro Padre Jesús Nazareno, María Santísima de los Dolores y María Magdalena",
-            "cofradia": "Cofradía de Nuestro Padre Jesús Nazareno, María Santísima de los Dolores y María Magdalena",
-            "imagenCaratula": "/assets/toWEBP/jesus-nazareno.webp",
-            "imagenExtendida": "/assets/toWEBP/jesus-nazareno-extended.webp",
-            "posicionImagen": "bottom",
-            "horaSalida": "09:00",
-            "horaLlegada": "14:30",
-            "parroquia": "Real Iglesia parroquial de Santa Marta",
-            "entradaCruzGuiaCarreraOficial": "11:30",
-            "salidaCruzGuiaCarreraOficial": "13:00",
-            "fundacion": "1595. Reorganizada en 1901",
-            "autor_imagen": {
-              "Jesús Nazareno": "Luis Ortega Bru",
-              "María Santísima de los Dolores": "Juan Abascal Fuentes",
-              "María Magdalena": "Anónimo"
-            },
-            "itinerario": [
-              "plaza de la Constitución", "La Fuente", "Las Huertas", "San Francisco", "plaza Fuente Nueva",
-              "Campiña", "Menor", "Carrera", "La Fuente", "plaza de la Constitución"
-            ],
-            "sitios_interes": [
-              "Salida", "Encuentro entre Jesús y María en plaza Fuente Nueva", "Entrada a su templo"
-            ]
-          },
-          {
-            "id" : "santo-entierro",
-            "nombre" : "Santo Entierro",
-            "descripcion" : "Santo Entierro de Cristo, María Santísima de los Dolores y San Juan Evangelista",
-            "cofradia": "Cofradía del Santo Entierro de Cristo, María Santísima de los Dolores y San Juan Evangelista",
-            "imagenCaratula": "/assets/toWEBP/santo-entierro.webp",
-            "imagenExtendida": "/assets/toWEBP/santo-entierro-extended.webp",
-            "posicionImagen": "center",
-            "horaSalida": "20:00",
-            "horaLlegada": "02:15",
-            "parroquia": "Santuario de María Santísima de la Villa",
-            "entradaCruzGuiaCarreraOficial": "23:35",
-            "salidaCruzGuiaCarreraOficial": "00:20",
-            "fundacion": "Finales del siglo XVI",
-            "autor_imagen": {
-              "Cristo Yacente": "Anónimo (siglo XVII)",
-              "María Santísima de los Dolores": "Anónimo (siglo XIX)"
-            },
-            "itinerario": [
-              "Plaza de la Constitución", "Real", "EI Llanete", "Campiña", "Plaza Fuente Nueva", "San Francisco",
-              "Fuente del Baño", "Las Huertas", "La Fuente", "Plaza de la Constitución"
-            ],
-            "sitios_interes": [
-              "Salida", "El paso por la plaza Fuente Nueva", "Entrada a su templo"
-            ]
-          }
-               
-          
-        ]
+      "id": "santa-vera-cruz",
+      "nombre": "Santa Vera Cruz",
+      "descripcion": "Cristo de la Santa Vera Cruz y María Santísima de Nazareth",
+      "cofradia": "Faustiniana Hermandad de la Santa Vera Cruz y Cofradía de Penitencia y Silencio de Nuestro Padre Jesús de Pasión y Nuestra Señora María de Nazareth",
+      "imagenCaratula": "/assets/toWEBP/vera-cruz.webp",
+      "imagenExtendida": "/assets/toWEBP/vera-cruz-extended.webp",
+      "posicionImagen": "center",
+      "horaSalida": "20:30",
+      "horaLlegada": "00:30",
+      "parroquia": "Parroquia de San Juan de Dios",
+      "entradaCruzGuiaCarreraOficial": "22:40",
+      "salidaCruzGuiaCarreraOficial": "23:00",
+      "fundacion": "1542. Reorganizada en 1991",
+      "autor_imagen": {
+      "Jesús de Pasión": "José Antonio Navarro Arteaga",
+      "María de Nazareth": "Luis Álvarez Duarte"
       },
-      {
-        "titulo": "Sábado Santo",
-        "procesiones": [{
-          "id" : "soledad",
-          "nombre": "Soledad",
-          "descripcion": "María Santísima de la Soledad",
-          "cofradia": "Seráfica Cofradía de María Santísima de la Soledad",
-          "imagenCaratula": "/assets/toWEBP/soledad.webp",
-          "imagenExtendida": "/assets/toWEBP/soledad-extended.webp",
-          "posicionImagen": "center",
-          "horaSalida": "00:00",
-          "horaLlegada": "04:15",
-          "parroquia": "Iglesia de las RR. MM. Trinitarias",
-          "entradaCruzGuiaCarreraOficial": "01:50",
-          "salidaCruzGuiaCarreraOficial": "02:05",
-          "fundacion": "1580 aprox. (reorganizada en 1981)",
-          "autor_imagen": {
-            "María Santísima de la Soledad": "Anónimo"
-          },
-          "itinerario": [
-            "Real", "plaza de la Constitución", "La Fuente", "Las Huertas", "Fuente del Baño", "San Francisco",
-            "plaza Fuente Nueva", "Campiña", "EI Llanete", "Izquierda de San Miguel", "Cobatillas Bajas", 
-            "Clarín", "Molino Medel", "San Bartolomé", "Adarves", "plaza de la Constitución", "Real"
-          ],
-          "sitios_interes": [
-            "Salida", "La Fuente", "San Francisco", "Cobatillas Bajas", 
-            "Casa de Hermandad del Santo Entierro", "Adarves", "Entrada a su templo"
-          ]
-        }     ]
+      "itinerario": [
+      "Río Genil", "Río Tinto", "Ingeniero García Pimentel", "avda. Príncipe Felipe", "La Teja", "EI Llanete",
+      "Campiña", "plaza Fuente Nueva", "Carrera", "avda. Príncipe Felipe", "avda. de los Olivares",
+      "Ingeniero García Pimentel", "Río Tinto", "Río Genil"
+      ],
+      "sitios_interes": ["Salida", "Entrada a su templo", "El discurrir silente por cualquier calle"],
+      "diaSalida": "Lunes Santo"
+    }
+    ]
+  },
+  {
+    "titulo": "Martes Santo",
+    "procesiones": [
+    {
+      "id": "nuestro-padre-jesús-cautivo",
+      "nombre": "Nuestro Padre Jesús Cautivo",
+      "descripcion": "Nuestro Padre Jesús Cautivo y María Santísima de la Trinidad",
+      "cofradia": "Cofradía de Nuestro Padre Jesús Cautivo de la Túnica Blanca y María Santísima de la Trinidad en su Mayor Dolor y Desamparo",
+      "imagenCaratula": "/assets/toWEBP/cautivo.webp",
+      "imagenExtendida": "/assets/images_big/cautivo-extended.jpg",
+      "posicionImagen": "top",
+      "horaSalida": "19:30",
+      "horaLlegada": "02:00",
+      "parroquia": "Iglesia de las RR. MM. Trinitarias",
+      "entradaCruzGuiaCarreraOficial": "22:45",
+      "salidaCruzGuiaCarreraOficial": "00:15",
+      "fundacion": "Siglo XVIII. Reorganizada el 8 de marzo de 1946",
+      "autor_imagen": {
+      "Jesús Cautivo": "José Navas-Parejo Pérez",
+      "María Santísima de la Trinidad": "Anónimo"
       },
-      {
-        "titulo": "Domingo de Resurrección",
-        "procesiones": [
-          {
-            "id" : "resurección-y-esperanza",
-            "nombre" : "Resurección y Esperanza",
-            "descripcion": "Cristo Resucitado y María Santísima de la Esperanza",
-            "cofradia": "",
-            "imagenCaratula": "/assets/toWEBP/resucitado.webp",
-            "imagenExtendida": "/assets/toWEBP/resucitado-extended.webp",
-            "posicionImagen": "top",
-            "horaSalida": "10:15",
-            "horaLlegada": "15:00",
-            "parroquia": "Santuario de María Santísima de la Villa",
-            "entradaCruzGuiaCarreraOficial": "12:30",
-            "salidaCruzGuiaCarreraOficial": "13:30",
-            "fundacion": "1994",
-            "autor_imagen": "Juan Ventura",
-            "itinerario": [
-              "plaza de la Constitución", "La Fuente", "Las Huertas", "San Francisco", "plaza Fuente Nueva",
-              "Campiña", "EI Llanete", "Real", "plaza de la Constitución"
-            ],
-            "sitios_interes": [
-              "Salida", "Encuentro con el Santísimo Sacramento en Carrera Oficial", "Entrada a su templo"
-            ]
-          }
-        ]
-      }      
+      "itinerario": [
+      "Real", "plaza de la Constitución", "La Fuente", "Las Huertas", "Fuente del Baño", "San Francisco",
+      "plaza Fuente Nueva", "Campiña", "EI Llanete", "Real"
+      ],
+      "sitios_interes": [
+      "Salida", "La Fuente", "Encuentro en plaza Fuente Nueva", "Entrada a su templo"
+      ],
+      "diaSalida": "Martes Santo"
+    }
+    ]
+  },
+  {
+    "titulo": "Miércoles Santo",
+    "procesiones": [
+    {
+      "id": "oración-en-el-huerto",
+      "nombre": "Oración en el huerto",
+      "descripcion": "Oración en el Huerto y María de la Amargura",
+      "cofradia": "Hermandad y Cofradía de Nazarenos de la Oración de Jesús en el Huerto y María Santísima de la Amargura",
+      "imagenCaratula": "/assets/toWEBP/oracion-huerto.webp",
+      "imagenExtendida": "/assets/toWEBP/oracion-huerto-extended.webp",
+      "posicionImagen": "top",
+      "horaSalida": "20:00",
+      "horaLlegada": "01:45",
+      "parroquia": "Iglesia parroquial de San Amador y Santa Ana",
+      "entradaCruzGuiaCarreraOficial": "23:40",
+      "salidaCruzGuiaCarreraOficial": "00:30",
+      "fundacion": "1576",
+      "autor_imagen": {
+      "Jesús en el Huerto": "Francisco Romero Zafra",
+      "María Santísima de la Amargura": "Talleres de Olot"
+      },
+      "itinerario": [
+      "San Amador", "Carrera", "San Bartolomé", "plaza Fuente Nueva", "Las Huertas", "Fuente del Baño",
+      "plaza de la Constitución", "Real", "San Amador"
+      ],
+      "sitios_interes": ["Salida", "Encuentro en la plaza Fuente Nueva", "Entrada a su templo"],
+      "diaSalida": "Miércoles Santo"
+    }
+    ]
+  },
+  {
+    "titulo": "Jueves Santo",
+    "procesiones": [
+    {
+      "id": "amor-y-auxilio",
+      "nombre": "Amor y Auxilio",
+      "descripcion": "Cristo del Amor y María Auxiliadora en su Desconsuelo",
+      "cofradia": "Cofradía del Santísimo Cristo del Amor, María Auxiliadora en su Desconsuelo y Misericordia, San Juan Evangelista y San Juan Bosco",
+      "imagenCaratula": "/assets/toWEBP/amor-y-auxilio.webp",
+      "imagenExtendida": "/assets/toWEBP/amor-y-auxilio-extended.webp",
+      "posicionImagen": "top",
+      "horaSalida": "09:30",
+      "horaLlegada": "14:30",
+      "parroquia": "Parroquia de San Juan de Dios",
+      "entradaCruzGuiaCarreraOficial": "11:45",
+      "salidaCruzGuiaCarreraOficial": "12:30",
+      "fundacion": "1980",
+      "autor_imagen": {
+      "Cristo del Amor": "José Antonio Navarro Arteaga",
+      "María Auxiliadora": "Antonio Eslava Rubio"
+      },
+      "itinerario": [
+      "San Juan de Dios", "plaza Fuente Nueva", "Campiña", "Las Huertas", "plaza Constitución"
+      ],
+      "sitios_interes": ["Salida", "Encuentro en la plaza Fuente Nueva", "Entrada a su templo"],
+      "diaSalida": "Jueves Santo"
+    },
+    {
+      "id": "silencio-dolor",
+      "nombre": "Silencio y Dolor",
+      "descripcion": "Nuestro Padre Jesús del Silencio y Nuestra Madre del Mayor Dolor",
+      "cofradia": "Hermandad Sacramental y Seráfica de San Francisco de Asís y Cofradía de Nazarenos de Nuestro Padre Jesús del Silencio y Nuestra Madre y Señora del Mayor Dolor",
+      "imagenCaratula": "/assets/toWEBP/silencio.webp",
+      "imagenExtendida": "/assets/toWEBP/silencio-extended.webp",
+      "posicionImagen": "center",
+      "horaSalida": "18:15",
+      "horaLlegada": "22:15",
+      "parroquia": "Parroquia de San Francisco de Asís",
+      "entradaCruzGuiaCarreraOficial": "21:45",
+      "salidaCruzGuiaCarreraOficial": "22:05",
+      "fundacion": "2013",
+      "autor_imagen": {
+      "Cristo Yacente": "Darío Fernández Parra",
+      "María Santísima de los Dolores": "Darío Fernández Parra"
+      },
+      "itinerario": [
+      "Campiña", "Corral del Concejo", "Carrera", "Avenida San Amador", "América", "Andalucía", "Manuel Caballero",
+      "Avenida Oro Verde", "San Antonio de Padua", "Avenida de Europa", "Alferería", "San Francisco", "Fuente Nueva"
+      ],
+      "sitios_interes": [
+      "Salida", "San Antonio", "San Francisco", "Paso por Carrera Ofiical", "Llegada a su templo"
+      ],
+      "diaSalida": "Jueves Santo"
+    },
+    {
+      "id": "fe-y-consuelo",
+      "nombre": "Fe y Consuelo",
+      "descripcion": "Cristo de la Fe y del Consuelo",
+      "cofradia": "Cofradía del Santísimo Cristo de la Fe y del Consuelo",
+      "imagenCaratula": "/assets/toWEBP/fe-y-consuelo-variant.webp",
+      "imagenExtendida": "/assets/toWEBP/fe-y-consuelo-extended.webp",
+      "posicionImagen": "top",
+      "horaSalida": "23:00",
+      "horaLlegada": "03:40",
+      "parroquia": "Real Iglesia parroquial de Santa Marta",
+      "entradaCruzGuiaCarreraOficial": "01:35",
+      "salidaCruzGuiaCarreraOficial": "02:40",
+      "fundacion": "1947",
+      "autor_imagen": "Luis Vassallo Parodi",
+      "itinerario": [
+      "plaza de la Constitución", "La Fuente", "Las Huertas", "Fuente del Baño", "San Francisco", "plaza Fuente Nueva",
+      "Campiña", "El Llanete", "Real", "plaza de la Constitución"
+      ],
+      "sitios_interes": ["Salida", "esquina de La Fuente y Las Huertas", "entrada a su templo"],
+      "diaSalida": "Jueves Santo"
+    }
+    ]
+  },
+  {
+    "titulo": "Viernes Santo",
+    "procesiones": [
+    {
+      "id": "jesús-nazareno",
+      "nombre": "Jesús Nazareno",
+      "descripcion": "Nuestro Padre Jesús Nazareno, María Santísima de los Dolores y María Magdalena",
+      "cofradia": "Cofradía de Nuestro Padre Jesús Nazareno, María Santísima de los Dolores y María Magdalena",
+      "imagenCaratula": "/assets/toWEBP/jesus-nazareno.webp",
+      "imagenExtendida": "/assets/toWEBP/jesus-nazareno-extended.webp",
+      "posicionImagen": "bottom",
+      "horaSalida": "09:00",
+      "horaLlegada": "14:30",
+      "parroquia": "Real Iglesia parroquial de Santa Marta",
+      "entradaCruzGuiaCarreraOficial": "11:30",
+      "salidaCruzGuiaCarreraOficial": "13:00",
+      "fundacion": "1595. Reorganizada en 1901",
+      "autor_imagen": {
+      "Jesús Nazareno": "Luis Ortega Bru",
+      "María Santísima de los Dolores": "Juan Abascal Fuentes",
+      "María Magdalena": "Anónimo"
+      },
+      "itinerario": [
+      "plaza de la Constitución", "La Fuente", "Las Huertas", "San Francisco", "plaza Fuente Nueva",
+      "Campiña", "Menor", "Carrera", "La Fuente", "plaza de la Constitución"
+      ],
+      "sitios_interes": [
+      "Salida", "Encuentro entre Jesús y María en plaza Fuente Nueva", "Entrada a su templo"
+      ],
+      "diaSalida": "Viernes Santo"
+    },
+    {
+      "id": "santo-entierro",
+      "nombre": "Santo Entierro",
+      "descripcion": "Santo Entierro de Cristo, María Santísima de los Dolores y San Juan Evangelista",
+      "cofradia": "Cofradía del Santo Entierro de Cristo, María Santísima de los Dolores y San Juan Evangelista",
+      "imagenCaratula": "/assets/toWEBP/santo-entierro.webp",
+      "imagenExtendida": "/assets/toWEBP/santo-entierro-extended.webp",
+      "posicionImagen": "center",
+      "horaSalida": "20:00",
+      "horaLlegada": "02:15",
+      "parroquia": "Santuario de María Santísima de la Villa",
+      "entradaCruzGuiaCarreraOficial": "23:35",
+      "salidaCruzGuiaCarreraOficial": "00:20",
+      "fundacion": "Finales del siglo XVI",
+      "autor_imagen": {
+      "Cristo Yacente": "Anónimo (siglo XVII)",
+      "María Santísima de los Dolores": "Anónimo (siglo XIX)"
+      },
+      "itinerario": [
+      "Plaza de la Constitución", "Real", "EI Llanete", "Campiña", "Plaza Fuente Nueva", "San Francisco",
+      "Fuente del Baño", "Las Huertas", "La Fuente", "Plaza de la Constitución"
+      ],
+      "sitios_interes": [
+      "Salida", "El paso por la plaza Fuente Nueva", "Entrada a su templo"
+      ],
+      "diaSalida": "Viernes Santo"
+    },
+    {
+      "id": "soledad",
+      "nombre": "Soledad",
+      "descripcion": "María Santísima de la Soledad",
+      "cofradia": "Seráfica Cofradía de María Santísima de la Soledad",
+      "imagenCaratula": "/assets/toWEBP/soledad.webp",
+      "imagenExtendida": "/assets/toWEBP/soledad-extended.webp",
+      "posicionImagen": "center",
+      "horaSalida": "00:00",
+      "horaLlegada": "04:15",
+      "parroquia": "Iglesia de las RR. MM. Trinitarias",
+      "entradaCruzGuiaCarreraOficial": "01:50",
+      "salidaCruzGuiaCarreraOficial": "02:05",
+      "fundacion": "1580 aprox. (reorganizada en 1981)",
+      "autor_imagen": {
+      "María Santísima de la Soledad": "Anónimo"
+      },
+      "itinerario": [
+      "Real", "plaza de la Constitución", "La Fuente", "Las Huertas", "Fuente del Baño", "San Francisco",
+      "plaza Fuente Nueva", "Campiña", "EI Llanete", "Izquierda de San Miguel", "Cobatillas Bajas", 
+      "Clarín", "Molino Medel", "San Bartolomé", "Adarves", "plaza de la Constitución", "Real"
+      ],
+      "sitios_interes": [
+      "Salida", "La Fuente", "San Francisco", "Cobatillas Bajas", 
+      "Casa de Hermandad del Santo Entierro", "Adarves", "Entrada a su templo"
+      ],
+      "diaSalida": "Viernes Santo"
+    }
+    ]
+  },
+  {
+    "titulo": "Sábado Santo",
+    "procesiones": []
+  },
+  {
+    "titulo": "Domingo de Resurrección",
+    "procesiones": [
+    {
+      "id": "resurección-y-esperanza",
+      "nombre": "Resurección y Esperanza",
+      "descripcion": "Cristo Resucitado y María Santísima de la Esperanza",
+      "cofradia": "",
+      "imagenCaratula": "/assets/toWEBP/resucitado.webp",
+      "imagenExtendida": "/assets/toWEBP/resucitado-extended.webp",
+      "posicionImagen": "top",
+      "horaSalida": "10:15",
+      "horaLlegada": "15:00",
+      "parroquia": "Santuario de María Santísima de la Villa",
+      "entradaCruzGuiaCarreraOficial": "12:30",
+      "salidaCruzGuiaCarreraOficial": "13:30",
+      "fundacion": "1994",
+      "autor_imagen": "Juan Ventura",
+      "itinerario": [
+      "Plaza de la Constitución", "La Fuente", "Las Huertas", "San Francisco", "plaza Fuente Nueva",
+      "Campiña", "EI Llanete", "Real", "plaza de la Constitución"
+      ],
+      "sitios_interes": [
+      "Salida", "Encuentro con el Santísimo Sacramento en Carrera Oficial", "Entrada a su templo"
+      ],
+      "diaSalida": "Domingo de Resurrección"
+    }
+    ]
+  }
   ]
-  
-
-

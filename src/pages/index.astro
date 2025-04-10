@@ -17,6 +17,7 @@ interface Procesion {
   imagenCaratula: string;
   imagenExtendida: string;
   posicionImagen: string;
+  diaSalida: string;
 }
 
 interface Dia {
@@ -32,6 +33,7 @@ interface DisenoDia {
 
 const dias = diasRaw as Dia[];
 const disenoDias = disenoDiasRaw as DisenoDia[];
+
 ---
 <Layout>
   <SeccionDiaActualIsla client:load 
