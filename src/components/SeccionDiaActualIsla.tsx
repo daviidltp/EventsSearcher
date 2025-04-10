@@ -39,8 +39,18 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
   const [puedeScrollIzq, setPuedeScrollIzq] = useState(false);
   const [puedeScrollDer, setPuedeScrollDer] = useState(false);
 
-  const FECHA_DEBUG = new Date('2025-04-12T00:30:00');
-  const FECHA_DEBUG_ACTIVA = true;
+  //const FECHA_DEBUG = new Date('2025-04-06T09:30:00'); // Domingo de ramos mañana
+  //const FECHA_DEBUG = new Date('2025-04-06T20:30:00'); // Domingo de ramos tarde
+  //const FECHA_DEBUG = new Date('2025-04-07T20:30:00'); // Lunes santo
+  //const FECHA_DEBUG = new Date('2025-04-08T20:30:00'); // Martes santo
+  //const FECHA_DEBUG = new Date('2025-04-09T20:30:00'); // Miercoles santo
+  //const FECHA_DEBUG = new Date('2025-04-10T10:30:00'); // Jueves santo mañana
+  //const FECHA_DEBUG = new Date('2025-04-10T23:30:00'); // Jueves santo noche
+  //const FECHA_DEBUG = new Date('2025-04-11T12:30:00'); // Viernes santo mañana
+  //const FECHA_DEBUG = new Date('2025-04-11T22:30:00'); // Viernes santo noche
+
+  const FECHA_DEBUG = new Date('2025-04-12T02:30:00');
+  const FECHA_DEBUG_ACTIVA = false;
 
   useEffect(() => {
     const fetchHoraEspaña = async () => {
@@ -170,7 +180,7 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
 
   if (haTerminado) {
     return (
-      <section className="relative w-full h-full min-h-screen bg-black flex items-center justify-center">
+      <section className="relative w-full h-full bg-black flex items-center justify-center">
         <h2 className="text-white text-center font-serif text-4xl md:text-6xl font-bold">
           Hasta el año que viene 👋
         </h2>
@@ -184,7 +194,7 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
         {puedeScrollIzq && (
           <button
             onClick={() => scrollCarrusel('left')}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-lg hover:scale-105 transition"
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/60 rounded-full p-2 shadow-lg hover:scale-105 transition"
           >
             <img src="/assets/icons/chevron-left.svg" alt="Izquierda" className="w-6 h-6 pr-0.5" />
           </button>
@@ -192,12 +202,12 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
 
         <div
           ref={carruselRef}
-          className="flex snap-x snap-mandatory overflow-x-auto scroll-smooth"
+          className="flex snap-x snap-mandatory overflow-x-auto scroll-smooth w-full h-full"
         >
           {procesionesEnCalle.map((p, i) => (
             <div
               key={i}
-              className="snap-center flex-shrink-0 w-full h-screen"
+              className="snap-center flex-shrink-0 w-full h-auto"
             >
               <SeccionDiaActual
                 titulo={diseno?.nombre ?? ''}
@@ -220,7 +230,7 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
         {puedeScrollDer && (
           <button
             onClick={() => scrollCarrusel('right')}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-lg hover:scale-105 transition"
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/60 rounded-full p-2 shadow-lg hover:scale-105 transition"
           >
             <img src="/assets/icons/chevron-right.svg" alt="Derecha" className="w-6 h-6" />
           </button>
