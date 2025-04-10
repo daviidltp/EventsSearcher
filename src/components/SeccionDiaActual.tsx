@@ -61,7 +61,8 @@ export default function SeccionDiaActual(props: Props) {
   return (
     <section className="relative w-full h-full overflow-hidden">
       {/* Imagen responsiva */}
-      <picture>
+      {imagenNormal && imagenExtendida && 
+      (<picture>
         <source srcSet={imagenExtendida} media="(min-width: 768px)" />
         <img
           src={imagenNormal}
@@ -78,7 +79,7 @@ export default function SeccionDiaActual(props: Props) {
           }`}
         />
 
-      </picture>
+      </picture>)}
 
       {/* Capa sombra */}
       <div className="absolute bottom-0 w-full h-2/3 bg-gradient-to-t from-black/90 to-transparent z-0"></div>
