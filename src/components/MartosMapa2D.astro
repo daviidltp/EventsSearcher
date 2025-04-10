@@ -42,14 +42,7 @@ const pointsJSON = JSON.stringify(points);
   
   <!-- Controles - Botones abajo a la derecha -->
 	<div class="absolute bottom-8 right-4 z-30 flex flex-col gap-3">
-	<!-- Botón de reproducir/pausar animación -->
-	<button id="play-btn" class="p-3 bg-white rounded-full shadow-lg hover:bg-blue-50 active:bg-blue-100 transition-colors" title="Reproducir animación">
-	  <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-		<path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-	  </svg>
-	</button>
-	
-	<!-- Botón de ubicación actual -->
+	<!-- Botón de ubicación actual (ahora en primera posición) -->
 	<button id="location-btn" class="p-3 bg-white rounded-full shadow-lg hover:bg-blue-50 active:bg-blue-100 transition-colors" title="Mi ubicación">
 	  <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
 		<path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -57,7 +50,7 @@ const pointsJSON = JSON.stringify(points);
 	  </svg>
 	</button>
 	
-	<!-- Botón de volver -->
+	<!-- Botón de volver (ahora en segunda posición) -->
 	<button id="back-btn" class="p-3 bg-white rounded-full shadow-lg hover:bg-blue-50 active:bg-blue-100 transition-colors" title="Volver">
 	  <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
 		<path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -280,7 +273,6 @@ const pointsJSON = JSON.stringify(points);
     });
     
     // Configurar eventos para los botones
-	document.getElementById('play-btn').addEventListener('click', toggleAnimation);
 	document.getElementById('location-btn').addEventListener('click', handleLocationRequest);
 	document.getElementById('back-btn').addEventListener('click', () => window.history.back());
     
@@ -296,9 +288,9 @@ const pointsJSON = JSON.stringify(points);
       updateRouteByPercentage(percentageComplete);
       
       // Pausar la animación automática si estaba corriendo
-      if (!isPaused) {
-        toggleAnimation();
-      }
+    //   if (!isPaused) {
+    //     toggleAnimation();
+    //   }
     });
     
     // Inicializar la visualización con 0%
