@@ -32,29 +32,29 @@ const pointsJSON = JSON.stringify(points);
   </div>
   
   <!-- Control de porcentaje -->
-  <div class="absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-white/80 rounded-lg p-3 z-20 shadow-lg flex flex-col items-center w-64">
-    <p class="text-sm font-semibold mb-2">Progreso de la procesión</p>
-    <div class="flex items-center w-full">
-      <input type="range" id="progress-slider" min="0" max="100" value="0" class="w-full accent-blue-600">
-      <span id="percentage-display" class="ml-2 text-sm font-bold">0%</span>
-    </div>
+  <div class="absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-white/80 rounded-lg p-3 z-20 shadow-lg flex flex-col items-center w-11/12 max-w-md mx-auto">
+	<p class="text-sm font-semibold mb-2">Progreso de la procesión</p>
+	<div class="flex items-center w-full">
+	  <input type="range" id="progress-slider" min="0" max="100" value="0" class="w-full accent-blue-600">
+	  <span id="percentage-display" class="ml-2 text-sm font-bold">0%</span>
+	</div>
   </div>
   
   <!-- Controles - Botones abajo a la derecha -->
-  <div class="absolute bottom-8 right-4 z-20 flex flex-col gap-2">
-    <!-- Botón de reproducir/pausar animación -->
-    <button id="play-btn" class="p-2 bg-white rounded-full shadow-lg" title="Reproducir animación">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-      </svg>
-    </button>
-    
-    <!-- Botón de volver -->
-    <button id="back-btn" class="p-2 bg-white rounded-full shadow-lg" title="Volver">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-      </svg>
-    </button>
+<div class="absolute bottom-8 right-4 z-30 flex flex-col gap-3">
+	<!-- Botón de reproducir/pausar animación -->
+	<button id="play-btn" class="p-3 bg-white rounded-full shadow-lg hover:bg-blue-50 active:bg-blue-100 transition-colors" title="Reproducir animación">
+	  <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+		<path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+	  </svg>
+	</button>
+	
+	<!-- Botón de volver -->
+	<button id="back-btn" class="p-3 bg-white rounded-full shadow-lg hover:bg-blue-50 active:bg-blue-100 transition-colors" title="Volver">
+	  <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+		<path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+	  </svg>
+	</button>
   </div>
 </div>
 
@@ -458,19 +458,19 @@ const pointsJSON = JSON.stringify(points);
     
     // Actualizar el icono del botón
     const playBtn = document.getElementById('play-btn');
-    if (isPaused) {
-      playBtn.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-        </svg>
-      `;
-      cancelAnimationFrame(animationId);
-    } else {
-      playBtn.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      `;
+	if (isPaused) {
+		playBtn.innerHTML = `
+			<svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+			<path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+			</svg>
+	`;
+	cancelAnimationFrame(animationId);
+	} else {
+		playBtn.innerHTML = `
+			<svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+			<path stroke-linecap="round" stroke-linejoin="round" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+			</svg>
+	`;
       
       // Si ya completó la ruta, reiniciar
       if (percentageComplete >= 100) {
@@ -591,4 +591,33 @@ const pointsJSON = JSON.stringify(points);
   :global(.iglesia-container:hover .marker-title) {
     visibility: visible;
   }
+  /* Mejoras para botones en móvil y ordenador */
+	:global(.leaflet-control-zoom) {
+	margin-bottom: 80px !important; /* Para evitar solapamiento con los controles de reproducción */
+	}
+
+	@media (max-width: 640px) {
+	:global(.leaflet-control-zoom) {
+		margin-bottom: 100px !important;
+	}
+	
+	:global(.leaflet-control-attribution) {
+		font-size: 8px !important;
+		max-width: 80% !important;
+	}
+	}
+
+	/* Asegurar que los SVG en los botones sean visibles */
+	:global(button svg) {
+	stroke: black;  /* Azul oscuro para mejor contraste */
+	display: block;   /* Asegura que el SVG se muestre correctamente */
+	}
+
+	:global(button:hover svg) {
+	stroke: black;  /* Azul más claro al hover */
+	}
+
+	:global(button:active svg) {
+	stroke: black;  /* Azul medio al presionar */
+	}
 </style>
