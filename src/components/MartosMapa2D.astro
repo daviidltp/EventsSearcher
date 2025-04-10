@@ -63,16 +63,20 @@ const pointsJSON = JSON.stringify(points);
 
 <!-- Scripts necesarios -->
 <script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script is:inline src="https://unpkg.com/leaflet-polylinedecorator/dist/leaflet.polylineDecorator.js"></script>
 
 <script define:vars={{ routeJSON, pointsJSON, MARTOS_CENTER }}>
   // Parsear datos JSON
   const route = JSON.parse(routeJSON);
   const points = JSON.parse(pointsJSON);
   let map, routeLayer, completedRouteLayer, animatedMarker;
+  let routeDecorator, completedDecorator; // Decoradores para las flechas
   let isPaused = true;
   let animationId = null;
   let currentPosition = 0;
   let percentageComplete = 0;
+  let arrowOffset = 0; // Para la animación de las flechas
+  let arrowAnimationId = null; // Para controlar la animación de flechas
   
   // Inicializar cuando la página esté cargada
   window.onload = initMap;
@@ -103,12 +107,11 @@ const pointsJSON = JSON.stringify(points);
     
     // Si hay ruta, preparar las capas para la animación
     if (route && route.length > 0) {
-      // Capa para la ruta completa (gris)
+      // Capa para la ruta completa
       routeLayer = L.polyline(route, {
-        color: '#666666',
-        weight: 4,
-        opacity: 0.5,
-        dashArray: '5, 5'
+        color: '#3388ff',
+        weight: 3,
+        opacity: 0.8
       }).addTo(map);
       
       // Capa para la parte de la ruta ya recorrida (color destacado)
@@ -120,37 +123,115 @@ const pointsJSON = JSON.stringify(points);
         className: 'route-glow'
       }).addTo(map);
       
+      // Decorador con flechas para la ruta completa
+      routeDecorator = L.polylineDecorator(routeLayer, {
+        patterns: [{
+          offset: 25,
+          repeat: 40,
+          symbol: L.Symbol.arrowHead({
+            pixelSize: 10,
+            headAngle: 45,
+            polygon: true,
+            pathOptions: {
+              color: '#fff',
+              fillColor: '#3388ff',
+              fillOpacity: 0.9,
+              weight: 2
+            }
+          })
+        }]
+      }).addTo(map);
+      
+      // Decorador con flechas para la ruta completada
+      completedDecorator = L.polylineDecorator(completedRouteLayer, {
+        patterns: [{
+          offset: 25,
+          repeat: 40,
+          symbol: L.Symbol.arrowHead({
+            pixelSize: 10,
+            headAngle: 45,
+            polygon: true,
+            pathOptions: {
+              color: '#fff',
+              fillColor: '#FFD700',
+              fillOpacity: 0.9,
+              weight: 2
+            }
+          })
+        }]
+      }).addTo(map);
+      
+      // Iniciar la animación de las flechas
+      startArrowAnimation();
+      
       // Centrar el mapa en la ruta
       map.fitBounds(routeLayer.getBounds(), { padding: [30, 30] });
       
       // Crear el icono del paso procesional más colorido y animado
       const pasoColoridoSVG = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
-          <!-- Base del paso -->
-          <rect x="10" y="32" width="28" height="8" fill="#8B4513" stroke="#5D2906" stroke-width="1"/>
-          
-          <!-- Estructura del paso -->
-          <rect x="12" y="24" width="24" height="8" fill="#CD7F32" stroke="#8B4513" stroke-width="1"/>
-          
-          <!-- Figura superior (virgen/cristo) -->
-          <rect x="18" y="12" width="12" height="12" rx="2" fill="#DAA520" stroke="#B8860B" stroke-width="1"/>
-          
-          <!-- Detalles ornamentales (flores) -->
-          <circle cx="15" cy="28" r="2" fill="#FF6347"/>
-          <circle cx="21" cy="28" r="2" fill="#FF0000"/>
-          <circle cx="27" cy="28" r="2" fill="#9932CC"/>
-          <circle cx="33" cy="28" r="2" fill="#FF6347"/>
-          
-          <!-- Velas -->
-          <rect x="14" y="18" width="2" height="6" fill="#F5F5DC" stroke="#DAA520" stroke-width="0.5"/>
-          <rect x="32" y="18" width="2" height="6" fill="#F5F5DC" stroke="#DAA520" stroke-width="0.5"/>
-          <circle cx="15" cy="18" r="1" fill="#FFD700"/>
-          <circle cx="33" cy="18" r="1" fill="#FFD700"/>
-          
-          <!-- Luces -->
-          <circle cx="15" cy="18" r="2" fill="#FFFF00" opacity="0.7" class="light-pulse"/>
-          <circle cx="33" cy="18" r="2" fill="#FFFF00" opacity="0.7" class="light-pulse"/>
-        </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120" width="60" height="72">
+		<!-- Base dorada y estructura del trono -->
+		<rect x="15" y="90" width="70" height="12" fill="#B8860B" stroke="#8B4513" stroke-width="1"/>
+		<rect x="20" y="85" width="60" height="5" fill="#DAA520" stroke="#B8860B" stroke-width="0.5"/>
+		
+		<!-- Patas ornamentadas -->
+		<rect x="20" y="90" width="5" height="12" fill="#8B4513" stroke="#5D2906" stroke-width="0.5" rx="1"/>
+		<rect x="75" y="90" width="5" height="12" fill="#8B4513" stroke="#5D2906" stroke-width="0.5" rx="1"/>
+		
+		<!-- Nivel medio del trono con terciopelo -->
+		<rect x="22" y="70" width="56" height="15" fill="#800020" stroke="#4B0010" stroke-width="1"/>
+		<!-- Bordes dorados -->
+		<rect x="20" y="70" width="60" height="2" fill="#DAA520" stroke="#B8860B" stroke-width="0.5"/>
+		<rect x="20" y="83" width="60" height="2" fill="#DAA520" stroke="#B8860B" stroke-width="0.5"/>
+		
+		<!-- Cruz principal -->
+		<rect x="48" y="20" width="4" height="50" fill="#8B4513" stroke="#5D2906" stroke-width="1"/>
+		<rect x="35" y="30" width="30" height="4" fill="#8B4513" stroke="#5D2906" stroke-width="1"/>
+		
+		<!-- Cristo en la cruz (simplificado pero reconocible) -->
+		<path d="M50,30 Q48,35 45,40 L50,40 L55,40 Q52,35 50,30" fill="#FFE4C4" stroke="#8B4513" stroke-width="0.5"/>
+		<path d="M45,40 L41,55 M55,40 L59,55" stroke="#FFE4C4" stroke-width="2" stroke-linecap="round"/>
+		<circle cx="50" cy="27" r="3" fill="#FFE4C4" stroke="#8B4513" stroke-width="0.5"/> <!-- Cabeza -->
+		
+		<!-- Corona de espinas -->
+		<path d="M47,25 Q50,22 53,25" stroke="#8B4513" stroke-width="0.5" fill="none"/>
+		
+		<!-- Candelabros y velas a los lados -->
+		<!-- Izquierdo -->
+		<rect x="25" y="60" width="2" height="10" fill="#B8860B" stroke="#8B4513" stroke-width="0.3"/>
+		<rect x="24.5" y="50" width="3" height="10" fill="#B8860B" stroke="#8B4513" stroke-width="0.3"/>
+		<rect x="25" y="45" width="2" height="5" fill="#FFF8DC" stroke="#DCDCDC" stroke-width="0.2"/>
+		<circle cx="26" cy="44" r="1" fill="#FFFF00" class="light-pulse" opacity="0.9"/>
+		
+		<!-- Derecho -->
+		<rect x="73" y="60" width="2" height="10" fill="#B8860B" stroke="#8B4513" stroke-width="0.3"/>
+		<rect x="72.5" y="50" width="3" height="10" fill="#B8860B" stroke="#8B4513" stroke-width="0.3"/>
+		<rect x="73" y="45" width="2" height="5" fill="#FFF8DC" stroke="#DCDCDC" stroke-width="0.2"/>
+		<circle cx="74" cy="44" r="1" fill="#FFFF00" class="light-pulse" opacity="0.9"/>
+		
+		<!-- Decoraciones florales -->
+		<!-- Centro -->
+		<ellipse cx="50" cy="65" rx="10" ry="4" fill="#800020" opacity="0.7"/>
+		<circle cx="46" cy="64" r="2" fill="#FF0000" opacity="0.9"/>
+		<circle cx="50" cy="63" r="2" fill="#FFFFFF" opacity="0.9"/>
+		<circle cx="54" cy="64" r="2" fill="#FF0000" opacity="0.9"/>
+		
+		<!-- Laterales -->
+		<!-- Izquierda -->
+		<circle cx="32" cy="70" r="3" fill="#A020F0" opacity="0.8"/>
+		<circle cx="35" cy="72" r="2.5" fill="#FFFFFF" opacity="0.8"/>
+		<circle cx="31" cy="74" r="2" fill="#FF4500" opacity="0.8"/>
+		
+		<!-- Derecha -->
+		<circle cx="68" cy="70" r="3" fill="#A020F0" opacity="0.8"/>
+		<circle cx="65" cy="72" r="2.5" fill="#FFFFFF" opacity="0.8"/>
+		<circle cx="69" cy="74" r="2" fill="#FF4500" opacity="0.8"/>
+		
+		<!-- Luces ambientales -->
+		<circle cx="25" cy="65" r="2" fill="#FFFF00" opacity="0.3" class="ambient-light"/>
+		<circle cx="75" cy="65" r="2" fill="#FFFF00" opacity="0.3" class="ambient-light"/>
+		<circle cx="50" cy="58" r="3" fill="#FFFF00" opacity="0.2" class="ambient-light"/>
+		</svg>
       `;
       
       // Crear el div icon con el SVG animado
@@ -162,8 +243,8 @@ const pointsJSON = JSON.stringify(points);
             <div class="paso-shadow"></div>
           </div>
         `,
-        iconSize: [48, 48],
-        iconAnchor: [24, 36] // Ajuste para que el punto de anclaje esté abajo del centro
+        iconSize: [60, 72],
+        iconAnchor: [30, 60] // Ajuste para que el punto de anclaje esté abajo del centro
       });
       
       // Crear el marcador en la posición inicial
@@ -214,6 +295,59 @@ const pointsJSON = JSON.stringify(points);
     updateRouteByPercentage(0);
   }
   
+  // Función para animar las flechas
+  function startArrowAnimation() {
+    // Cancelar animación previa si existe
+    if (arrowAnimationId) {
+      cancelAnimationFrame(arrowAnimationId);
+    }
+    
+    function animateArrows() {
+      arrowOffset = (arrowOffset + 1) % 100;
+      
+      // Actualizar flechas de la ruta completa
+      routeDecorator.setPatterns([{
+        offset: arrowOffset,
+        repeat: 50,
+        symbol: L.Symbol.arrowHead({
+          pixelSize: 10,
+          headAngle: 45,
+          polygon: true,
+          pathOptions: {
+            color: '#fff',
+            fillColor: '#3388ff',
+            fillOpacity: 0.9,
+            weight: 2
+          }
+        })
+      }]);
+      
+      // Actualizar flechas de la ruta completada
+      if (completedRouteLayer.getLatLngs().length > 1) {
+        completedDecorator.setPatterns([{
+          offset: arrowOffset,
+          repeat: 50,
+          symbol: L.Symbol.arrowHead({
+            pixelSize: 10,
+            headAngle: 45,
+            polygon: true,
+            pathOptions: {
+              color: '#fff',
+              fillColor: 'red',
+              fillOpacity: 0.9,
+              weight: 2
+            }
+          })
+        }]);
+      }
+      
+      // Continuar la animación
+      arrowAnimationId = requestAnimationFrame(animateArrows);
+    }
+    
+    animateArrows();
+  }
+  
   // Función para actualizar la visualización según un porcentaje
   function updateRouteByPercentage(percentage) {
     if (!route || route.length < 2) return;
@@ -230,6 +364,7 @@ const pointsJSON = JSON.stringify(points);
     // Si el porcentaje es 0, reiniciar
     if (percentage === 0) {
       completedRouteLayer.setLatLngs([]);
+      completedDecorator.setPaths([]); // Limpiar el decorador de la ruta completada
       animatedMarker.setLatLng(route[0]);
       return;
     }
@@ -237,6 +372,7 @@ const pointsJSON = JSON.stringify(points);
     // Si el porcentaje es 100, completar toda la ruta
     if (percentage === 100) {
       completedRouteLayer.setLatLngs(route);
+      completedDecorator.setPaths(completedRouteLayer); // Actualizar el decorador
       animatedMarker.setLatLng(route[route.length - 1]);
       return;
     }
@@ -255,6 +391,13 @@ const pointsJSON = JSON.stringify(points);
     // Actualizar la línea recorrida
     const completedPath = route.slice(0, currentIndex + 1).concat([[lat, lng]]);
     completedRouteLayer.setLatLngs(completedPath);
+    
+    // Actualizar decorador para la ruta completada
+    if (completedPath.length > 1) {
+      completedDecorator.setPaths(completedRouteLayer);
+    } else {
+      completedDecorator.setPaths([]);
+    }
     
     // Centrar en la posición actual
     map.panTo([lat, lng]);
@@ -335,6 +478,7 @@ const pointsJSON = JSON.stringify(points);
         document.getElementById('progress-slider').value = 0;
         document.getElementById('percentage-display').textContent = '0%';
         completedRouteLayer.setLatLngs([]);
+        completedDecorator.setPaths([]);
       }
       
       animateRoute();
@@ -387,6 +531,7 @@ const pointsJSON = JSON.stringify(points);
   :global(.paso-container) {
     position: relative;
     animation: paso-motion 1.5s infinite alternate ease-in-out;
+	z-index: 1000;
   }
   
   :global(.paso-shadow) {
@@ -426,7 +571,7 @@ const pointsJSON = JSON.stringify(points);
   /* Estilos para los iconos de iglesias */
   :global(.iglesia-container) {
     position: relative;
-    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.5));
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.5))
   }
 
   :global(.marker-title) {
