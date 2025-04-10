@@ -3,11 +3,12 @@
       "titulo": "Domingo de Ramos",
       "procesiones": [
         {
+          "id" : "borriquita",
           "nombre" : "Borriquita",
           "descripcion": "Nuestro Padre Jesús en su Entrada Triunfal en Jerusalén",
           "cofradia": "Cofradía de Nuestro Padre Jesús en su Entrada Triunfal en Jerusalén",
-          "imagenCaratula": "assets/toWEBP/borriquita.webp",
-          "imagenExtendida": "assets/toWEBP/borriquita-extended.webp",
+          "imagenCaratula": "/assets/toWEBP/borriquita.webp",
+          "imagenExtendida": "/assets/toWEBP/borriquita-extended.webp",
           "posicionImagen": "center",
           "horaSalida": "11:00",
           "horaLlegada": "14:00",
@@ -25,11 +26,12 @@
           ]
         },
         {
+          "id": "humildad-y-paciencia",
           "nombre" : "Humildad y Paciencia",
           "descripcion": "Cristo de Humildad y Paciencia y María de los Desamparados",
           "cofradia": "Hermandad del Stmo. Cristo de Humildad y Paciencia, María Santísima Madre de los Desamparados, San Juan Evangelista y Ntra. Sra. del Buen Remedio",
-          "imagenCaratula": "assets/toWEBP/humildad-paciencia.webp",
-          "imagenExtendida": "assets/toWEBP/humildad-paciencia-extended.webp",
+          "imagenCaratula": "/assets/toWEBP/humildad-paciencia.webp",
+          "imagenExtendida": "/assets/toWEBP/humildad-paciencia-extended.webp",
           "posicionImagen": "center",
           "horaSalida": "19:00",
           "horaLlegada": "00:00",
@@ -49,11 +51,12 @@
       "titulo": "Lunes Santo",
       "procesiones": [
         {
+          "id" : "santa-vera-cruz",
           "nombre" : "Santa Vera Cruz",
           "descripcion": "Cristo de la Santa Vera Cruz y María Santísima de Nazareth",
           "cofradia": "Faustiniana Hermandad de la Santa Vera Cruz y Cofradía de Penitencia y Silencio de Nuestro Padre Jesús de Pasión y Nuestra Señora María de Nazareth",
-          "imagenCaratula": "assets/toWEBP/vera-cruz.webp",
-          "imagenExtendida": "assets/toWEBP/vera-cruz-extended.webp",
+          "imagenCaratula": "/assets/toWEBP/vera-cruz.webp",
+          "imagenExtendida": "/assets/toWEBP/vera-cruz-extended.webp",
           "posicionImagen": "center",
           "horaSalida": "20:30",
           "horaLlegada": "00:30",
@@ -79,11 +82,12 @@
       "titulo": "Martes Santo",
       "procesiones": [
         {
+          "id" : "nuestro-padre-jesús-cautivo",
           "nombre" : "Nuestro Padre Jesús Cautivo",
           "descripcion": "Nuestro Padre Jesús Cautivo y María Santísima de la Trinidad",
           "cofradia": "Cofradía de Nuestro Padre Jesús Cautivo de la Túnica Blanca y María Santísima de la Trinidad en su Mayor Dolor y Desamparo",
-          "imagenCaratula": "assets/toWEBP/cautivo.webp",
-          "imagenExtendida": "assets/images_big/cautivo-extended.jpg",
+          "imagenCaratula": "/assets/toWEBP/cautivo.webp",
+          "imagenExtendida": "/assets/images_big/cautivo-extended.jpg",
           "posicionImagen": "top",
           "horaSalida": "19:30",
           "horaLlegada": "02:00",
@@ -109,11 +113,12 @@
       "titulo": "Miércoles Santo",
       "procesiones": [
         {
+          "id" : "oración-en-el-huerto",
           "nombre" : "Oración en el huerto",
           "descripcion": "Oración en el Huerto y María de la Amargura",
           "cofradia": "Hermandad y Cofradía de Nazarenos de la Oración de Jesús en el Huerto y María Santísima de la Amargura",
-          "imagenCaratula": "assets/toWEBP/oracion-huerto.webp",
-          "imagenExtendida": "assets/toWEBP/oracion-huerto-extended.webp",
+          "imagenCaratula": "/assets/toWEBP/oracion-huerto.webp",
+          "imagenExtendida": "/assets/toWEBP/oracion-huerto-extended.webp",
           "posicionImagen": "top",
           "horaSalida": "20:00",
           "horaLlegada": "01:15",
@@ -137,11 +142,12 @@
       "titulo": "Jueves Santo",
       "procesiones": [
         {
+          "id" : "amor-y-auxilio",
           "nombre" : "Amor y Auxilio",
           "descripcion": "Cristo del Amor y María Auxiliadora en su Desconsuelo",
           "cofradia": "Cofradía del Santísimo Cristo del Amor, María Auxiliadora en su Desconsuelo y Misericordia, San Juan Evangelista y San Juan Bosco",
-          "imagenCaratula": "assets/toWEBP/amor-y-auxilio.webp",
-          "imagenExtendida": "assets/toWEBP/amor-y-auxilio-extended.webp",
+          "imagenCaratula": "/assets/toWEBP/amor-y-auxilio.webp",
+          "imagenExtendida": "/assets/toWEBP/amor-y-auxilio-extended.webp",
           "posicionImagen": "top",
           "horaSalida": "09:30",
           "horaLlegada": "14:30",
@@ -159,11 +165,12 @@
           "sitios_interes": ["Salida", "Encuentro en la plaza Fuente Nueva", "Entrada a su templo"]
         },
         {
+          "id" : "fe-y-consuelo",
           "nombre" : "Fe y Consuelo",
           "descripcion" : "Cristo de la Fe y del Consuelo",
           "cofradia": "Cofradía del Santísimo Cristo de la Fe y del Consuelo",
-          "imagenCaratula": "assets/toWEBP/fe-y-consuelo-variant.webp",
-          "imagenExtendida": "assets/toWEBP/fe-y-consuelo-extended.webp",
+          "imagenCaratula": "/assets/toWEBP/fe-y-consuelo-variant.webp",
+          "imagenExtendida": "/assets/toWEBP/fe-y-consuelo-extended.webp",
           "posicionImagen": "top",
           "horaSalida": "23:00",
           "horaLlegada": "03:40",
@@ -184,11 +191,12 @@
         "titulo": "Viernes Santo",
         "procesiones": [
           {
+            "id" : "jesús-nazareno",
             "nombre" : "Jesús Nazareno",
             "descripcion" : "Nuestro Padre Jesús Nazareno, María Santísima de los Dolores y María Magdalena",
             "cofradia": "Cofradía de Nuestro Padre Jesús Nazareno, María Santísima de los Dolores y María Magdalena",
-            "imagenCaratula": "assets/toWEBP/jesus-nazareno.webp",
-            "imagenExtendida": "assets/toWEBP/jesus-nazareno-extended.webp",
+            "imagenCaratula": "/assets/toWEBP/jesus-nazareno.webp",
+            "imagenExtendida": "/assets/toWEBP/jesus-nazareno-extended.webp",
             "posicionImagen": "bottom",
             "horaSalida": "09:00",
             "horaLlegada": "14:30",
@@ -210,11 +218,12 @@
             ]
           },
           {
+            "id" : "santo-entierro",
             "nombre" : "Santo Entierro",
             "descripcion" : "Santo Entierro de Cristo, María Santísima de los Dolores y San Juan Evangelista",
             "cofradia": "Cofradía del Santo Entierro de Cristo, María Santísima de los Dolores y San Juan Evangelista",
-            "imagenCaratula": "assets/toWEBP/santo-entierro.webp",
-            "imagenExtendida": "assets/toWEBP/santo-entierro-extended.webp",
+            "imagenCaratula": "/assets/toWEBP/santo-entierro.webp",
+            "imagenExtendida": "/assets/toWEBP/santo-entierro-extended.webp",
             "posicionImagen": "center",
             "horaSalida": "20:00",
             "horaLlegada": "01:30",
@@ -241,11 +250,12 @@
       {
         "titulo": "Sábado Santo",
         "procesiones": [{
+          "id" : "soledad",
           "nombre": "Soledad",
           "descripcion": "María Santísima de la Soledad",
           "cofradia": "Seráfica Cofradía de María Santísima de la Soledad",
-          "imagenCaratula": "assets/toWEBP/soledad.webp",
-          "imagenExtendida": "assets/toWEBP/soledad-extended.webp",
+          "imagenCaratula": "/assets/toWEBP/soledad.webp",
+          "imagenExtendida": "/assets/toWEBP/soledad-extended.webp",
           "posicionImagen": "center",
           "horaSalida": "00:00",
           "horaLlegada": "04:15",
@@ -271,11 +281,12 @@
         "titulo": "Domingo de Resurrección",
         "procesiones": [
           {
+            "id" : "resurección-y-esperanza",
             "nombre" : "Resurección y Esperanza",
             "descripcion": "Cristo Resucitado y María Santísima de la Esperanza",
             "cofradia": "",
-            "imagenCaratula": "assets/toWEBP/resucitado.webp",
-            "imagenExtendida": "assets/toWEBP/resucitado-extended.webp",
+            "imagenCaratula": "/assets/toWEBP/resucitado.webp",
+            "imagenExtendida": "/assets/toWEBP/resucitado-extended.webp",
             "posicionImagen": "top",
             "horaSalida": "11:00",
             "horaLlegada": "14:00",

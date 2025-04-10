@@ -1,0 +1,75 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import SeccionDiaActual from '../../../components/SeccionDiaActual';
+
+import diasRaw from '../../../data/dias.json';
+import disenoDiasRaw from '../../../data/disenoDias.json';
+
+const { procesionId = 'borriquita' } = Astro.params;
+
+const dias = diasRaw;
+const disenoDias = disenoDiasRaw;
+
+const idBuscado = procesionId.toLowerCase();
+
+let diaProcesion = null;
+let procesion = null;
+let diseno = null;
+
+for (let i = 0; i < dias.length; i++) {
+  for (const p of dias[i].procesiones) {
+    const id = p.nombre.toLowerCase().replace(/\s+/g, '-');
+    if (id === idBuscado) {
+      diaProcesion = dias[i];
+      procesion = p;
+      diseno = disenoDias[i];
+      break;
+    }
+  }
+  if (procesion) break;
+}
+
+// Aquí puedes poner la lógica real para determinar si está en la calle
+const estaEnCalle = false;
+
+
+// Necesario para rutas estáticas
+export async function getStaticPaths() {
+  const dias = (await import('../../../data/dias.json')).default;
+
+  const paths = [];
+
+  for (const dia of dias) {
+    for (const procesion of dia.procesiones) {
+      const id = procesion.nombre.toLowerCase().replace(/\s+/g, '-');
+      paths.push({ params: { procesionId: id } });
+    }
+  }
+
+  return paths;
+}
+---
+
+
+<Layout>
+  {procesion && diseno && diaProcesion ? (
+    <SeccionDiaActual
+      titulo={diseno.nombre}
+      imagenNormal={procesion.imagenCaratula}
+      imagenExtendida={procesion.imagenExtendida}
+      posicionImagen={procesion.posicionImagen || 'center'}
+      hermandad={procesion.descripcion}
+      iglesia={procesion.parroquia}
+      horaSalida={procesion.horaSalida}
+      horaLlegada={procesion.horaLlegada}
+      posicionTexto={diseno.posicionTexto}
+      colorTexto={diseno.colorTexto}
+      estaEnCalle={estaEnCalle}
+      rutaId={procesion.nombre.toLowerCase().replace(/\s+/g, '-')}
+    />
+  ) : (
+    <section class="text-center py-20">
+      <h2 class="text-3xl font-bold text-red-600">Procesión no encontrada</h2>
+    </section>
+  )}
+</Layout>

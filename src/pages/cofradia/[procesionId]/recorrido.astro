@@ -1,7 +1,7 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import MartosMapa2D from '../../components/MartosMapa2D.astro';
-import { rutasProcesiones, puntosInteresProcesiones } from '../../data/rutas-procesiones';
+import Layout from '../../../layouts/Layout.astro';
+import MartosMapa2D from '../../../components/MartosMapa2D.astro';
+import { rutasProcesiones, puntosInteresProcesiones } from '../../../data/rutas-procesiones';
 
 // Obtener el parámetro de ruta dinámica
 const { procesionId = 'borriquita' } = Astro.params as { procesionId: keyof typeof rutasProcesiones };

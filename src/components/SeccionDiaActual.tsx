@@ -17,7 +17,6 @@ const colorClaseMap: Record<string, string> = {
   blanco: 'text-white',
   negro: 'text-black',
   rojo: 'text-red-500',
-  // Agrega más si necesitas
 };
 
 const posicionClaseMap: Record<string, string> = {
@@ -38,54 +37,45 @@ export default function SeccionDiaActual(props: Props) {
     posicionTexto,
     colorTexto,
     estaEnCalle,
-    rutaId
+    rutaId,
   } = props;
 
   const claseColorTexto = colorClaseMap[colorTexto] ?? 'text-white';
   const clasePosicionTexto = posicionClaseMap[posicionTexto] ?? 'left-6';
 
-  // Para poner los titulos partidos en 2 partes:
   const partes = titulo.split(' ');
   let linea1 = '';
   let linea2 = '';
 
   if (partes.length === 2) {
-    // Dos palabras → una por línea
     [linea1, linea2] = partes;
   } else if (partes.length >= 3) {
-    // Tres o más → dos primeras en la primera línea, resto en la segunda
     linea1 = `${partes[0]} ${partes[1]} `;
     linea2 = partes.slice(2).join(' ');
   }
 
   return (
     <section className="relative w-full h-full overflow-hidden">
-      {/* Imagen responsiva */}
-      {imagenNormal && imagenExtendida && 
-      (<picture>
-        <source srcSet={imagenExtendida} media="(min-width: 768px)" />
-        <img
-          src={imagenNormal}
-          alt={titulo}
-          
-          className={`absolute top-0 left-0 w-full h-full object-cover ${
-            posicionImagen === 'top'
-              ? 'object-top'
-              : posicionImagen === 'bottom'
-              ? 'object-bottom'
-              : posicionImagen === 'center'
-              ? 'object-center'
-              : 'object-center' // fallback
-          }`}
-        />
+      {imagenNormal && imagenExtendida && (
+        <picture>
+          <source srcSet={imagenExtendida} media="(min-width: 768px)" />
+          <img
+            src={imagenNormal}
+            alt={titulo}
+            className={`absolute top-0 left-0 w-full h-full object-cover ${
+              posicionImagen === 'top'
+                ? 'object-top'
+                : posicionImagen === 'bottom'
+                ? 'object-bottom'
+                : 'object-center'
+            }`}
+          />
+        </picture>
+      )}
 
-      </picture>)}
-
-      {/* Capa sombra */}
       <div className="absolute bottom-0 w-full h-2/3 bg-gradient-to-t from-black/90 to-transparent z-0"></div>
 
-      {/* Título */}
-      {/* TÍTULO MÓVIL */}
+      {/* Título móvil */}
       <h2
         className={`absolute top-6 ${clasePosicionTexto} ${claseColorTexto} titulo-dinamico 
                     font-serif tracking-wide uppercase drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)] 
@@ -100,7 +90,7 @@ export default function SeccionDiaActual(props: Props) {
         <span className="block">{linea2}</span>
       </h2>
 
-      {/* TÍTULO ESCRITORIO */}
+      {/* Título escritorio */}
       <h2
         className={`absolute top-6 ${clasePosicionTexto} ${claseColorTexto} titulo-dinamico 
                     font-serif tracking-wide uppercase drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)] 
@@ -114,7 +104,6 @@ export default function SeccionDiaActual(props: Props) {
         {titulo}
       </h2>
 
-
       {/* Información */}
       <div className="absolute bottom-6 left-6 z-10 text-white space-y-1 text-lg drop-shadow-[0_1px_6px_rgba(0,0,0,0.8)] max-w-[80%]">
         <p className="text-2xl font-semibold">{hermandad}</p>
@@ -124,39 +113,51 @@ export default function SeccionDiaActual(props: Props) {
         </p>
 
         {/* Botón móvil */}
-        {estaEnCalle && (
-          <div className="mt-5 md:hidden">
-            <a href={`/martos-2d/${rutaId}`}>
+        <div className="mt-5 md:hidden">
+          <a href={`/cofradia/${rutaId}/recorrido`}>
+            {estaEnCalle ? (
               <button className="flex items-center gap-3 bg-white bg-opacity-80 text-black font-semibold 
-                             px-5 py-2 text-md rounded-full shadow-md 
-                             hover:bg-opacity-100 transition">
+                                 px-5 py-2 text-md rounded-full shadow-md 
+                                 hover:bg-opacity-100 transition">
                 ¡Síguela en directo!
                 <span className="relative flex h-4 w-4">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-600 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-4 w-4 bg-red-600"></span>
                 </span>
               </button>
-            </a>
-          </div>
-        )}
+            ) : (
+              <button className="flex items-center gap-3 bg-transparent border border-white text-white font-semibold 
+                                 px-5 py-2 text-md rounded-full shadow-md 
+                                 hover:bg-white hover:text-black transition">
+                Recorrido
+              </button>
+            )}
+          </a>
+        </div>
       </div>
 
       {/* Botón escritorio */}
-      {estaEnCalle && (
-        <div className="hidden md:flex absolute bottom-6 right-6 z-10">
-          <a href={`/martos-2d/${rutaId}`}>
+      <div className="hidden md:flex absolute bottom-6 right-6 z-10">
+        <a href={`/cofradia/${rutaId}/recorrido`}>
+          {estaEnCalle ? (
             <button className="flex items-center gap-3 bg-white bg-opacity-80 text-black font-semibold 
-                           px-6 py-3 text-base rounded-full shadow-md 
-                           hover:bg-opacity-100 transition cursor-pointer">
+                               px-6 py-3 text-base rounded-full shadow-md 
+                               hover:bg-opacity-100 transition cursor-pointer">
               ¡Síguela en directo!
               <span className="relative flex h-4 w-4">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-600 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-4 w-4 bg-red-600"></span>
               </span>
             </button>
-          </a>
-        </div>
-      )}
+          ) : (
+            <button className="flex items-center gap-3 bg-transparent border border-white text-white font-semibold 
+                               px-6 py-3 text-base rounded-full shadow-md 
+                               hover:bg-white hover:text-black transition cursor-pointer">
+              Recorrido
+            </button>
+          )}
+        </a>
+      </div>
     </section>
   );
 }

@@ -1,0 +1,7 @@
+---
+// Si alguien accede directamente a /cofradia, redirigir a una ruta predeterminada
+const defaultRoute = 'borriquita';
+
+// Esta página solo sirve como punto de entrada - redirigir a la versión con URL dinámica
+return Astro.redirect(`/cofradia/${defaultRoute}`);
+---
