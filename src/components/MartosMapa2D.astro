@@ -26,36 +26,36 @@ const pointsJSON = JSON.stringify(points);
 <div class="map-container w-full h-full relative">
   <div id="map" class="absolute inset-0 z-10"></div>
   
-  <!-- UI overlay - Título a la derecha -->
-  <div class="absolute top-4 right-4 bg-black/60 text-white p-3 rounded-lg z-20">
-    <h2 class="text-xl font-bold">{title}</h2>
+  <!-- UI overlay - Título adaptativo -->
+  <div class="title-container">
+	<h2 class="title-text">{title}</h2>
   </div>
   
   <!-- Control de porcentaje -->
   <div class="absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-white/80 rounded-lg p-3 z-20 shadow-lg flex flex-col items-center w-11/12 max-w-md mx-auto">
-	<p class="text-sm font-semibold mb-2">Progreso de la procesión</p>
-	<div class="flex items-center w-full">
-	  <input type="range" id="progress-slider" min="0" max="100" value="0" class="w-full accent-blue-600">
-	  <span id="percentage-display" class="ml-2 text-sm font-bold">0%</span>
-	</div>
+    <p class="text-sm font-semibold mb-2">Progreso de la procesión</p>
+    <div class="flex items-center w-full">
+      <input type="range" id="progress-slider" min="0" max="100" value="0" class="w-full accent-blue-600">
+      <span id="percentage-display" class="ml-2 text-sm font-bold">0%</span>
+    </div>
   </div>
   
   <!-- Controles - Botones abajo a la derecha -->
-	<div class="absolute bottom-8 right-4 z-30 flex flex-col gap-3">
-	<!-- Botón de ubicación actual (ahora en primera posición) -->
-	<button id="location-btn" class="p-3 bg-white rounded-full shadow-lg hover:bg-blue-50 active:bg-blue-100 transition-colors" title="Mi ubicación">
-	  <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-		<path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-		<path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-	  </svg>
-	</button>
-	
-	<!-- Botón de volver (ahora en segunda posición) -->
-	<button id="back-btn" class="p-3 bg-white rounded-full shadow-lg hover:bg-blue-50 active:bg-blue-100 transition-colors" title="Volver">
-	  <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-		<path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-	  </svg>
-	</button>
+  <div class="absolute bottom-8 right-4 z-30 flex flex-col gap-3">
+    <!-- Botón de ubicación actual (primera posición) -->
+    <button id="location-btn" class="p-3 bg-white rounded-full shadow-lg hover:bg-blue-50 active:bg-blue-100 transition-colors" title="Mi ubicación">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>
+    </button>
+    
+    <!-- Botón de volver (segunda posición) -->
+    <button id="back-btn" class="p-3 bg-white rounded-full shadow-lg hover:bg-blue-50 active:bg-blue-100 transition-colors" title="Volver">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+      </svg>
+    </button>
   </div>
 
 <!-- Importar CSS de Leaflet -->
@@ -63,177 +63,151 @@ const pointsJSON = JSON.stringify(points);
 
 <!-- Scripts necesarios -->
 <script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script is:inline src="https://unpkg.com/leaflet-polylinedecorator/dist/leaflet.polylineDecorator.js"></script>
+<script is:inline src="https://unpkg.com/leaflet-ant-path/dist/leaflet-ant-path.js"></script>
 
 <script define:vars={{ routeJSON, pointsJSON, MARTOS_CENTER }}>
   // Parsear datos JSON
   const route = JSON.parse(routeJSON);
   const points = JSON.parse(pointsJSON);
-  let map, routeLayer, completedRouteLayer, animatedMarker;
-  let routeDecorator, completedDecorator; // Decoradores para las flechas
+  
+  // Variables globales del mapa
+  let map;
+  let routeLayer;
+  let completedRouteLayer;
+  let animatedMarker;
   let isPaused = true;
   let animationId = null;
-  let currentPosition = 0;
   let percentageComplete = 0;
-  let arrowOffset = 0; // Para la animación de las flechas
-  let arrowAnimationId = null; // Para controlar la animación de flechas
-  let userLocationMarker; // Marcador para la ubicación del usuario
-  let isLocationActive = false; // Estado para saber si la ubicación está activa
+  let userLocationMarker = null;
+  let isLocationActive = false;
   
   // Inicializar cuando la página esté cargada
   window.onload = initMap;
   
   function initMap() {
-    // Crear mapa base con Leaflet
-    map = L.map('map', {
-      center: MARTOS_CENTER,
-      zoom: 16,
-      minZoom: 14,
-      maxZoom: 19
-    });
+    // Verificar si hay datos de ruta
+    if (!route || route.length < 2) {
+      console.error("No se proporcionó una ruta válida");
+      return;
+    }
+
+    // Registrar información de los datos para depuración
+    console.log(`Ruta cargada: ${route.length} puntos`);
+    console.log(`Puntos de interés: ${points.length} marcadores`);
     
-    // Añadir capa base de imágenes satelitales
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-      maxZoom: 19
-    }).addTo(map);
-    
-    // Añadir capa de etiquetas para que los nombres de calles sean visibles
-    L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/toner-labels/{z}/{x}/{y}{r}.png', {
-      attribution: 'Map labels by <a href="http://stamen.com">Stamen Design</a>',
-      subdomains: 'abcd',
-      minZoom: 13,
-      maxZoom: 19,
-      opacity: 0.7
-    }).addTo(map);
-    
-    // Si hay ruta, preparar las capas para la animación
-    if (route && route.length > 0) {
-      // Capa para la ruta completa
-      routeLayer = L.polyline(route, {
-        color: '#3388ff',
-        weight: 3,
-        opacity: 0.8
+    try {
+      // Crear mapa base con Leaflet
+      	map = L.map('map', {
+		center: MARTOS_CENTER,
+		zoom: 16,
+		minZoom: 14,
+		maxZoom: 19,
+		attributionControl: false  // Esto desactiva el panel de atribución
+	});
+      
+      // Añadir capa base de imágenes satelitales
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: '',
+        maxZoom: 19
       }).addTo(map);
       
-      // Capa para la parte de la ruta ya recorrida (color destacado)
+      // Añadir capa de etiquetas para que los nombres de calles sean visibles
+      L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/toner-labels/{z}/{x}/{y}{r}.png', {
+        attribution: '',
+        subdomains: 'abcd',
+        minZoom: 13,
+        maxZoom: 19,
+        opacity: 0.7
+      }).addTo(map);
+      
+      // Capa para la ruta completa con efecto "ant path"
+      routeLayer = L.polyline.antPath(route, {
+        color: '#3388ff',
+        weight: 5,
+        opacity: 0.8,
+        delay: 2500,
+        dashArray: [10, 20],
+        pulseColor: '#FFFFFF',
+        paused: false,
+        hardwareAccelerated: true
+      }).addTo(map);
+      
+      // Capa para la parte de la ruta ya recorrida (dorada)
       completedRouteLayer = L.polyline([], {
         color: 'gold',
         weight: 6,
         opacity: 0.9,
-        // Efecto de línea brillante
         className: 'route-glow'
       }).addTo(map);
-      
-      // Decorador con flechas para la ruta completa
-      routeDecorator = L.polylineDecorator(routeLayer, {
-        patterns: [{
-          offset: 25,
-          repeat: 40,
-          symbol: L.Symbol.arrowHead({
-            pixelSize: 10,
-            headAngle: 45,
-            polygon: true,
-            pathOptions: {
-              color: '#fff',
-              fillColor: '#3388ff',
-              fillOpacity: 0.9,
-              weight: 2
-            }
-          })
-        }]
-      }).addTo(map);
-      
-      // Decorador con flechas para la ruta completada
-      completedDecorator = L.polylineDecorator(completedRouteLayer, {
-        patterns: [{
-          offset: 25,
-          repeat: 40,
-          symbol: L.Symbol.arrowHead({
-            pixelSize: 10,
-            headAngle: 45,
-            polygon: true,
-            pathOptions: {
-              color: '#fff',
-              fillColor: '#FFD700',
-              fillOpacity: 0.9,
-              weight: 2
-            }
-          })
-        }]
-      }).addTo(map);
-      
-      // Iniciar la animación de las flechas
-      startArrowAnimation();
       
       // Centrar el mapa en la ruta
       map.fitBounds(routeLayer.getBounds(), { padding: [30, 30] });
       
-      // Crear el icono del paso procesional más colorido y animado
+      // Crear el icono del paso procesional
       const pasoColoridoSVG = `
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120" width="60" height="72">
-		<!-- Base dorada y estructura del trono -->
-		<rect x="15" y="90" width="70" height="12" fill="#B8860B" stroke="#8B4513" stroke-width="1"/>
-		<rect x="20" y="85" width="60" height="5" fill="#DAA520" stroke="#B8860B" stroke-width="0.5"/>
-		
-		<!-- Patas ornamentadas -->
-		<rect x="20" y="90" width="5" height="12" fill="#8B4513" stroke="#5D2906" stroke-width="0.5" rx="1"/>
-		<rect x="75" y="90" width="5" height="12" fill="#8B4513" stroke="#5D2906" stroke-width="0.5" rx="1"/>
-		
-		<!-- Nivel medio del trono con terciopelo -->
-		<rect x="22" y="70" width="56" height="15" fill="#800020" stroke="#4B0010" stroke-width="1"/>
-		<!-- Bordes dorados -->
-		<rect x="20" y="70" width="60" height="2" fill="#DAA520" stroke="#B8860B" stroke-width="0.5"/>
-		<rect x="20" y="83" width="60" height="2" fill="#DAA520" stroke="#B8860B" stroke-width="0.5"/>
-		
-		<!-- Cruz principal -->
-		<rect x="48" y="20" width="4" height="50" fill="#8B4513" stroke="#5D2906" stroke-width="1"/>
-		<rect x="35" y="30" width="30" height="4" fill="#8B4513" stroke="#5D2906" stroke-width="1"/>
-		
-		<!-- Cristo en la cruz (simplificado pero reconocible) -->
-		<path d="M50,30 Q48,35 45,40 L50,40 L55,40 Q52,35 50,30" fill="#FFE4C4" stroke="#8B4513" stroke-width="0.5"/>
-		<path d="M45,40 L41,55 M55,40 L59,55" stroke="#FFE4C4" stroke-width="2" stroke-linecap="round"/>
-		<circle cx="50" cy="27" r="3" fill="#FFE4C4" stroke="#8B4513" stroke-width="0.5"/> <!-- Cabeza -->
-		
-		<!-- Corona de espinas -->
-		<path d="M47,25 Q50,22 53,25" stroke="#8B4513" stroke-width="0.5" fill="none"/>
-		
-		<!-- Candelabros y velas a los lados -->
-		<!-- Izquierdo -->
-		<rect x="25" y="60" width="2" height="10" fill="#B8860B" stroke="#8B4513" stroke-width="0.3"/>
-		<rect x="24.5" y="50" width="3" height="10" fill="#B8860B" stroke="#8B4513" stroke-width="0.3"/>
-		<rect x="25" y="45" width="2" height="5" fill="#FFF8DC" stroke="#DCDCDC" stroke-width="0.2"/>
-		<circle cx="26" cy="44" r="1" fill="#FFFF00" class="light-pulse" opacity="0.9"/>
-		
-		<!-- Derecho -->
-		<rect x="73" y="60" width="2" height="10" fill="#B8860B" stroke="#8B4513" stroke-width="0.3"/>
-		<rect x="72.5" y="50" width="3" height="10" fill="#B8860B" stroke="#8B4513" stroke-width="0.3"/>
-		<rect x="73" y="45" width="2" height="5" fill="#FFF8DC" stroke="#DCDCDC" stroke-width="0.2"/>
-		<circle cx="74" cy="44" r="1" fill="#FFFF00" class="light-pulse" opacity="0.9"/>
-		
-		<!-- Decoraciones florales -->
-		<!-- Centro -->
-		<ellipse cx="50" cy="65" rx="10" ry="4" fill="#800020" opacity="0.7"/>
-		<circle cx="46" cy="64" r="2" fill="#FF0000" opacity="0.9"/>
-		<circle cx="50" cy="63" r="2" fill="#FFFFFF" opacity="0.9"/>
-		<circle cx="54" cy="64" r="2" fill="#FF0000" opacity="0.9"/>
-		
-		<!-- Laterales -->
-		<!-- Izquierda -->
-		<circle cx="32" cy="70" r="3" fill="#A020F0" opacity="0.8"/>
-		<circle cx="35" cy="72" r="2.5" fill="#FFFFFF" opacity="0.8"/>
-		<circle cx="31" cy="74" r="2" fill="#FF4500" opacity="0.8"/>
-		
-		<!-- Derecha -->
-		<circle cx="68" cy="70" r="3" fill="#A020F0" opacity="0.8"/>
-		<circle cx="65" cy="72" r="2.5" fill="#FFFFFF" opacity="0.8"/>
-		<circle cx="69" cy="74" r="2" fill="#FF4500" opacity="0.8"/>
-		
-		<!-- Luces ambientales -->
-		<circle cx="25" cy="65" r="2" fill="#FFFF00" opacity="0.3" class="ambient-light"/>
-		<circle cx="75" cy="65" r="2" fill="#FFFF00" opacity="0.3" class="ambient-light"/>
-		<circle cx="50" cy="58" r="3" fill="#FFFF00" opacity="0.2" class="ambient-light"/>
-		</svg>
+          <!-- Base dorada y estructura del trono -->
+          <rect x="15" y="90" width="70" height="12" fill="#B8860B" stroke="#8B4513" stroke-width="1"/>
+          <rect x="20" y="85" width="60" height="5" fill="#DAA520" stroke="#B8860B" stroke-width="0.5"/>
+          
+          <!-- Patas ornamentadas -->
+          <rect x="20" y="90" width="5" height="12" fill="#8B4513" stroke="#5D2906" stroke-width="0.5" rx="1"/>
+          <rect x="75" y="90" width="5" height="12" fill="#8B4513" stroke="#5D2906" stroke-width="0.5" rx="1"/>
+          
+          <!-- Nivel medio del trono con terciopelo -->
+          <rect x="22" y="70" width="56" height="15" fill="#800020" stroke="#4B0010" stroke-width="1"/>
+          <!-- Bordes dorados -->
+          <rect x="20" y="70" width="60" height="2" fill="#DAA520" stroke="#B8860B" stroke-width="0.5"/>
+          <rect x="20" y="83" width="60" height="2" fill="#DAA520" stroke="#B8860B" stroke-width="0.5"/>
+          
+          <!-- Cruz principal -->
+          <rect x="48" y="20" width="4" height="50" fill="#8B4513" stroke="#5D2906" stroke-width="1"/>
+          <rect x="35" y="30" width="30" height="4" fill="#8B4513" stroke="#5D2906" stroke-width="1"/>
+          
+          <!-- Cristo en la cruz (simplificado pero reconocible) -->
+          <path d="M50,30 Q48,35 45,40 L50,40 L55,40 Q52,35 50,30" fill="#FFE4C4" stroke="#8B4513" stroke-width="0.5"/>
+          <path d="M45,40 L41,55 M55,40 L59,55" stroke="#FFE4C4" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="50" cy="27" r="3" fill="#FFE4C4" stroke="#8B4513" stroke-width="0.5"/> <!-- Cabeza -->
+          
+          <!-- Corona de espinas -->
+          <path d="M47,25 Q50,22 53,25" stroke="#8B4513" stroke-width="0.5" fill="none"/>
+          
+          <!-- Candelabros y velas a los lados -->
+          <!-- Izquierdo -->
+          <rect x="25" y="60" width="2" height="10" fill="#B8860B" stroke="#8B4513" stroke-width="0.3"/>
+          <rect x="24.5" y="50" width="3" height="10" fill="#B8860B" stroke="#8B4513" stroke-width="0.3"/>
+          <rect x="25" y="45" width="2" height="5" fill="#FFF8DC" stroke="#DCDCDC" stroke-width="0.2"/>
+          <circle cx="26" cy="44" r="1" fill="#FFFF00" class="light-pulse" opacity="0.9"/>
+          
+          <!-- Derecho -->
+          <rect x="73" y="60" width="2" height="10" fill="#B8860B" stroke="#8B4513" stroke-width="0.3"/>
+          <rect x="72.5" y="50" width="3" height="10" fill="#B8860B" stroke="#8B4513" stroke-width="0.3"/>
+          <rect x="73" y="45" width="2" height="5" fill="#FFF8DC" stroke="#DCDCDC" stroke-width="0.2"/>
+          <circle cx="74" cy="44" r="1" fill="#FFFF00" class="light-pulse" opacity="0.9"/>
+          
+          <!-- Decoraciones florales -->
+          <!-- Centro -->
+          <ellipse cx="50" cy="65" rx="10" ry="4" fill="#800020" opacity="0.7"/>
+          <circle cx="46" cy="64" r="2" fill="#FF0000" opacity="0.9"/>
+          <circle cx="50" cy="63" r="2" fill="#FFFFFF" opacity="0.9"/>
+          <circle cx="54" cy="64" r="2" fill="#FF0000" opacity="0.9"/>
+          
+          <!-- Laterales -->
+          <!-- Izquierda -->
+          <circle cx="32" cy="70" r="3" fill="#A020F0" opacity="0.8"/>
+          <circle cx="35" cy="72" r="2.5" fill="#FFFFFF" opacity="0.8"/>
+          <circle cx="31" cy="74" r="2" fill="#FF4500" opacity="0.8"/>
+          
+          <!-- Derecha -->
+          <circle cx="68" cy="70" r="3" fill="#A020F0" opacity="0.8"/>
+          <circle cx="65" cy="72" r="2.5" fill="#FFFFFF" opacity="0.8"/>
+          <circle cx="69" cy="74" r="2" fill="#FF4500" opacity="0.8"/>
+          
+          <!-- Luces ambientales -->
+          <circle cx="25" cy="65" r="2" fill="#FFFF00" opacity="0.3" class="ambient-light"/>
+          <circle cx="75" cy="65" r="2" fill="#FFFF00" opacity="0.3" class="ambient-light"/>
+          <circle cx="50" cy="58" r="3" fill="#FFFF00" opacity="0.2" class="ambient-light"/>
+        </svg>
       `;
       
       // Crear el div icon con el SVG animado
@@ -246,11 +220,15 @@ const pointsJSON = JSON.stringify(points);
           </div>
         `,
         iconSize: [60, 72],
-        iconAnchor: [30, 60] // Ajuste para que el punto de anclaje esté abajo del centro
+        iconAnchor: [30, 45],
+        zIndexOffset: 1000
       });
       
       // Crear el marcador en la posición inicial
-      animatedMarker = L.marker(route[0], { icon: tronoIcon }).addTo(map);
+      animatedMarker = L.marker(route[0], { 
+        icon: tronoIcon,
+        zIndexOffset: 1000
+      }).addTo(map);
       
       // Añadir marcadores de inicio y fin
       L.marker(route[0], {
@@ -260,99 +238,47 @@ const pointsJSON = JSON.stringify(points);
       L.marker(route[route.length - 1], {
         icon: createCustomIcon('red', 'Fin') 
       }).addTo(map).bindPopup('<strong>Punto Final</strong>');
-    }
-    
-    // Añadir puntos de interés
-    points.forEach(point => {
-      L.marker(point.position, {
-        icon: createIglesiaIcon(point.title)
-      }).addTo(map).bindPopup(`
-        <strong>${point.title}</strong>
-        ${point.description ? `<br>${point.description}` : ''}
-      `);
-    });
-    
-    // Configurar eventos para los botones
-	document.getElementById('location-btn').addEventListener('click', handleLocationRequest);
-	document.getElementById('back-btn').addEventListener('click', () => window.history.back());
-    
-    // Configurar el control de porcentaje
-    const slider = document.getElementById('progress-slider');
-    const percentageDisplay = document.getElementById('percentage-display');
-    
-    slider.addEventListener('input', function(e) {
-      percentageComplete = parseInt(e.target.value);
-      percentageDisplay.textContent = `${percentageComplete}%`;
       
-      // Actualizar la visualización según el porcentaje
-      updateRouteByPercentage(percentageComplete);
-      
-      // Pausar la animación automática si estaba corriendo
-    //   if (!isPaused) {
-    //     toggleAnimation();
-    //   }
-    });
-    
-    // Inicializar la visualización con 0%
-    updateRouteByPercentage(0);
-  }
-  
-  // Función para animar las flechas
-  function startArrowAnimation() {
-    // Cancelar animación previa si existe
-    if (arrowAnimationId) {
-      cancelAnimationFrame(arrowAnimationId);
-    }
-    
-    function animateArrows() {
-      arrowOffset = (arrowOffset + 1) % 100;
-      
-      // Actualizar flechas de la ruta completa
-      routeDecorator.setPatterns([{
-        offset: arrowOffset,
-        repeat: 50,
-        symbol: L.Symbol.arrowHead({
-          pixelSize: 10,
-          headAngle: 45,
-          polygon: true,
-          pathOptions: {
-            color: '#fff',
-            fillColor: '#3388ff',
-            fillOpacity: 0.9,
-            weight: 2
-          }
-        })
-      }]);
-      
-      // Actualizar flechas de la ruta completada
-      if (completedRouteLayer.getLatLngs().length > 1) {
-        completedDecorator.setPatterns([{
-          offset: arrowOffset,
-          repeat: 50,
-          symbol: L.Symbol.arrowHead({
-            pixelSize: 10,
-            headAngle: 45,
-            polygon: true,
-            pathOptions: {
-              color: '#fff',
-              fillColor: 'red',
-              fillOpacity: 0.9,
-              weight: 2
-            }
-          })
-        }]);
+      // Añadir puntos de interés
+      if (points && points.length > 0) {
+        points.forEach(point => {
+          L.marker(point.position, {
+            icon: createIglesiaIcon(point.title)
+          }).addTo(map).bindPopup(`
+            <strong>${point.title}</strong>
+            ${point.description ? `<br>${point.description}` : ''}
+          `);
+        });
       }
       
-      // Continuar la animación
-      arrowAnimationId = requestAnimationFrame(animateArrows);
+      // Configurar eventos para los botones
+      document.getElementById('location-btn').addEventListener('click', handleLocationRequest);
+      document.getElementById('back-btn').addEventListener('click', () => window.history.back());
+      
+      // Configurar el control de porcentaje
+      const slider = document.getElementById('progress-slider');
+      const percentageDisplay = document.getElementById('percentage-display');
+      
+      slider.addEventListener('input', function(e) {
+        percentageComplete = parseInt(e.target.value);
+        percentageDisplay.textContent = `${percentageComplete}%`;
+        
+        // Actualizar la visualización según el porcentaje
+        updateRouteByPercentage(percentageComplete);
+      });
+      
+      // Inicializar la visualización con 0%
+      updateRouteByPercentage(0);
+      
+    } catch (error) {
+      console.error("Error al inicializar el mapa:", error);
     }
-    
-    animateArrows();
   }
   
   // Función para actualizar la visualización según un porcentaje
   function updateRouteByPercentage(percentage) {
-    if (!route || route.length < 2) return;
+    // Verificar si hay datos válidos
+    if (!map || !route || route.length < 2 || !completedRouteLayer || !animatedMarker) return;
     
     // Convertir porcentaje a posición en la ruta
     const totalLength = route.length - 1;
@@ -366,7 +292,6 @@ const pointsJSON = JSON.stringify(points);
     // Si el porcentaje es 0, reiniciar
     if (percentage === 0) {
       completedRouteLayer.setLatLngs([]);
-      completedDecorator.setPaths([]); // Limpiar el decorador de la ruta completada
       animatedMarker.setLatLng(route[0]);
       return;
     }
@@ -374,7 +299,6 @@ const pointsJSON = JSON.stringify(points);
     // Si el porcentaje es 100, completar toda la ruta
     if (percentage === 100) {
       completedRouteLayer.setLatLngs(route);
-      completedDecorator.setPaths(completedRouteLayer); // Actualizar el decorador
       animatedMarker.setLatLng(route[route.length - 1]);
       return;
     }
@@ -393,13 +317,6 @@ const pointsJSON = JSON.stringify(points);
     // Actualizar la línea recorrida
     const completedPath = route.slice(0, currentIndex + 1).concat([[lat, lng]]);
     completedRouteLayer.setLatLngs(completedPath);
-    
-    // Actualizar decorador para la ruta completada
-    if (completedPath.length > 1) {
-      completedDecorator.setPaths(completedRouteLayer);
-    } else {
-      completedDecorator.setPaths([]);
-    }
     
     // Centrar en la posición actual
     map.panTo([lat, lng]);
@@ -454,154 +371,101 @@ const pointsJSON = JSON.stringify(points);
     });
   }
   
-  // Función para alternar la animación (inicio/pausa)
-  function toggleAnimation() {
-    isPaused = !isPaused;
+  // Función para mostrar la ubicación del usuario
+  function handleLocationRequest() {
+    if (!map) return;
     
-    // Actualizar el icono del botón
-    const playBtn = document.getElementById('play-btn');
-	if (isPaused) {
-		playBtn.innerHTML = `
-			<svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-			<path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-			</svg>
-	`;
-	cancelAnimationFrame(animationId);
-	} else {
-		playBtn.innerHTML = `
-			<svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-			<path stroke-linecap="round" stroke-linejoin="round" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-			</svg>
-	`;
-      
-      // Si ya completó la ruta, reiniciar
-      if (percentageComplete >= 100) {
-        percentageComplete = 0;
-        document.getElementById('progress-slider').value = 0;
-        document.getElementById('percentage-display').textContent = '0%';
-        completedRouteLayer.setLatLngs([]);
-        completedDecorator.setPaths([]);
+    if (!isLocationActive) {
+      // Activar
+      if ("geolocation" in navigator) {
+        // Cambiar estilo del botón para indicar activación
+        document.getElementById('location-btn').classList.add('bg-blue-500');
+        document.getElementById('location-btn').classList.add('text-white');
+        
+        // Intentar obtener ubicación
+        navigator.geolocation.getCurrentPosition(
+          // Éxito
+          function(position) {
+            const userLat = position.coords.latitude;
+            const userLng = position.coords.longitude;
+            
+            // Crear icono de ubicación si no existe
+            if (!userLocationMarker) {
+              // Crear icono personalizado para la ubicación
+              const userIcon = L.divIcon({
+                className: 'user-location-marker',
+                html: `
+                  <div class="user-dot">
+                    <div class="user-pulse"></div>
+                  </div>
+                `,
+                iconSize: [24, 24],
+                iconAnchor: [12, 12]
+              });
+              
+              userLocationMarker = L.marker([userLat, userLng], {
+                icon: userIcon,
+                zIndexOffset: 2000
+              }).addTo(map);
+              
+              // Añadir popup
+              userLocationMarker.bindPopup('¡Estás aquí!').openPopup();
+            } else {
+              // Actualizar posición
+              userLocationMarker.setLatLng([userLat, userLng]);
+              userLocationMarker.openPopup();
+            }
+            
+            // Centrar mapa en la ubicación
+            map.flyTo([userLat, userLng], 17);
+            isLocationActive = true;
+          },
+          // Error
+          function(error) {
+            let errorMsg;
+            switch(error.code) {
+              case error.PERMISSION_DENIED:
+                errorMsg = "Necesitas permitir el acceso a tu ubicación para usar esta función.";
+                break;
+              case error.POSITION_UNAVAILABLE:
+                errorMsg = "No se puede determinar tu ubicación actual.";
+                break;
+              case error.TIMEOUT:
+                errorMsg = "Se agotó el tiempo para obtener tu ubicación.";
+                break;
+              default:
+                errorMsg = "Ocurrió un error al intentar obtener tu ubicación.";
+            }
+            
+            alert(errorMsg);
+            
+            // Restaurar estilo del botón
+            document.getElementById('location-btn').classList.remove('bg-blue-500');
+            document.getElementById('location-btn').classList.remove('text-white');
+          },
+          // Opciones
+          {
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 0
+          }
+        );
+      } else {
+        alert("Tu navegador no soporta geolocalización");
+      }
+    } else {
+      // Desactivar
+      if (userLocationMarker) {
+        userLocationMarker.closePopup();
+        map.removeLayer(userLocationMarker);
+        userLocationMarker = null;
       }
       
-      animateRoute();
+      document.getElementById('location-btn').classList.remove('bg-blue-500');
+      document.getElementById('location-btn').classList.remove('text-white');
+      isLocationActive = false;
     }
   }
-  
-  // Función para animar la ruta
-  function animateRoute() {
-    if (isPaused || percentageComplete >= 100) {
-      return;
-    }
-    
-    // Incrementar el porcentaje
-    percentageComplete += 0.1; // Ajuste este valor para controlar la velocidad
-    if (percentageComplete > 100) percentageComplete = 100;
-    
-    // Actualizar el slider y la visualización
-    const slider = document.getElementById('progress-slider');
-    const percentageDisplay = document.getElementById('percentage-display');
-    slider.value = percentageComplete;
-    percentageDisplay.textContent = `${Math.round(percentageComplete)}%`;
-    
-    // Actualizar la visualización
-    updateRouteByPercentage(percentageComplete);
-    
-    // Continuar la animación
-    animationId = requestAnimationFrame(animateRoute);
-  }
-  // Función para mostrar la ubicación del usuario
-function handleLocationRequest() {
-  if (!isLocationActive) {
-    // Activar
-    if ("geolocation" in navigator) {
-      // Cambiar estilo del botón para indicar activación
-      document.getElementById('location-btn').classList.add('bg-blue-500');
-      document.getElementById('location-btn').classList.add('text-white');
-      
-      // Intentar obtener ubicación
-      navigator.geolocation.getCurrentPosition(
-        // Éxito
-        function(position) {
-          const userLat = position.coords.latitude;
-          const userLng = position.coords.longitude;
-          
-          // Crear icono de ubicación si no existe
-          if (!userLocationMarker) {
-            // Crear icono personalizado para la ubicación
-            const userIcon = L.divIcon({
-              className: 'user-location-marker',
-              html: `
-                <div class="user-dot">
-                  <div class="user-pulse"></div>
-                </div>
-              `,
-              iconSize: [24, 24],
-              iconAnchor: [12, 12]
-            });
-            
-            userLocationMarker = L.marker([userLat, userLng], {
-              icon: userIcon,
-              zIndexOffset: 2000
-            }).addTo(map);
-            
-            // Añadir popup
-            userLocationMarker.bindPopup('¡Estás aquí!').openPopup();
-          } else {
-            // Actualizar posición
-            userLocationMarker.setLatLng([userLat, userLng]);
-            userLocationMarker.openPopup();
-          }
-          
-          // Centrar mapa en la ubicación
-          map.flyTo([userLat, userLng], 17);
-          isLocationActive = true;
-        },
-        // Error
-        function(error) {
-          let errorMsg;
-          switch(error.code) {
-            case error.PERMISSION_DENIED:
-              errorMsg = "Necesitas permitir el acceso a tu ubicación para usar esta función.";
-              break;
-            case error.POSITION_UNAVAILABLE:
-              errorMsg = "No se puede determinar tu ubicación actual.";
-              break;
-            case error.TIMEOUT:
-              errorMsg = "Se agotó el tiempo para obtener tu ubicación.";
-              break;
-            default:
-              errorMsg = "Ocurrió un error al intentar obtener tu ubicación.";
-          }
-          
-          alert(errorMsg);
-          
-          // Restaurar estilo del botón
-          document.getElementById('location-btn').classList.remove('bg-blue-500');
-          document.getElementById('location-btn').classList.remove('text-white');
-        },
-        // Opciones
-        {
-          enableHighAccuracy: true,
-          timeout: 5000,
-          maximumAge: 0
-        }
-      );
-    } else {
-      alert("Tu navegador no soporta geolocalización");
-    }
-  } else {
-    // Desactivar
-    if (userLocationMarker) {
-      userLocationMarker.closePopup();
-      map.removeLayer(userLocationMarker);
-      userLocationMarker = null;
-    }
-    
-    document.getElementById('location-btn').classList.remove('bg-blue-500');
-    document.getElementById('location-btn').classList.remove('text-white');
-    isLocationActive = false;
-  }
-}
 </script>
 
 <style>
@@ -626,7 +490,8 @@ function handleLocationRequest() {
   :global(.paso-container) {
     position: relative;
     animation: paso-motion 1.5s infinite alternate ease-in-out;
-	z-index: 1000;
+    z-index: 1000;
+    transform: translateY(-20px);
   }
   
   :global(.paso-shadow) {
@@ -642,9 +507,9 @@ function handleLocationRequest() {
   
   /* Animación del movimiento lateral del paso */
   @keyframes paso-motion {
-    0% { transform: translate(-2px, 0) rotate(-1deg); }
-    50% { transform: translate(0, -1px); }
-    100% { transform: translate(2px, 0) rotate(1deg); }
+    0% { transform: translate(-2px, -20px) rotate(-1deg); }
+    50% { transform: translate(0, -21px); }
+    100% { transform: translate(2px, -20px) rotate(1deg); }
   }
   
   /* Animación de las luces del paso */
@@ -658,6 +523,16 @@ function handleLocationRequest() {
     100% { opacity: 1; r: 2.5; }
   }
   
+  /* Animación para las luces ambientales */
+  :global(.ambient-light) {
+    animation: glow 3s infinite alternate ease-in-out;
+  }
+
+  @keyframes glow {
+    0% { opacity: 0.2; r: 2; }
+    100% { opacity: 0.4; r: 2.5; }
+  }
+  
   /* Efecto de brillo para la ruta */
   :global(.route-glow) {
     filter: drop-shadow(0 0 3px gold);
@@ -666,7 +541,7 @@ function handleLocationRequest() {
   /* Estilos para los iconos de iglesias */
   :global(.iglesia-container) {
     position: relative;
-    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.5))
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.5));
   }
 
   :global(.marker-title) {
@@ -686,94 +561,144 @@ function handleLocationRequest() {
   :global(.iglesia-container:hover .marker-title) {
     visibility: visible;
   }
+  
   /* Mejoras para botones en móvil y ordenador */
-	:global(.leaflet-control-zoom) {
-	margin-bottom: 80px !important; /* Para evitar solapamiento con los controles de reproducción */
-	}
+  :global(.leaflet-control-zoom) {
+    margin-bottom: 80px !important; /* Para evitar solapamiento con los controles de reproducción */
+  }
 
-	@media (max-width: 640px) {
+  @media (max-width: 640px) {
 	:global(.leaflet-control-zoom) {
 		margin-bottom: 100px !important;
-	}
-	
-	:global(.leaflet-control-attribution) {
-		font-size: 8px !important;
-		max-width: 80% !important;
-	}
-	}
+		display: none !important; /* Ocultar controles de zoom en móvil */
+  }
+    
+    :global(.leaflet-control-attribution) {
+		display: none !important;
+    }
+  }
 
-	/* Asegurar que los SVG en los botones sean visibles */
-	:global(button svg) {
-	stroke: black;  /* Azul oscuro para mejor contraste */
-	display: block;   /* Asegura que el SVG se muestre correctamente */
-	}
+  /* Asegurar que los SVG en los botones sean visibles */
+  :global(button svg) {
+    stroke: black;
+    display: block;
+  }
 
-	:global(button:hover svg) {
-	stroke: black;  /* Azul más claro al hover */
-	}
+  :global(button:hover svg) {
+    stroke: black;
+  }
 
-	:global(button:active svg) {
-	stroke: black;  /* Azul medio al presionar */
-	}
+  :global(button:active svg) {
+    stroke: black;
+  }
 
-	/* Estilos para el marcador de ubicación del usuario */
-	:global(.user-location-marker) {
-	background: transparent;
-	border: none;
-	}
+  /* Estilos para el marcador de ubicación del usuario */
+  :global(.user-location-marker) {
+    background: transparent;
+    border: none;
+  }
 
-	:global(.user-dot) {
-	position: relative;
-	width: 24px;
-	height: 24px;
-	}
+  :global(.user-dot) {
+    position: relative;
+    width: 24px;
+    height: 24px;
+  }
 
-	:global(.user-dot::before) {
-	content: '';
-	position: absolute;
-	top: 8px;
-	left: 8px;
-	width: 8px;
-	height: 8px;
-	background-color: #3b82f6;
-	border-radius: 50%;
-	box-shadow: 0 0 0 2px white;
-	z-index: 10;
-	}
+  :global(.user-dot::before) {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 8px;
+    height: 8px;
+    background-color: #3b82f6;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px white;
+    z-index: 10;
+  }
 
-	:global(.user-pulse) {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 24px;
-	height: 24px;
-	background-color: rgba(59, 130, 246, 0.4);
-	border-radius: 50%;
-	opacity: 1;
-	animation: pulse 2s infinite ease-out;
-	}
+  :global(.user-pulse) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 24px;
+    height: 24px;
+    background-color: rgba(59, 130, 246, 0.4);
+    border-radius: 50%;
+    opacity: 1;
+    animation: pulse 2s infinite ease-out;
+  }
 
-	@keyframes pulse {
-	0% {
-		transform: scale(0.5);
-		opacity: 1;
-	}
-	100% {
-		transform: scale(2);
-		opacity: 0;
-	}
-	}
+  @keyframes pulse {
+    0% {
+      transform: scale(0.5);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(2);
+      opacity: 0;
+    }
+  }
 
-	/* Mejora del contraste para botones activos */
-	:global(.bg-blue-500) {
-	background-color: #3b82f6 !important;
-	}
+  /* Mejora del contraste para botones activos */
+  :global(.bg-blue-500) {
+    background-color: #3b82f6 !important;
+  }
 
-	:global(.text-white) {
-	color: white !important;
-	}
+  :global(.text-white) {
+    color: white !important;
+  }
 
-	:global(.bg-blue-500 svg) {
-	stroke: white !important;
-	}
+  :global(.bg-blue-500 svg) {
+    stroke: white !important;
+  }
+
+  /* Estilos mejorados para el título */
+.title-container {
+  position: absolute;
+  z-index: 20;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.8));
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  top: 1rem;
+  right: 1rem;
+  max-width: 80%;
+  backdrop-filter: blur(2px);
+  border-left: 3px solid black;
+  transition: all 0.3s ease;
+}
+
+.title-text {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: white;
+  margin: 0;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Adaptar título en dispositivos móviles */
+@media (max-width: 640px) {
+  .title-container {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    text-align: center;
+    width: 90%;
+    max-width: 90%;
+    background: rgba(0,0,0,0.75);
+    padding: 0.5rem 0.75rem;
+    border-left: none;
+    border-bottom: 2px solid black;
+  }
+  
+  .title-text {
+    font-size: 1.1rem;
+    white-space: normal;
+    line-height: 1.3;
+  }
+}
 </style>
