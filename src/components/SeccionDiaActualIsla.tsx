@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import SeccionDiaActual from './SeccionDiaActual';
 
 interface Procesion {
@@ -30,13 +30,17 @@ interface Props {
 }
 
 export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
-  const [procesion, setProcesion] = useState<Procesion | null>(null);
+  const [procesionesEnCalle, setProcesionesEnCalle] = useState<Procesion[]>([]);
+  const [proximaProcesion, setProximaProcesion] = useState<Procesion | null>(null);
   const [diseno, setDiseno] = useState<DisenoDia | null>(null);
-  const [estaEnCalle, setEstaEnCalle] = useState(false);
   const [haTerminado, setHaTerminado] = useState(false);
 
+  const carruselRef = useRef<HTMLDivElement>(null);
+  const [puedeScrollIzq, setPuedeScrollIzq] = useState(false);
+  const [puedeScrollDer, setPuedeScrollDer] = useState(false);
+
   const FECHA_DEBUG = new Date('2025-04-12T00:30:00');
-  const FECHA_DEBUG_ACTIVA = false;
+  const FECHA_DEBUG_ACTIVA = true;
 
   useEffect(() => {
     const fetchHoraEspaña = async () => {
@@ -51,17 +55,14 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
           }
         } catch (error) {
           console.warn('No se pudo obtener la hora de España desde la API. Usando la hora del navegador.', error);
-          ahora = new Date(); // Fallback a hora local del navegador
+          ahora = new Date();
         }
 
         if (!ahora) ahora = new Date();
 
-        let mejorProcesion: Procesion | null = null;
-        let mejorDiseno: DisenoDia | null = null;
-        let estaEnCalleActual = false;
-
-        let proximaProcesion: Procesion | null = null;
-        let proximoDiseno: DisenoDia | null = null;
+        const enCalle: Procesion[] = [];
+        let proxima: Procesion | null = null;
+        let disenoElegido: DisenoDia | null = null;
         let menorDiferenciaTiempo = Infinity;
 
         const fechasPorDia: Record<number, Date> = {
@@ -110,34 +111,26 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
             margenDespues.setMinutes(margenDespues.getMinutes() + 30);
 
             if (ahora >= margenAntes && ahora <= margenDespues) {
-              mejorProcesion = procesion;
-              mejorDiseno = diseno;
-              estaEnCalleActual = true;
-              break;
+              enCalle.push(procesion);
+              if (enCalle.length === 1) {
+                disenoElegido = diseno;
+              }
             }
 
-            if (fechaSalida > ahora) {
+            if (enCalle.length === 0 && fechaSalida > ahora) {
               const diferencia = fechaSalida.getTime() - ahora.getTime();
               if (diferencia < menorDiferenciaTiempo) {
                 menorDiferenciaTiempo = diferencia;
-                proximaProcesion = procesion;
-                proximoDiseno = diseno;
+                proxima = procesion;
+                disenoElegido = diseno;
               }
             }
           }
-
-          if (mejorProcesion) break;
         }
 
-        if (!mejorProcesion && proximaProcesion && proximoDiseno) {
-          mejorProcesion = proximaProcesion;
-          mejorDiseno = proximoDiseno;
-          estaEnCalleActual = false;
-        }
-
-        setProcesion(mejorProcesion);
-        setDiseno(mejorDiseno);
-        setEstaEnCalle(estaEnCalleActual);
+        setProcesionesEnCalle(enCalle);
+        setProximaProcesion(enCalle.length === 0 && proxima ? proxima : null);
+        setDiseno(disenoElegido);
       } catch (error) {
         console.error('Error al obtener la hora de España:', error);
       }
@@ -145,6 +138,35 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
 
     fetchHoraEspaña();
   }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const el = carruselRef.current;
+      if (!el) return;
+      setPuedeScrollIzq(el.scrollLeft > 0);
+      setPuedeScrollDer(el.scrollLeft + el.clientWidth < el.scrollWidth);
+    };
+
+    handleScroll();
+
+    const el = carruselRef.current;
+    if (el) {
+      el.addEventListener('scroll', handleScroll);
+      window.addEventListener('resize', handleScroll);
+    }
+
+    return () => {
+      if (el) el.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, [procesionesEnCalle]);
+
+  const scrollCarrusel = (direccion: 'left' | 'right') => {
+    const el = carruselRef.current;
+    if (!el) return;
+    const ancho = el.clientWidth;
+    el.scrollBy({ left: direccion === 'left' ? -ancho : ancho, behavior: 'smooth' });
+  };
 
   if (haTerminado) {
     return (
@@ -156,20 +178,77 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
     );
   }
 
+  if (procesionesEnCalle.length > 1) {
+    return (
+      <div className="relative w-full h-full overflow-hidden">
+        {puedeScrollIzq && (
+          <button
+            onClick={() => scrollCarrusel('left')}
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-lg hover:scale-105 transition"
+          >
+            <img src="/assets/icons/chevron-left.svg" alt="Izquierda" className="w-6 h-6 pr-0.5" />
+          </button>
+        )}
+
+        <div
+          ref={carruselRef}
+          className="flex snap-x snap-mandatory overflow-x-auto scroll-smooth"
+        >
+          {procesionesEnCalle.map((p, i) => (
+            <div
+              key={i}
+              className="snap-center flex-shrink-0 w-full h-screen"
+            >
+              <SeccionDiaActual
+                titulo={diseno?.nombre ?? ''}
+                imagenNormal={p.imagenCaratula}
+                imagenExtendida={p.imagenExtendida}
+                posicionImagen={p.posicionImagen}
+                hermandad={p.descripcion}
+                iglesia={p.parroquia}
+                horaSalida={p.horaSalida}
+                horaLlegada={p.horaLlegada}
+                posicionTexto={diseno?.posicionTexto ?? 'bottom'}
+                colorTexto={diseno?.colorTexto ?? '#fff'}
+                estaEnCalle={true}
+                rutaId={p.nombre.toLowerCase().replace(/\s+/g, '-')}
+              />
+            </div>
+          ))}
+        </div>
+
+        {puedeScrollDer && (
+          <button
+            onClick={() => scrollCarrusel('right')}
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-lg hover:scale-105 transition"
+          >
+            <img src="/assets/icons/chevron-right.svg" alt="Derecha" className="w-6 h-6" />
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  const procesionMostrada = procesionesEnCalle[0] ?? proximaProcesion;
+
+  if (!procesionMostrada) {
+    return null;
+  }
+
   return (
     <SeccionDiaActual
       titulo={diseno?.nombre ?? ''}
-      imagenNormal={procesion?.imagenCaratula ?? ""}
-      imagenExtendida={procesion?.imagenExtendida ?? ''}
-      posicionImagen={procesion?.posicionImagen || 'center'}
-      hermandad={procesion?.descripcion ?? ''}
-      iglesia={procesion?.parroquia ?? ''}
-      horaSalida={procesion?.horaSalida ?? ''}
-      horaLlegada={procesion?.horaLlegada ?? ''}
+      imagenNormal={procesionMostrada.imagenCaratula}
+      imagenExtendida={procesionMostrada.imagenExtendida}
+      posicionImagen={procesionMostrada.posicionImagen}
+      hermandad={procesionMostrada.descripcion}
+      iglesia={procesionMostrada.parroquia}
+      horaSalida={procesionMostrada.horaSalida}
+      horaLlegada={procesionMostrada.horaLlegada}
       posicionTexto={diseno?.posicionTexto ?? 'bottom'}
       colorTexto={diseno?.colorTexto ?? '#fff'}
-      estaEnCalle={estaEnCalle}
-      rutaId={procesion?.nombre?.toLowerCase().replace(/\s+/g, '-') ?? ''}
+      estaEnCalle={procesionesEnCalle.length > 0}
+      rutaId={procesionMostrada.nombre.toLowerCase().replace(/\s+/g, '-')}
     />
   );
 }
