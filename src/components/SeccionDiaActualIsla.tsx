@@ -46,8 +46,8 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
   //const FECHA_DEBUG = new Date('2025-04-10T23:30:00'); // Jueves santo noche
   //const FECHA_DEBUG = new Date('2025-04-11T12:30:00'); // Viernes santo mañana
   //const FECHA_DEBUG = new Date('2025-04-11T22:30:00'); // Viernes santo noche
-  //const FECHA_DEBUG = new Date('2025-04-12T02:30:00'); // Soledad
-    const FECHA_DEBUG = new Date('2025-04-13T12:30:00'); // Domingo de ramos
+  const FECHA_DEBUG = new Date('2025-04-12T00:30:00'); // Soledad
+  //const FECHA_DEBUG = new Date('2025-04-17T12:30:00'); // Domingo de resurreccion
 
 
   // Si no quieres usar una fecha de debug, ponlo en null:
