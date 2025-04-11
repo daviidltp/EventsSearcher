@@ -49,22 +49,30 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
     const fetchHoraEspaña = async () => {
       try {
         let ahora = FECHA_DEBUG_ACTIVA ? FECHA_DEBUG : new Date();
-
+  
         try {
           if (!FECHA_DEBUG_ACTIVA) {
+            // Si en algún momento decides usar una API externa para obtener la hora,
+            // se puede descomentar el siguiente bloque, pero asegúrate de que el endpoint esté disponible.
+            // const response = await fetch('https://worldtimeapi.org/api/timezone/Europe/Madrid');
+            // const data = await response.json();
+            // ahora = new Date(data.datetime);
+            
+            // Por ahora usamos la hora del navegador:
             ahora = new Date();
           }
         } catch (error) {
           console.warn('No se pudo obtener la hora de España desde la API. Usando la hora del navegador.', error);
+          ahora = new Date();
         }
-
+  
         if (!ahora) ahora = new Date();
-
+  
         const enCalle: Procesion[] = [];
         let proxima: Procesion | null = null;
         let disenoElegido: DisenoDia | null = null;
         let menorDiferenciaTiempo = Infinity;
-
+  
         const fechasPorDia: Record<number, Date> = {
           0: new Date(2025, 3, 6),
           1: new Date(2025, 3, 7),
@@ -75,55 +83,55 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
           6: new Date(2025, 3, 12),
           7: new Date(2025, 3, 13),
         };
-
+  
         const fechaFinSemanaSanta = new Date(fechasPorDia[7]);
         fechaFinSemanaSanta.setHours(23, 59, 59, 999);
-
+  
         if (ahora > fechaFinSemanaSanta) {
           setHaTerminado(true);
           return;
         }
-
+  
         for (let diaIndex = 0; diaIndex < dias.length; diaIndex++) {
           const dia = dias[diaIndex];
           const diseno = disenoDias[diaIndex];
           const fechaDelDia = fechasPorDia[diaIndex];
           if (!fechaDelDia) continue;
-
+  
           for (const procesion of dia.procesiones) {
             const [hSalida, mSalida] = procesion.horaSalida.split(':').map(Number);
             const [hLlegada, mLlegada] = procesion.horaLlegada.split(':').map(Number);
-
+  
             const esMadrugada = hSalida === 0 && mSalida === 0;
-
+  
             const fechaSalida = new Date(fechaDelDia);
             const fechaLlegada = new Date(fechaDelDia);
-
+  
             if (esMadrugada) {
               fechaSalida.setDate(fechaSalida.getDate() + 1);
               fechaLlegada.setDate(fechaLlegada.getDate() + 1);
             }
-
+  
             fechaSalida.setHours(hSalida, mSalida, 0, 0);
             fechaLlegada.setHours(hLlegada, mLlegada, 0, 0);
-
+  
             if (fechaLlegada <= fechaSalida) {
               fechaLlegada.setDate(fechaLlegada.getDate() + 1);
             }
-
+  
             const margenAntes = new Date(fechaSalida);
             margenAntes.setMinutes(margenAntes.getMinutes() - 30);
-
+  
             const margenDespues = new Date(fechaLlegada);
             margenDespues.setMinutes(margenDespues.getMinutes() + 30);
-
+  
             if (ahora >= margenAntes && ahora <= margenDespues) {
               enCalle.push(procesion);
               if (enCalle.length === 1) {
                 disenoElegido = diseno;
               }
             }
-
+  
             if (enCalle.length === 0 && fechaSalida > ahora) {
               const diferencia = fechaSalida.getTime() - ahora.getTime();
               if (diferencia < menorDiferenciaTiempo) {
@@ -134,13 +142,19 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
             }
           }
         }
-
+  
         const procesionesMostradas = enCalle.length > 0 ? enCalle : proxima ? [proxima] : [];
         const ids = procesionesMostradas.map((p) => `id=${p.id}`).join('&');
-
-        const response = await fetch(`https://owntracks-api.semanasantatracker.workers.dev/procesiones?${ids}`);
+  
+        // Antes de usar la URL, valida que no esté vacía (opcional)
+        const urlFetch = `https://owntracks-api.semanasantatracker.workers.dev/procesiones?${ids}`;
+        
+        const response = await fetch(urlFetch);
+        if (!response.ok) {
+          throw new Error(`Error en la llamada a la API, status: ${response.status}`);
+        }
         const datosApi: { id: string; estado: string; alerta: string }[] = await response.json();
-
+  
         for (const p of procesionesMostradas) {
           const data = datosApi.find((d) => d.id === p.id);
           if (data) {
@@ -148,7 +162,7 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
             p.alerta = data.alerta;
           }
         }
-
+  
         setProcesionesEnCalle(enCalle);
         setProximaProcesion(enCalle.length === 0 && proxima ? proxima : null);
         setDiseno(disenoElegido);
@@ -156,9 +170,10 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
         console.error('Error al obtener la hora o datos de la API:', error);
       }
     };
-
+  
     fetchHoraEspaña();
   }, []);
+  
 
   useEffect(() => {
     const handleScroll = () => {
