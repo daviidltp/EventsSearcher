@@ -52,13 +52,10 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
 
         try {
           if (!FECHA_DEBUG_ACTIVA) {
-            const response = await fetch('https://worldtimeapi.org/api/timezone/Europe/Madrid');
-            const data = await response.json();
-            ahora = new Date(data.datetime);
+            ahora = new Date();
           }
         } catch (error) {
           console.warn('No se pudo obtener la hora de España desde la API. Usando la hora del navegador.', error);
-          ahora = new Date();
         }
 
         if (!ahora) ahora = new Date();
