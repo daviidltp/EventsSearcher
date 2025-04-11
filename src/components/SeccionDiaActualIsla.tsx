@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import SeccionDiaActual from './SeccionDiaActual';
 
 interface Procesion {
+  id: string;
   nombre: string;
   descripcion: string;
   cofradia: string;
@@ -11,6 +12,8 @@ interface Procesion {
   imagenCaratula: string;
   imagenExtendida: string;
   posicionImagen: string;
+  alerta?: string;
+  estado?: string;
 }
 
 interface Dia {
@@ -39,24 +42,14 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
   const [puedeScrollIzq, setPuedeScrollIzq] = useState(false);
   const [puedeScrollDer, setPuedeScrollDer] = useState(false);
 
-  //const FECHA_DEBUG = new Date('2025-04-06T09:30:00'); // Domingo de ramos mañana
-  //const FECHA_DEBUG = new Date('2025-04-06T20:30:00'); // Domingo de ramos tarde
-  //const FECHA_DEBUG = new Date('2025-04-07T20:30:00'); // Lunes santo
-  //const FECHA_DEBUG = new Date('2025-04-08T20:30:00'); // Martes santo
-  //const FECHA_DEBUG = new Date('2025-04-09T20:30:00'); // Miercoles santo
-  //const FECHA_DEBUG = new Date('2025-04-10T10:30:00'); // Jueves santo mañana
-  //const FECHA_DEBUG = new Date('2025-04-10T23:30:00'); // Jueves santo noche
-  //const FECHA_DEBUG = new Date('2025-04-11T12:30:00'); // Viernes santo mañana
-  //const FECHA_DEBUG = new Date('2025-04-11T22:30:00'); // Viernes santo noche
-
-  const FECHA_DEBUG = new Date('2025-04-11T12:30:00');
-  const FECHA_DEBUG_ACTIVA = false;
+  const FECHA_DEBUG = new Date('2025-04-06T12:30:00');
+  const FECHA_DEBUG_ACTIVA = true;
 
   useEffect(() => {
     const fetchHoraEspaña = async () => {
       try {
         let ahora = FECHA_DEBUG_ACTIVA ? FECHA_DEBUG : new Date();
-  
+
         try {
           if (!FECHA_DEBUG_ACTIVA) {
             const response = await fetch('https://worldtimeapi.org/api/timezone/Europe/Madrid');
@@ -67,14 +60,14 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
           console.warn('No se pudo obtener la hora de España desde la API. Usando la hora del navegador.', error);
           ahora = new Date();
         }
-  
+
         if (!ahora) ahora = new Date();
-  
+
         const enCalle: Procesion[] = [];
         let proxima: Procesion | null = null;
         let disenoElegido: DisenoDia | null = null;
         let menorDiferenciaTiempo = Infinity;
-  
+
         const fechasPorDia: Record<number, Date> = {
           0: new Date(2025, 3, 6),
           1: new Date(2025, 3, 7),
@@ -85,55 +78,55 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
           6: new Date(2025, 3, 12),
           7: new Date(2025, 3, 13),
         };
-  
+
         const fechaFinSemanaSanta = new Date(fechasPorDia[7]);
         fechaFinSemanaSanta.setHours(23, 59, 59, 999);
-  
+
         if (ahora > fechaFinSemanaSanta) {
           setHaTerminado(true);
           return;
         }
-  
+
         for (let diaIndex = 0; diaIndex < dias.length; diaIndex++) {
           const dia = dias[diaIndex];
           const diseno = disenoDias[diaIndex];
           const fechaDelDia = fechasPorDia[diaIndex];
           if (!fechaDelDia) continue;
-  
+
           for (const procesion of dia.procesiones) {
             const [hSalida, mSalida] = procesion.horaSalida.split(':').map(Number);
             const [hLlegada, mLlegada] = procesion.horaLlegada.split(':').map(Number);
-  
+
             const esMadrugada = hSalida === 0 && mSalida === 0;
-  
+
             const fechaSalida = new Date(fechaDelDia);
             const fechaLlegada = new Date(fechaDelDia);
-  
+
             if (esMadrugada) {
               fechaSalida.setDate(fechaSalida.getDate() + 1);
               fechaLlegada.setDate(fechaLlegada.getDate() + 1);
             }
-  
+
             fechaSalida.setHours(hSalida, mSalida, 0, 0);
             fechaLlegada.setHours(hLlegada, mLlegada, 0, 0);
-  
+
             if (fechaLlegada <= fechaSalida) {
               fechaLlegada.setDate(fechaLlegada.getDate() + 1);
             }
-  
+
             const margenAntes = new Date(fechaSalida);
             margenAntes.setMinutes(margenAntes.getMinutes() - 30);
-  
+
             const margenDespues = new Date(fechaLlegada);
             margenDespues.setMinutes(margenDespues.getMinutes() + 30);
-  
+
             if (ahora >= margenAntes && ahora <= margenDespues) {
               enCalle.push(procesion);
               if (enCalle.length === 1) {
                 disenoElegido = diseno;
               }
             }
-  
+
             if (enCalle.length === 0 && fechaSalida > ahora) {
               const diferencia = fechaSalida.getTime() - ahora.getTime();
               if (diferencia < menorDiferenciaTiempo) {
@@ -144,18 +137,31 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
             }
           }
         }
-  
+
+        const procesionesMostradas = enCalle.length > 0 ? enCalle : proxima ? [proxima] : [];
+        const ids = procesionesMostradas.map((p) => `id=${p.id}`).join('&');
+
+        const response = await fetch(`https://owntracks-api.semanasantatracker.workers.dev/procesiones?${ids}`);
+        const datosApi: { id: string; estado: string; alerta: string }[] = await response.json();
+
+        for (const p of procesionesMostradas) {
+          const data = datosApi.find((d) => d.id === p.id);
+          if (data) {
+            p.estado = data.estado;
+            p.alerta = data.alerta;
+          }
+        }
+
         setProcesionesEnCalle(enCalle);
         setProximaProcesion(enCalle.length === 0 && proxima ? proxima : null);
         setDiseno(disenoElegido);
       } catch (error) {
-        console.error('Error al obtener la hora de España:', error);
+        console.error('Error al obtener la hora o datos de la API:', error);
       }
     };
-  
+
     fetchHoraEspaña();
   }, []);
-  
 
   useEffect(() => {
     const handleScroll = () => {
@@ -229,7 +235,9 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
                 posicionTexto={diseno?.posicionTexto ?? 'bottom'}
                 colorTexto={diseno?.colorTexto ?? '#fff'}
                 estaEnCalle={true}
-                rutaId={p.nombre.toLowerCase().replace(/\s+/g, '-')}
+                rutaId={p.id}
+                estado={p.estado}
+                alerta={p.alerta}
               />
             </div>
           ))}
@@ -249,9 +257,22 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
 
   const procesionMostrada = procesionesEnCalle[0] ?? proximaProcesion;
 
-  if (!procesionMostrada) {
-    return null;
-  }
+  if (!procesionMostrada) return (
+    <SeccionDiaActual
+      titulo=""
+      imagenNormal=""
+      imagenExtendida=""
+      posicionImagen="center"
+      hermandad=""
+      iglesia=""
+      horaSalida=""
+      horaLlegada=""
+      posicionTexto="izquierda"
+      colorTexto="blanco"
+      estaEnCalle={false}
+      rutaId=""
+    />
+  );;
 
   return (
     <SeccionDiaActual
@@ -266,7 +287,9 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
       posicionTexto={diseno?.posicionTexto ?? 'bottom'}
       colorTexto={diseno?.colorTexto ?? '#fff'}
       estaEnCalle={procesionesEnCalle.length > 0}
-      rutaId={procesionMostrada.nombre.toLowerCase().replace(/\s+/g, '-')}
+      rutaId={procesionMostrada.id}
+      alerta={procesionMostrada.alerta}
+      estado={procesionMostrada.estado}
     />
   );
 }
