@@ -32,11 +32,8 @@ for (let i = 0; i < dias.length; i++) {
 // Aquí puedes poner la lógica real para determinar si está en la calle
 const estaEnCalle = false;
 
-
-// Necesario para rutas estáticas
 export async function getStaticPaths() {
   const dias = (await import('../../../data/dias.json')).default;
-
   const paths = [];
 
   for (const dia of dias) {
@@ -50,23 +47,78 @@ export async function getStaticPaths() {
 }
 ---
 
-
 <Layout>
   {procesion && diseno && diaProcesion ? (
-    <SeccionDiaActual
-      titulo={diseno.nombre}
-      imagenNormal={procesion.imagenCaratula}
-      imagenExtendida={procesion.imagenExtendida}
-      posicionImagen={procesion.posicionImagen || 'center'}
-      hermandad={procesion.descripcion}
-      iglesia={procesion.parroquia}
-      horaSalida={procesion.horaSalida}
-      horaLlegada={procesion.horaLlegada}
-      posicionTexto={diseno.posicionTexto}
-      colorTexto={diseno.colorTexto}
-      estaEnCalle={estaEnCalle}
-      rutaId={procesion.nombre.toLowerCase().replace(/\s+/g, '-')}
-    />
+    <>
+      <SeccionDiaActual
+        titulo={diseno.nombre}
+        imagenNormal={procesion.imagenCaratula}
+        imagenExtendida={procesion.imagenExtendida}
+        posicionImagen={procesion.posicionImagen || 'center'}
+        hermandad={procesion.descripcion}
+        iglesia={procesion.parroquia}
+        horaSalida={procesion.horaSalida}
+        horaLlegada={procesion.horaLlegada}
+        posicionTexto={diseno.posicionTexto}
+        colorTexto={diseno.colorTexto}
+        estaEnCalle={estaEnCalle}
+        rutaId={procesion.nombre.toLowerCase().replace(/\s+/g, '-')}
+      />
+
+      <section class="mx-auto py-10 md:px-15 px-5 space-y-6">
+        <div>
+          <h3 class="text-3xl font-bold">{procesion.cofradia} ({procesion.fundacion})</h3>
+        </div>
+
+        <div class="flex items-center">
+        <span class="w-10 h-10 bg-white rounded-full flex items-center justify-center mr-4">
+          <img src="/assets/icons/building-church.svg" alt="Iglesia" class="w-6 h-6" />
+        </span>
+        <span class="text-md">{procesion.parroquia}</span>
+      </div>
+
+
+        <div>
+          <h3 class="text-xl font-bold">Horarios de salida y entrada</h3>
+          <p>Salida: {procesion.horaSalida}</p>
+          <p>Llegada a su templo: {procesion.horaLlegada}</p>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-bold">Carrera Oficial</h3>
+          <p>Entrada de la Cruz de Guía: {procesion.entradaCruzGuiaCarreraOficial}</p>
+          <p>Salida del último paso o músico: {procesion.salidaCruzGuiaCarreraOficial}</p>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-bold">Itinerario</h3>
+          <p>{procesion.itinerario.join(', ')} y a su templo</p>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-bold">Sitios de interés</h3>
+          <p>{procesion.sitios_interes.join(', ')}</p>
+        </div>
+
+        {procesion.autor_imagen && (
+          <div>
+            <h3 class="text-xl font-bold">Autoría de las imágenes titulares</h3>
+            <div class="space-y-1 mt-1">
+              {Object.entries(procesion.autor_imagen).map(([nombre, autor]) => {
+                return (
+                  <p>Autor de la imagen {nombre}: {autor}</p>
+                );
+              })}
+            </div>
+          </div>
+
+        <div>
+          <h3 class="text-xl font-bold">Acompañamiento musical</h3>
+          <p></p>
+        </div>
+        )}
+      </section>
+    </>
   ) : (
     <section class="text-center py-20">
       <h2 class="text-3xl font-bold text-red-600">Procesión no encontrada</h2>

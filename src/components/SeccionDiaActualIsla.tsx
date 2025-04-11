@@ -49,8 +49,8 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
   //const FECHA_DEBUG = new Date('2025-04-11T12:30:00'); // Viernes santo mañana
   //const FECHA_DEBUG = new Date('2025-04-11T22:30:00'); // Viernes santo noche
 
-  const FECHA_DEBUG = new Date('2025-04-12T02:30:00');
-  const FECHA_DEBUG_ACTIVA = false;
+  const FECHA_DEBUG = new Date('2025-04-11T12:30:00');
+  const FECHA_DEBUG_ACTIVA = true;
 
   useEffect(() => {
     const fetchHoraEspaña = async () => {

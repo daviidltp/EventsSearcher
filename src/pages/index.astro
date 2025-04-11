@@ -8,6 +8,7 @@ import diasRaw from '../data/dias.json';
 import disenoDiasRaw from '../data/disenoDias.json';
 
 interface Procesion {
+  id: string;
   nombre: string;
   descripcion: string;
   cofradia: string;
@@ -18,7 +19,16 @@ interface Procesion {
   imagenExtendida: string;
   posicionImagen: string;
   diaSalida: string;
+  entradaCruzGuiaCarreraOficial: string;
+  salidaCruzGuiaCarreraOficial: string;
+  fundacion: string;
+  autor_imagen: {
+    [nombre: string]: string;
+  };
+  itinerario: string[];
+  sitios_interes: string[];
 }
+
 
 interface Dia {
   titulo: string;
