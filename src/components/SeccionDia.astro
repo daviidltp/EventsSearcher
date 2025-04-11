@@ -20,7 +20,7 @@ import Caratula from './Caratula.astro';
   
   <div class="-mx-5">
     
-    <div class="flex overflow-x-auto overflow-y-hidden gap-4 flex-nowrap scrollbar-hide px-5 no-scrollbar">
+    <div class="flex md:justify-start overflow-x-auto overflow-y-hidden gap-4 flex-nowrap scrollbar-hide px-5 no-scrollbar">
       {imagenes.map((imagen) => (
         <a href={`/cofradia/${imagen.rutaId}`} class="relative">
           <Caratula src={imagen.src} titulo={imagen.alt} descripcion={imagen.descripcion} />

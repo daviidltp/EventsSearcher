@@ -1,3 +1,5 @@
+import BotonEstado from "./BotonesEstado";
+
 interface Props {
   titulo: string;
   imagenNormal: string;
@@ -7,10 +9,12 @@ interface Props {
   iglesia: string;
   horaSalida: string;
   horaLlegada: string;
-  posicionTexto: string; // izquierda o derecha
-  colorTexto: string;    // blanco, negro, etc.
+  posicionTexto: string;
+  colorTexto: string;
   estaEnCalle: boolean;
   rutaId: string;
+  estado?: string;
+  alerta?: string;
 }
 
 const colorClaseMap: Record<string, string> = {
@@ -38,6 +42,8 @@ export default function SeccionDiaActual(props: Props) {
     colorTexto,
     estaEnCalle,
     rutaId,
+    estado = 'OK',
+    alerta,
   } = props;
 
   const claseColorTexto = colorClaseMap[colorTexto] ?? 'text-white';
@@ -62,18 +68,30 @@ export default function SeccionDiaActual(props: Props) {
           <img
             src={imagenNormal}
             alt={titulo}
-            className={`absolute top-0 left-0 w-full h-full object-cover ${
+            className={`absolute top-0 left-0 w-full h-full object-cover transition-all duration-500 ${
               posicionImagen === 'top'
                 ? 'object-top'
                 : posicionImagen === 'bottom'
                 ? 'object-bottom'
                 : 'object-center'
-            }`}
+            } ${estado === 'Cancelada por lluvia' ? 'grayscale' : ''}`}
           />
         </picture>
       )}
 
-      <div className="absolute bottom-0 w-full h-2/3 bg-gradient-to-t from-black/90 to-transparent z-0"></div>
+      {/* Imagen de cancelado */}
+      {estado === 'Cancelada por lluvia' && (
+        <div className="absolute inset-0 flex items-center justify-center z-20">
+          <img
+            src="/assets/icons/cancelado.png"
+            alt="Evento cancelado"
+            className="max-w-[500px] w-full h-auto opacity-0 scale-75 animate-show-cancel transition-all duration-500 ease-in-out"
+          />
+        </div>
+      )}
+
+
+      <div className="absolute bottom-0 w-full h-2/3 bg-gradient-to-t from-black/90 to-transparent z-10"></div>
 
       {/* Título móvil */}
       <h2
@@ -115,23 +133,7 @@ export default function SeccionDiaActual(props: Props) {
         {/* Botón móvil */}
         <div className="mt-5 md:hidden">
           <a href={`/cofradia/${rutaId}/recorrido`}>
-            {estaEnCalle ? (
-              <button className="flex items-center gap-3 bg-white bg-opacity-80 text-black font-semibold 
-                                 px-5 py-2 text-md rounded-full shadow-md 
-                                 hover:bg-opacity-100 transition">
-                ¡Síguela en directo!
-                <span className="relative flex h-4 w-4">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-600 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-4 w-4 bg-red-600"></span>
-                </span>
-              </button>
-            ) : (
-              <button className="flex items-center gap-3 bg-transparent border border-white text-white font-semibold 
-                                 px-5 py-2 text-md rounded-full shadow-md 
-                                 hover:bg-white hover:text-black transition">
-                Recorrido
-              </button>
-            )}
+            <BotonEstado estado={estado} estaEnCalle={estaEnCalle} />
           </a>
         </div>
       </div>
@@ -139,25 +141,12 @@ export default function SeccionDiaActual(props: Props) {
       {/* Botón escritorio */}
       <div className="hidden md:flex absolute bottom-6 right-6 z-10">
         <a href={`/cofradia/${rutaId}/recorrido`}>
-          {estaEnCalle ? (
-            <button className="flex items-center gap-3 bg-white bg-opacity-80 text-black font-semibold 
-                               px-6 py-3 text-base rounded-full shadow-md 
-                               hover:bg-opacity-100 transition cursor-pointer">
-              ¡Síguela en directo!
-              <span className="relative flex h-4 w-4">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-600 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-4 w-4 bg-red-600"></span>
-              </span>
-            </button>
-          ) : (
-            <button className="flex items-center gap-3 bg-transparent border border-white text-white font-semibold 
-                               px-6 py-3 text-base rounded-full shadow-md 
-                               hover:bg-white hover:text-black transition cursor-pointer">
-              Recorrido
-            </button>
-          )}
+          <BotonEstado estado={estado} estaEnCalle={estaEnCalle} />
         </a>
       </div>
     </section>
   );
 }
+
+
+
