@@ -12,33 +12,35 @@ export default function ActualizarEstado() {
   useEffect(() => {
     const verificarSesion = async () => {
       const sessionId = localStorage.getItem("sessionId");
-
+  
       if (!sessionId) {
         window.location.href = "/admin";
         return;
       }
-
+  
       try {
         const res = await fetch("https://owntracks-api.semanasantatracker.workers.dev/verify-session", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ sessionId }),
         });
-
-        const texto = await res.text();
-        if (!res.ok || texto !== "Sesión válida") {
+  
+        const data = await res.json(); // <-- ¡Aquí debe ir res.json()!
+        if (!res.ok || !data.valid) {
           throw new Error("Sesión no válida");
         }
-
+  
         setIsSessionValid(true);
       } catch {
         localStorage.removeItem("sessionId");
         window.location.href = "/admin";
       }
     };
-
+  
     verificarSesion();
   }, []);
+  
+  
 
   useEffect(() => {
     const cargarProcesiones = async () => {

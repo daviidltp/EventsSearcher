@@ -21,6 +21,10 @@ export default function AdminLogin() {
         const { sessionId } = await response.json();
         localStorage.setItem('sessionId', sessionId);
         window.location.href = '/admin/actualizar-estado';
+        // o incluso forzar reload
+        // window.location.assign('/admin/actualizar-estado');
+
+        
       } else {
         const message = await response.text();
         setError(message || 'Error al autenticar');
