@@ -19,7 +19,7 @@ export default function AdminLogin() {
       });
 
       if (response.ok) {
-        window.location.href = '/admin/actualizar-estado';
+        //window.location.href = '/admin/actualizar-estado';
       } else {
         const message = await response.text();
         setError(message || 'Error al autenticar');
