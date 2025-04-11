@@ -43,7 +43,7 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
   const [puedeScrollDer, setPuedeScrollDer] = useState(false);
 
   const FECHA_DEBUG = new Date('2025-04-06T12:30:00');
-  const FECHA_DEBUG_ACTIVA = true;
+  const FECHA_DEBUG_ACTIVA = false;
 
   useEffect(() => {
     const fetchHoraEspaña = async () => {
