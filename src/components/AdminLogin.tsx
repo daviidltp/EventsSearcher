@@ -15,16 +15,11 @@ export default function AdminLogin() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ password }),
+        credentials: 'include', // 👈 ¡Importante para que se envíe y reciba la cookie!
       });
 
       if (response.ok) {
-        const { sessionId } = await response.json();
-        localStorage.setItem('sessionId', sessionId);
         window.location.href = '/admin/actualizar-estado';
-        // o incluso forzar reload
-        // window.location.assign('/admin/actualizar-estado');
-
-        
       } else {
         const message = await response.text();
         setError(message || 'Error al autenticar');
@@ -35,7 +30,7 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="bg-black dark:bg-gray-800 p-8 rounded-xl shadow-lg w-full max-w-md mx-auto ">
+    <div className="bg-black dark:bg-gray-800 p-8 rounded-xl shadow-lg w-full max-w-md mx-auto">
       <h2 className="text-2xl font-bold mb-6 text-center text-gray-900 dark:text-white">Acceso Admin</h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">

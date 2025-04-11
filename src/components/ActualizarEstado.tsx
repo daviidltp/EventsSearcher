@@ -11,36 +11,25 @@ export default function ActualizarEstado() {
 
   useEffect(() => {
     const verificarSesion = async () => {
-      const sessionId = localStorage.getItem("sessionId");
-  
-      if (!sessionId) {
-        window.location.href = "/admin";
-        return;
-      }
-  
       try {
         const res = await fetch("https://owntracks-api.semanasantatracker.workers.dev/verify-session", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sessionId }),
+          method: "GET",
+          credentials: "include", // 👈 Necesario para incluir cookies
         });
-  
-        const data = await res.json(); // <-- ¡Aquí debe ir res.json()!
+
+        const data = await res.json();
         if (!res.ok || !data.valid) {
           throw new Error("Sesión no válida");
         }
-  
+
         setIsSessionValid(true);
       } catch {
-        localStorage.removeItem("sessionId");
         window.location.href = "/admin";
       }
     };
-  
+
     verificarSesion();
   }, []);
-  
-  
 
   useEffect(() => {
     const cargarProcesiones = async () => {
@@ -72,13 +61,11 @@ export default function ActualizarEstado() {
     setMensaje(null);
 
     try {
-      const sessionId = localStorage.getItem("sessionId");
-      if (!sessionId) throw new Error("Sesión no válida");
-
       const res = await fetch("https://owntracks-api.semanasantatracker.workers.dev/actualizar-estado", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: selectedProcesion, estado, alerta, sessionId }),
+        credentials: "include", // 👈 Enviar cookie de sesión al actualizar
+        body: JSON.stringify({ id: selectedProcesion, estado, alerta }),
       });
 
       if (!res.ok) {
