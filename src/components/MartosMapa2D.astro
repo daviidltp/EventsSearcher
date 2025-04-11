@@ -785,6 +785,31 @@ function createPlazaIcon(title) {
         }
       }, { passive: true });
 
+	  bottomSheet.addEventListener('touchend', function() {
+  bottomSheet.style.transition = 'transform 0.3s ease, height 0.3s ease';
+  
+  // Si arrastró hacia arriba lo suficiente, expandir
+  if (touchCurrentY < touchStartY - 50 && (bottomSheetState === 'collapsed' || bottomSheetState === 'peeking')) {
+    expandBottomSheet();
+  } 
+  // Si arrastró hacia abajo lo suficiente desde estado colapsado, mostrar solo tirador
+  else if (touchCurrentY > touchStartY + 100 && bottomSheetState === 'collapsed') {
+    hideBottomSheet();
+  }
+  // Si arrastró hacia abajo desde estado expandido, colapsar
+  else if (touchCurrentY > touchStartY + 50 && bottomSheetState === 'expanded') {
+    collapseBottomSheet();
+  }
+  // Si estamos en estado peeking y hay un toque en el tirador, mostrar
+  else if (bottomSheetState === 'peeking') {
+    showBottomSheet();
+  }
+  // Volver al estado inicial
+  else {
+    bottomSheet.style.transform = '';
+    bottomSheet.style.height = '';
+  }
+}, { passive: true });
       // Evento click en el indicador de arrastre
       document.querySelector('.drag-handle').addEventListener('click', function() {
         if (bottomSheetState === 'collapsed') {
@@ -817,33 +842,31 @@ function createPlazaIcon(title) {
   
   function hideBottomSheet() {
   const bottomSheet = document.getElementById('street-info-container');
-  bottomSheet.style.transform = 'translateY(100%)';
-  bottomSheetState = 'hidden';
   
-  // Buscar el botón y verificar que exista antes de manipularlo
-  const showButton = document.getElementById('show-bottom-sheet');
-  if (showButton) {
-    showButton.classList.remove('hidden');
-  } else {
-    // Si no existe, crearlo
-    const mapContainer = document.querySelector('.map-container');
-    const newShowButton = document.createElement('button');
-    newShowButton.id = 'show-bottom-sheet';
-    newShowButton.innerHTML = '↑';
-    newShowButton.className = 'show-bottom-btn';
-    newShowButton.addEventListener('click', showBottomSheet);
-    mapContainer.appendChild(newShowButton);
-  }
+  // En lugar de ocultar completamente, dejamos asomar la parte del tirador (aproximadamente 20px)
+  bottomSheet.style.transform = 'translateY(calc(100% - 20px))';
+  bottomSheetState = 'peeking'; // Nuevo estado que indica que está casi oculto pero con el tirador visible
+  
+  // Añadimos una clase visual para resaltar el tirador
+  bottomSheet.classList.add('peeking');
+  bottomSheet.classList.remove('expanded');
 }
   
-  function showBottomSheet() {
-    const bottomSheet = document.getElementById('street-info-container');
-    bottomSheet.style.transform = '';
-    bottomSheetState = 'collapsed';
-    
-    // Ocultar botón
-    document.getElementById('show-bottom-btn').classList.add('hidden');
+  
+function showBottomSheet() {
+  const bottomSheet = document.getElementById('street-info-container');
+  bottomSheet.style.transform = '';
+  bottomSheetState = 'collapsed';
+  
+  // Quitar la clase peeking
+  bottomSheet.classList.remove('peeking');
+  
+  // Eliminar el botón si existe
+  const showButton = document.getElementById('show-bottom-sheet');
+  if (showButton) {
+    showButton.remove();
   }
+}
 </script>
 
 <style>
@@ -1124,6 +1147,8 @@ function createPlazaIcon(title) {
   background-color: rgba(255, 255, 255, 0.5);
   border-radius: 2.5px;
 }
+
+
 
 /* Comportamiento en escritorio */
 /* Comportamiento en escritorio - Mejor centrado y bordes redondeados */
