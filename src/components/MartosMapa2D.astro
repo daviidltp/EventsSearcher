@@ -31,9 +31,17 @@ const pointsJSON = JSON.stringify(points);
     <h2 class="title-text">{title}</h2>
   </div>
   
-  <!-- Nuevo container para la calle actual y botones -->
-  <div id="street-info-container" class="street-info-container">
+  <!-- Bottom Sheet para la calle actual y botones -->
+  <div id="street-info-container" class="bottom-sheet-container">
+    <!-- Indicador de arrastre (puramente decorativo) -->
+    <div class="drag-handle">
+      <div class="drag-indicator"></div>
+    </div>
+    
+    <!-- Información de la calle -->
     <p id="current-street" class="current-street-text">Iniciando recorrido...</p>
+    
+    <!-- Contenedor de botones -->
     <div class="buttons-container">
       <!-- Botón de volver (izquierda) -->
       <button id="back-btn" class="control-btn" title="Volver">
@@ -86,6 +94,11 @@ const pointsJSON = JSON.stringify(points);
   let currentPosition = 0;
   let userLocationMarker = null;
   let isLocationActive = false;
+  // Añade después de la declaración de variables existentes
+	let bottomSheetState = 'collapsed'; // Estados posibles: collapsed, expanded
+	let touchStartY = 0;
+	let touchCurrentY = 0;
+	let bottomSheetHeight = 0;
   
   // Inicializar cuando la página esté cargada
   window.onload = initMap;
@@ -287,6 +300,8 @@ const pointsJSON = JSON.stringify(points);
     } catch (error) {
       console.error("Error al inicializar el mapa:", error);
     }
+	// Añadir al final de initMap() justo antes del } de cierre
+	initBottomSheet();
   }
 
   async function addLastLocationMarker() {
@@ -708,6 +723,127 @@ function createPlazaIcon(title) {
       isLocationActive = false;
     }
   }
+  // Inicializar el manejo del bottom sheet
+  function initBottomSheet() {
+    const bottomSheet = document.getElementById('street-info-container');
+    bottomSheetHeight = bottomSheet.offsetHeight;
+    
+    // Añadir botón para mostrar panel si está oculto
+    const mapContainer = document.querySelector('.map-container');
+    const showButton = document.createElement('button');
+    showButton.id = 'show-bottom-sheet';
+    showButton.innerHTML = '↑';
+    showButton.className = 'show-bottom-btn hidden';
+    showButton.addEventListener('click', showBottomSheet);
+    mapContainer.appendChild(showButton);
+    
+    // Solo activar para móviles
+    if (window.innerWidth <= 768) {
+      // Evento para iniciar el arrastre
+      bottomSheet.addEventListener('touchstart', function(e) {
+        touchStartY = e.touches[0].clientY;
+        bottomSheet.style.transition = 'none';
+      }, { passive: true });
+
+      // Evento para el arrastre
+      bottomSheet.addEventListener('touchmove', function(e) {
+        touchCurrentY = e.touches[0].clientY;
+        const deltaY = touchCurrentY - touchStartY;
+        
+        // Permitir arrastres en ambas direcciones
+        const newHeight = Math.max(0, Math.min(window.innerHeight * 0.8, bottomSheetHeight - deltaY));
+        bottomSheet.style.height = `${newHeight}px`;
+        
+        // Si el arrastre es grande hacia abajo, permitir ocultarlo completamente
+        if (deltaY > bottomSheetHeight/2) {
+          bottomSheet.style.transform = `translateY(${deltaY}px)`;
+        } else {
+          bottomSheet.style.transform = `translateY(${Math.max(0, deltaY)}px)`;
+        }
+      }, { passive: true });
+
+      // Evento para finalizar el arrastre
+      bottomSheet.addEventListener('touchend', function() {
+        bottomSheet.style.transition = 'transform 0.3s ease, height 0.3s ease';
+        
+        // Si arrastró hacia arriba lo suficiente, expandir
+        if (touchCurrentY < touchStartY - 50 && bottomSheetState === 'collapsed') {
+          expandBottomSheet();
+        } 
+        // Si arrastró hacia abajo lo suficiente desde estado colapsado, ocultar
+        else if (touchCurrentY > touchStartY + 100 && bottomSheetState === 'collapsed') {
+          hideBottomSheet();
+        }
+        // Si arrastró hacia abajo desde estado expandido, colapsar
+        else if (touchCurrentY > touchStartY + 50 && bottomSheetState === 'expanded') {
+          collapseBottomSheet();
+        } 
+        // Volver al estado inicial
+        else {
+          bottomSheet.style.transform = '';
+          bottomSheet.style.height = '';
+        }
+      }, { passive: true });
+
+      // Evento click en el indicador de arrastre
+      document.querySelector('.drag-handle').addEventListener('click', function() {
+        if (bottomSheetState === 'collapsed') {
+          expandBottomSheet();
+        } else if (bottomSheetState === 'expanded') {
+          collapseBottomSheet();
+        }
+      });
+      
+      // Doble toque para ocultar
+      document.querySelector('.drag-handle').addEventListener('dblclick', hideBottomSheet);
+    }
+  }
+
+  function expandBottomSheet() {
+    const bottomSheet = document.getElementById('street-info-container');
+    bottomSheet.style.height = '80vh';
+    bottomSheet.style.transform = 'translateY(0)';
+    bottomSheet.classList.add('expanded');
+    bottomSheetState = 'expanded';
+  }
+
+  function collapseBottomSheet() {
+    const bottomSheet = document.getElementById('street-info-container');
+    bottomSheet.style.height = '';
+    bottomSheet.style.transform = '';
+    bottomSheet.classList.remove('expanded');
+    bottomSheetState = 'collapsed';
+  }
+  
+  function hideBottomSheet() {
+  const bottomSheet = document.getElementById('street-info-container');
+  bottomSheet.style.transform = 'translateY(100%)';
+  bottomSheetState = 'hidden';
+  
+  // Buscar el botón y verificar que exista antes de manipularlo
+  const showButton = document.getElementById('show-bottom-sheet');
+  if (showButton) {
+    showButton.classList.remove('hidden');
+  } else {
+    // Si no existe, crearlo
+    const mapContainer = document.querySelector('.map-container');
+    const newShowButton = document.createElement('button');
+    newShowButton.id = 'show-bottom-sheet';
+    newShowButton.innerHTML = '↑';
+    newShowButton.className = 'show-bottom-btn';
+    newShowButton.addEventListener('click', showBottomSheet);
+    mapContainer.appendChild(newShowButton);
+  }
+}
+  
+  function showBottomSheet() {
+    const bottomSheet = document.getElementById('street-info-container');
+    bottomSheet.style.transform = '';
+    bottomSheetState = 'collapsed';
+    
+    // Ocultar botón
+    document.getElementById('show-bottom-btn').classList.add('hidden');
+  }
 </script>
 
 <style>
@@ -843,7 +979,7 @@ function createPlazaIcon(title) {
   
   /* Mejoras para botones en móvil y ordenador */
   :global(.leaflet-control-zoom) {
-    margin-bottom: 120px !important; /* Para evitar solapamiento con los controles */
+    margin-bottom: 140px !important; /* Para evitar solapamiento con los controles */
   }
 
   @media (max-width: 640px) {
@@ -946,59 +1082,116 @@ function createPlazaIcon(title) {
     text-overflow: ellipsis;
   }
 
-  /* Nuevo contenedor para info de calles y botones */
-  .street-info-container {
-    position: absolute;
-    z-index: 20;
-    padding: 0.75rem 1rem;
-    background: linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.8));
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-    bottom: 1rem;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 90%;
-    max-width: 500px;
-    backdrop-filter: blur(2px);
-    border-left: 3px solid black;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
+  /* Estilo Bottom Sheet para el panel inferior */
+.bottom-sheet-container {
+  position: absolute;
+  z-index: 50;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(17, 24, 39, 0.85); /* Color oscuro semi-transparente */
+  backdrop-filter: blur(10px);
+  padding: 1rem 1.5rem 1.5rem;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  transition: transform 0.3s ease-in-out, height 0.3s ease-in-out;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Añade estilos para el estado expandido */
+.bottom-sheet-container.expanded {
+  overflow-y: auto;
+  height: 80vh !important;
+}
+
+/* Indicador de arrastre (handle) */
+.drag-handle {
+  width: 100%;
+  padding-bottom: 0.5rem;
+  display: flex;
+  justify-content: center;
+  cursor: grab;
+}
+
+.drag-indicator {
+  width: 40px;
+  height: 5px;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 2.5px;
+}
+
+/* Comportamiento en escritorio */
+/* Comportamiento en escritorio - Mejor centrado y bordes redondeados */
+@media (min-width: 769px) {
+    .bottom-sheet-container {
+      max-height: unset;
+      height: auto;
+      border-radius: 10px !important; /* Aumentado para que sea más visible */
+      max-width: 500px;
+      margin: 0 auto;
+      left: 0;
+      right: 0; /* Esto ayuda al centrado automático */
+      transform: none; /* Quitamos el transform que podría estar causando problemas */
+      background-color: rgba(17, 24, 39, 0.8);
+      bottom: 1rem;
+      width: 90%;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5); /* Añadido para mejor apariencia */
+      border: 1px solid rgba(255, 255, 255, 0.1); /* Borde sutil para mejorar visibilidad */
+    }
+    
+    .drag-handle {
+      display: none;
+    }
+    
+    .bottom-sheet-container.expanded {
+      height: auto !important;
+    }
   }
 
+  /* Estilo para el texto de la calle */
   .current-street-text {
-    font-size: 1.15rem;
-    font-weight: bold;
+    font-size: 1.25rem;
+    font-weight: 600;
     color: white;
     margin: 0;
     text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    text-align: center;
   }
 
+  /* Contenedor de botones para bottom sheet */
   .buttons-container {
     display: flex;
     justify-content: space-between;
     width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+    padding: 0 1rem;
   }
 
+  /* Estilos para los botones en el bottom sheet */
   .control-btn {
-    background-color: rgba(255, 255, 255, 0.85);
+    background-color: rgba(255, 255, 255, 0.9);
     border: none;
     border-radius: 50%;
-    width: 46px;
-    height: 46px;
+    width: 52px;
+    height: 52px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     transition: all 0.2s ease;
   }
 
   .control-btn:hover {
-    background-color: rgba(255, 255, 255, 0.95);
+    background-color: rgba(255, 255, 255, 1);
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   }
 
   .control-btn:active {
@@ -1008,8 +1201,8 @@ function createPlazaIcon(title) {
 
   .control-btn svg {
     stroke: #333;
-    width: 26px;
-    height: 26px;
+    width: 28px;
+    height: 28px;
   }
 
   .active-btn {
@@ -1041,9 +1234,43 @@ function createPlazaIcon(title) {
       line-height: 1.3;
     }
 
-    .street-info-container {
-      width: 95%;
+    .bottom-sheet-container {
+      padding: 0.75rem 1rem 1.25rem;
     }
+
+    .control-btn {
+      width: 46px;
+      height: 46px;
+    }
+  }
+  .show-bottom-btn {
+  position: fixed; /* Cambiado de absolute a fixed para asegurar que siempre sea visible */
+  bottom: 20px; /* Un poco más alto */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px; /* Más grande */
+  height: 50px; /* Más grande */
+  border-radius: 50%;
+  background-color: #3b82f6; /* Azul brillante */
+  color: white;
+  font-size: 24px; /* Más grande */
+  border: 2px solid white; /* Borde blanco para mejor contraste */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.7); /* Sombra más pronunciada */
+  z-index: 9999; /* Z-index muy alto para asegurar que esté por encima de todo */
+  cursor: pointer;
+  animation: pulse-button 2s infinite alternate; /* Animación para hacerlo más visible */
+}
+
+@keyframes pulse-button {
+  0% { transform: translateX(-50%) scale(1); }
+  100% { transform: translateX(-50%) scale(1.1); }
+}
+  
+  .hidden {
+    display: none !important;
   }
 </style>
 </div>
