@@ -28,34 +28,39 @@ const pointsJSON = JSON.stringify(points);
   
   <!-- UI overlay - Título adaptativo -->
   <div class="title-container">
-	<h2 class="title-text">{title}</h2>
+    <h2 class="title-text">{title}</h2>
   </div>
   
-  <!-- Control de porcentaje -->
-  <div class="absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-white/80 rounded-lg p-3 z-20 shadow-lg flex flex-col items-center w-11/12 max-w-md mx-auto">
-    <p class="text-sm font-semibold mb-2">Progreso de la procesión</p>
-    <div class="flex items-center w-full">
-      <input type="range" id="progress-slider" min="0" max="100" value="0" class="w-full accent-blue-600">
-      <span id="percentage-display" class="ml-2 text-sm font-bold">0%</span>
+  <!-- Nuevo container para la calle actual y botones -->
+  <div id="street-info-container" class="street-info-container">
+    <p id="current-street" class="current-street-text">Iniciando recorrido...</p>
+    <div class="buttons-container">
+      <!-- Botón de volver (izquierda) -->
+      <button id="back-btn" class="control-btn" title="Volver">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+      </button>
+      
+      <!-- Botón de play/pausa (centro) -->
+      <button id="play-btn" class="control-btn" title="Iniciar/Pausar animación">
+        <svg xmlns="http://www.w3.org/2000/svg" id="play-icon" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" id="pause-icon" class="h-7 w-7 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </button>
+      
+      <!-- Botón de ubicación actual (derecha) -->
+      <button id="location-btn" class="control-btn" title="Mi ubicación">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      </button>
     </div>
-  </div>
-  
-  <!-- Controles - Botones abajo a la derecha -->
-  <div class="absolute bottom-8 right-4 z-30 flex flex-col gap-3">
-    <!-- Botón de ubicación actual (primera posición) -->
-    <button id="location-btn" class="p-3 bg-white rounded-full shadow-lg hover:bg-blue-50 active:bg-blue-100 transition-colors" title="Mi ubicación">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-        <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-    </button>
-    
-    <!-- Botón de volver (segunda posición) -->
-    <button id="back-btn" class="p-3 bg-white rounded-full shadow-lg hover:bg-blue-50 active:bg-blue-100 transition-colors" title="Volver">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-      </svg>
-    </button>
   </div>
 
 <!-- Importar CSS de Leaflet -->
@@ -77,12 +82,24 @@ const pointsJSON = JSON.stringify(points);
   let animatedMarker;
   let isPaused = true;
   let animationId = null;
-  let percentageComplete = 0;
+  let animationSpeed = 0.05; // Ajusta la velocidad de la animación
+  let currentPosition = 0;
   let userLocationMarker = null;
   let isLocationActive = false;
   
   // Inicializar cuando la página esté cargada
   window.onload = initMap;
+  
+  // Datos de mapeo de calles - Define segmentos de la ruta y sus nombres de calles
+  // Esto es un ejemplo y deberá ser adaptado a cada ruta específica
+  const streetSegments = [
+    { startIndex: 0, endIndex: 5, name: "Plaza de la Constitución" },
+    { startIndex: 6, endIndex: 15, name: "Calle Real" },
+    { startIndex: 16, endIndex: 25, name: "Calle Dolores Torres" },
+    { startIndex: 26, endIndex: 40, name: "Plaza Fuente Nueva" },
+    { startIndex: 41, endIndex: 50, name: "Calle La Villa" },
+    // Añadir más segmentos según sea necesario
+  ];
   
   function initMap() {
     // Verificar si hay datos de ruta
@@ -97,29 +114,28 @@ const pointsJSON = JSON.stringify(points);
     
     try {
       // Crear mapa base con Leaflet
-      	map = L.map('map', {
-		center: MARTOS_CENTER,
-		zoom: 16,
-		minZoom: 14,
-		maxZoom: 19,
-		attributionControl: false  // Esto desactiva el panel de atribución
-	});
+      map = L.map('map', {
+        center: MARTOS_CENTER,
+        zoom: 16,
+        minZoom: 14,
+        maxZoom: 19,
+        attributionControl: false  // Esto desactiva el panel de atribución
+      });
       
       // Capa base de imágenes satelitales
-	L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-	attribution: false, // Cambia cadena vacía a false
-	maxZoom: 19
-	}).addTo(map);
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: false,
+        maxZoom: 19
+      }).addTo(map);
 
-	// Capa de etiquetas para nombres de calles con mejor contraste y legibilidad
-		// Capa de etiquetas para nombres de calles al estilo Google Maps
-L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_only_labels/{z}/{x}/{y}{r}.png', {
-  attribution: false,
-  subdomains: 'abcd',
-  maxZoom: 19,
-  opacity: 1.0,
-  className: 'street-labels-layer'
-}).addTo(map);
+      // Capa de etiquetas para nombres de calles con mejor contraste y legibilidad
+      L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_only_labels/{z}/{x}/{y}{r}.png', {
+        attribution: false,
+        subdomains: 'abcd',
+        maxZoom: 19,
+        opacity: 1.0,
+        className: 'street-labels-layer'
+      }).addTo(map);
       
       // Capa para la ruta completa con efecto "ant path"
       routeLayer = L.polyline.antPath(route, {
@@ -243,8 +259,12 @@ L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_only_label
       // Añadir puntos de interés
       if (points && points.length > 0) {
         points.forEach(point => {
+          // Determinar si es una plaza u otro punto de interés basado en el título
+          const isPlaza = point.title.toLowerCase().includes('plaza');
+          
           L.marker(point.position, {
-            icon: createIglesiaIcon(point.title)
+            // Usar el icono adecuado según el tipo
+            icon: isPlaza ? createPlazaIcon(point.title) : createIglesiaIcon(point.title)
           }).addTo(map).bindPopup(`
             <strong>${point.title}</strong>
             ${point.description ? `<br>${point.description}` : ''}
@@ -255,62 +275,75 @@ L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_only_label
       // Configurar eventos para los botones
       document.getElementById('location-btn').addEventListener('click', handleLocationRequest);
       document.getElementById('back-btn').addEventListener('click', () => window.history.back());
+      document.getElementById('play-btn').addEventListener('click', toggleAnimation);
       
-      // Configurar el control de porcentaje
-      const slider = document.getElementById('progress-slider');
-      const percentageDisplay = document.getElementById('percentage-display');
-      
-      slider.addEventListener('input', function(e) {
-        percentageComplete = parseInt(e.target.value);
-        percentageDisplay.textContent = `${percentageComplete}%`;
-        
-        // Actualizar la visualización según el porcentaje
-        updateRouteByPercentage(percentageComplete);
-      });
-      
-      // Inicializar la visualización con 0%
-      updateRouteByPercentage(0);
+      // Inicializar la visualización en la posición inicial
+      updatePosition(0);
+      updateCurrentStreet(0);
       
     } catch (error) {
       console.error("Error al inicializar el mapa:", error);
     }
   }
   
-  // Función para actualizar la visualización según un porcentaje
-  function updateRouteByPercentage(percentage) {
+  // Función para iniciar/pausar la animación
+  function toggleAnimation() {
+    const playIcon = document.getElementById('play-icon');
+    const pauseIcon = document.getElementById('pause-icon');
+    
+    isPaused = !isPaused;
+    
+    if (isPaused) {
+      // Detener animación
+      playIcon.classList.remove('hidden');
+      pauseIcon.classList.add('hidden');
+      cancelAnimationFrame(animationId);
+    } else {
+      // Iniciar animación
+      playIcon.classList.add('hidden');
+      pauseIcon.classList.remove('hidden');
+      
+      // Si ya llegó al final, reiniciar
+      if (currentPosition >= route.length - 1) {
+        currentPosition = 0;
+        completedRouteLayer.setLatLngs([]);
+      }
+      
+      animateRoute();
+    }
+  }
+  
+  // Función para animar la ruta
+  function animateRoute() {
+    if (isPaused) return;
+    
+    currentPosition += animationSpeed;
+    
+    if (currentPosition >= route.length - 1) {
+      currentPosition = route.length - 1;
+      isPaused = true;
+      document.getElementById('play-icon').classList.remove('hidden');
+      document.getElementById('pause-icon').classList.add('hidden');
+    } else {
+      animationId = requestAnimationFrame(animateRoute);
+    }
+    
+    updatePosition(currentPosition);
+    updateCurrentStreet(currentPosition);
+  }
+  
+  // Función para actualizar la posición en la ruta
+  function updatePosition(position) {
     // Verificar si hay datos válidos
     if (!map || !route || route.length < 2 || !completedRouteLayer || !animatedMarker) return;
     
-    // Convertir porcentaje a posición en la ruta
-    const totalLength = route.length - 1;
-    const targetPosition = (percentage / 100) * totalLength;
-    
-    // Calcular el índice actual y el siguiente
-    const currentIndex = Math.floor(targetPosition);
+    const currentIndex = Math.floor(position);
     const nextIndex = Math.min(currentIndex + 1, route.length - 1);
-    const fraction = targetPosition - currentIndex;
-    
-    // Si el porcentaje es 0, reiniciar
-    if (percentage === 0) {
-      completedRouteLayer.setLatLngs([]);
-      animatedMarker.setLatLng(route[0]);
-      return;
-    }
-    
-    // Si el porcentaje es 100, completar toda la ruta
-    if (percentage === 100) {
-      completedRouteLayer.setLatLngs(route);
-      animatedMarker.setLatLng(route[route.length - 1]);
-      return;
-    }
-    
-    // Para porcentajes intermedios, interpolar entre puntos
-    const currentPoint = route[currentIndex];
-    const nextPoint = route[nextIndex];
+    const fraction = position - currentIndex;
     
     // Interpolar entre los dos puntos
-    const lat = currentPoint[0] + fraction * (nextPoint[0] - currentPoint[0]);
-    const lng = currentPoint[1] + fraction * (nextPoint[1] - currentPoint[1]);
+    const lat = route[currentIndex][0] + fraction * (route[nextIndex][0] - route[currentIndex][0]);
+    const lng = route[currentIndex][1] + fraction * (route[nextIndex][1] - route[currentIndex][1]);
     
     // Actualizar posición del marcador
     animatedMarker.setLatLng([lat, lng]);
@@ -321,6 +354,23 @@ L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_only_label
     
     // Centrar en la posición actual
     map.panTo([lat, lng]);
+  }
+  
+  // Función para actualizar el nombre de la calle actual
+  function updateCurrentStreet(position) {
+    const currentIndex = Math.floor(position);
+    let streetName = "Recorrido procesional";
+    
+    // Buscar en qué segmento de calle estamos
+    for (const segment of streetSegments) {
+      if (currentIndex >= segment.startIndex && currentIndex <= segment.endIndex) {
+        streetName = segment.name;
+        break;
+      }
+    }
+    
+    // Actualizar el texto de la calle actual
+    document.getElementById('current-street').textContent = streetName;
   }
   
   // Función para crear iconos personalizados
@@ -335,42 +385,204 @@ L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_only_label
   }
   
   // Función para crear iconos de iglesias y templos
-  function createIglesiaIcon(title) {
-    // SVG de una iglesia/templo
-    const iglesiaSVG = `
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="30" height="30" fill="#f0f0f0" stroke="#333333" stroke-width="0.5">
-        <!-- Base de la iglesia -->
-        <rect x="5" y="14" width="14" height="10" />
-        
-        <!-- Torre principal -->
-        <rect x="9" y="7" width="6" height="7" />
-        <polygon points="9,7 15,7 12,2" />
-        
-        <!-- Cruz -->
-        <path d="M12,1 L12,4 M10.5,2.5 L13.5,2.5" stroke="#E6C700" stroke-width="0.7" />
-        
-        <!-- Puerta -->
-        <rect x="10" y="18" width="4" height="6" fill="#8B4513" />
-        
-        <!-- Ventana -->
-        <circle cx="12" cy="11" r="1.5" fill="#2986cc" />
-      </svg>
-    `;
-    
-    // Crear el div icon con el SVG
-    return L.divIcon({
-      className: 'iglesia-marker',
-      html: `
-        <div class="iglesia-container">
-          ${iglesiaSVG}
-          <div class="marker-title">${title}</div>
-        </div>
-      `,
-      iconSize: [30, 30],
-      iconAnchor: [15, 30],
-      popupAnchor: [0, -30]
-    });
-  }
+function createIglesiaIcon(title) {
+  // SVG de una iglesia con efectos 3D avanzados, sombras y detalles arquitectónicos
+  const iglesiaSVG = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120" width="40" height="48" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.5))">
+      <!-- Definición de gradientes para efectos 3D -->
+      <defs>
+        <linearGradient id="wallGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#f5f2eb" />
+          <stop offset="100%" stop-color="#d5cdc0" />
+        </linearGradient>
+        <linearGradient id="roofGradient" x1="0%" y1="0%" x2="80%" y2="100%">
+          <stop offset="0%" stop-color="#a83232" />
+          <stop offset="100%" stop-color="#651c1c" />
+        </linearGradient>
+        <linearGradient id="doorGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#704214" />
+          <stop offset="100%" stop-color="#4b2809" />
+        </linearGradient>
+        <linearGradient id="windowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#88c9ff" />
+          <stop offset="100%" stop-color="#1a6caa" />
+        </linearGradient>
+        <radialGradient id="stainedGlassGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+          <stop offset="0%" stop-color="#ffea8a" stop-opacity="0.7" />
+          <stop offset="80%" stop-color="#5c94d6" stop-opacity="0.9" />
+        </radialGradient>
+        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="2" />
+          <feOffset dx="2" dy="2" result="offsetblur" />
+          <feComponentTransfer>
+            <feFuncA type="linear" slope="0.5" />
+          </feComponentTransfer>
+          <feMerge>
+            <feMergeNode />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+      
+      <!-- Terreno/Base -->
+      <ellipse cx="50" cy="105" rx="30" ry="6" fill="#7a6c5a" opacity="0.6" />
+      
+      <!-- Cuerpo principal de la iglesia -->
+      <polygon points="15,60 15,100 85,100 85,60" fill="url(#wallGradient)" stroke="#444" stroke-width="0.5" filter="url(#shadow)" />
+      
+      <!-- Fachada frontal con detalles -->
+      <path d="M15,60 v40 h70 v-40 z" fill="url(#wallGradient)" stroke="#444" stroke-width="0.4" />
+      <path d="M20,65 h60 M20,75 h60 M20,85 h60 M20,95 h60" stroke="#d8d0c5" stroke-width="0.3" opacity="0.7" />
+      
+      <!-- Escalones -->
+      <path d="M35,100 v-1 h30 v1 z M33,101 v-1 h34 v1 z M31,102 v-1 h38 v1 z" fill="#c0b8a8" stroke="#888" stroke-width="0.1" />
+      
+      <!-- Puerta principal con arco y detalles -->
+      <path d="M40,75 v25 h20 v-25 q-10,-7 -20,0 z" fill="url(#doorGradient)" stroke="#3a2a1a" stroke-width="0.5" filter="url(#shadow)" />
+      <path d="M40,75 q10,-7 20,0" fill="none" stroke="#5d3d22" stroke-width="1" />
+      <path d="M50,100 v-18" stroke="#5d3d22" stroke-width="0.5" />
+      <ellipse cx="47" cy="88" rx="1" ry="1" fill="#d4af37" />
+      
+      <!-- Ventanas laterales con efecto de vidriera -->
+      <g filter="url(#shadow)">
+        <path d="M25,70 v15 h8 v-15 q-4,-2 -8,0 z" fill="url(#stainedGlassGradient)" stroke="#444" stroke-width="0.3" />
+        <path d="M25,70 q4,-2 8,0" fill="none" stroke="#666" stroke-width="0.5" />
+        <path d="M67,70 v15 h8 v-15 q-4,-2 -8,0 z" fill="url(#stainedGlassGradient)" stroke="#444" stroke-width="0.3" />
+        <path d="M67,70 q4,-2 8,0" fill="none" stroke="#666" stroke-width="0.5" />
+      </g>
+      
+      <!-- Torre izquierda -->
+      <rect x="15" y="30" width="20" height="30" fill="url(#wallGradient)" stroke="#444" stroke-width="0.3" filter="url(#shadow)" />
+      <path d="M15,35 h20 M15,40 h20 M15,50 h20" stroke="#d8d0c5" stroke-width="0.4" opacity="0.7" />
+      
+      <!-- Ventanas de la torre -->
+      <path d="M20,42 v10 h10 v-10 q-5,-3 -10,0 z" fill="url(#windowGradient)" stroke="#444" stroke-width="0.2" filter="url(#shadow)" />
+      <path d="M20,42 q5,-3 10,0" fill="none" stroke="#666" stroke-width="0.3" />
+      
+      <!-- Techo de la torre con detalles -->
+      <polygon points="10,30 25,10 40,30" fill="url(#roofGradient)" stroke="#444" stroke-width="0.3" filter="url(#shadow)" />
+      <line x1="25" y1="10" x2="25" y2="5" stroke="#888" stroke-width="0.5" />
+      <path d="M24,5 h2 M24.5,4 v-3" stroke="#E6C700" stroke-width="0.7" />
+      
+      <!-- Torre principal/centro -->
+      <rect x="35" y="20" width="30" height="40" fill="url(#wallGradient)" stroke="#444" stroke-width="0.3" filter="url(#shadow)" />
+      <path d="M35,25 h30 M35,35 h30 M35,45 h30" stroke="#d8d0c5" stroke-width="0.4" opacity="0.7" />
+      
+      <!-- Ventana rosetón central -->
+      <circle cx="50" cy="35" r="7" fill="url(#stainedGlassGradient)" stroke="#444" stroke-width="0.3" filter="url(#shadow)" />
+      <path d="M50,28 v14 M43,35 h14" stroke="#f0f0f0" stroke-width="0.4" />
+      <path d="M45,30 l10,10 M45,40 l10,-10" stroke="#f0f0f0" stroke-width="0.4" />
+      <circle cx="50" cy="35" r="2" fill="#ffea8a" opacity="0.9" />
+      
+      <!-- Techo principal con detalles y acabados -->
+      <polygon points="30,20 50,5 70,20" fill="url(#roofGradient)" stroke="#444" stroke-width="0.3" filter="url(#shadow)" />
+      <line x1="50" y1="5" x2="50" y2="2" stroke="#888" stroke-width="0.5" />
+      
+      <!-- Cruz dorada en la cima -->
+      <path d="M50,2 v-4 M48,-3 h4" stroke="#E6C700" stroke-width="1" stroke-linecap="round" filter="url(#shadow)" />
+    </svg>
+  `;
+  
+  return L.divIcon({
+    className: 'iglesia-marker',
+    html: `
+      <div class="iglesia-container">
+        ${iglesiaSVG}
+        <div class="marker-title">${title}</div>
+      </div>
+    `,
+    iconSize: [40, 48],
+    iconAnchor: [20, 48],
+    popupAnchor: [0, -42]
+  });
+}
+
+// Función para crear iconos de plazas
+function createPlazaIcon(title) {
+  // SVG de una plaza con efectos 3D y elementos típicos
+  const plazaSVG = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120" width="40" height="48" filter="drop-shadow(0 3px 5px rgba(0,0,0,0.5))">
+      <defs>
+        <!-- Gradientes y filtros para efectos 3D -->
+        <linearGradient id="plazaFloor" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#c2c2c2" />
+          <stop offset="100%" stop-color="#a0a0a0" />
+        </linearGradient>
+        <linearGradient id="fountainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#7fb3d5" />
+          <stop offset="100%" stop-color="#2874a6" />
+        </linearGradient>
+        <linearGradient id="treeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#66bb6a" />
+          <stop offset="100%" stop-color="#2e7d32" />
+        </linearGradient>
+        <filter id="plazaShadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="2" />
+          <feOffset dx="2" dy="2" result="offsetblur" />
+          <feComponentTransfer>
+            <feFuncA type="linear" slope="0.5" />
+          </feComponentTransfer>
+          <feMerge>
+            <feMergeNode />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+      
+      <!-- Base de la plaza -->
+      <polygon points="10,100 90,100 85,60 15,60" fill="url(#plazaFloor)" stroke="#777" stroke-width="0.5" filter="url(#plazaShadow)" />
+      
+      <!-- Patrón de adoquines/pavimento -->
+      <path d="M15,70 h70 M15,80 h70 M15,90 h70" stroke="#888" stroke-width="0.3" opacity="0.7" />
+      <path d="M25,60 v40 M40,60 v40 M55,60 v40 M70,60 v40" stroke="#888" stroke-width="0.3" opacity="0.7" />
+      
+      <!-- Fuente central -->
+      <circle cx="50" cy="75" r="12" fill="url(#plazaFloor)" stroke="#777" stroke-width="0.5" />
+      <circle cx="50" cy="75" r="8" fill="url(#fountainGradient)" stroke="#2874a6" stroke-width="0.5" />
+      <!-- Agua/chorro de la fuente -->
+      <path d="M50,75 v-15" stroke="#a9cce3" stroke-width="1" />
+      <circle cx="50" cy="55" r="2" fill="#a9cce3" opacity="0.8" class="water-drop" />
+      <circle cx="52" cy="60" r="1" fill="#a9cce3" opacity="0.6" class="water-drop" />
+      <circle cx="48" cy="58" r="1" fill="#a9cce3" opacity="0.6" class="water-drop" />
+      
+      <!-- Árboles -->
+      <!-- Árbol izquierdo -->
+      <rect x="20" y="85" width="4" height="10" fill="#795548" />
+      <circle cx="22" cy="80" r="6" fill="url(#treeGradient)" filter="url(#plazaShadow)" />
+      
+      <!-- Árbol derecho -->
+      <rect x="76" y="85" width="4" height="10" fill="#795548" />
+      <circle cx="78" cy="80" r="6" fill="url(#treeGradient)" filter="url(#plazaShadow)" />
+      
+      <!-- Banco izquierdo -->
+      <rect x="30" y="90" width="10" height="3" fill="#a0522d" />
+      <rect x="31" y="93" width="2" height="5" fill="#6d4c41" />
+      <rect x="37" y="93" width="2" height="5" fill="#6d4c41" />
+      
+      <!-- Banco derecho -->
+      <rect x="60" y="90" width="10" height="3" fill="#a0522d" />
+      <rect x="61" y="93" width="2" height="5" fill="#6d4c41" />
+      <rect x="67" y="93" width="2" height="5" fill="#6d4c41" />
+      
+      <!-- Sombras proyectadas de los árboles -->
+      <ellipse cx="22" cy="102" rx="5" ry="2" fill="#000" opacity="0.2" />
+      <ellipse cx="78" cy="102" rx="5" ry="2" fill="#000" opacity="0.2" />
+    </svg>
+  `;
+  
+  return L.divIcon({
+    className: 'plaza-marker',
+    html: `
+      <div class="plaza-container">
+        ${plazaSVG}
+        <div class="marker-title">${title}</div>
+      </div>
+    `,
+    iconSize: [40, 48],
+    iconAnchor: [20, 48],
+    popupAnchor: [0, -42]
+  });
+}
   
   // Función para mostrar la ubicación del usuario
   function handleLocationRequest() {
@@ -380,8 +592,7 @@ L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_only_label
       // Activar
       if ("geolocation" in navigator) {
         // Cambiar estilo del botón para indicar activación
-        document.getElementById('location-btn').classList.add('bg-blue-500');
-        document.getElementById('location-btn').classList.add('text-white');
+        document.getElementById('location-btn').classList.add('active-btn');
         
         // Intentar obtener ubicación
         navigator.geolocation.getCurrentPosition(
@@ -441,8 +652,7 @@ L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_only_label
             alert(errorMsg);
             
             // Restaurar estilo del botón
-            document.getElementById('location-btn').classList.remove('bg-blue-500');
-            document.getElementById('location-btn').classList.remove('text-white');
+            document.getElementById('location-btn').classList.remove('active-btn');
           },
           // Opciones
           {
@@ -462,43 +672,41 @@ L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_only_label
         userLocationMarker = null;
       }
       
-      document.getElementById('location-btn').classList.remove('bg-blue-500');
-      document.getElementById('location-btn').classList.remove('text-white');
+      document.getElementById('location-btn').classList.remove('active-btn');
       isLocationActive = false;
     }
   }
 </script>
 
 <style>
-	/* Mejoras para las etiquetas de calles al estilo Google Maps */
-/* Mejoras para las etiquetas de calles al estilo Google Maps */
-:global(.street-labels-layer) {
-  filter: brightness(0.8) contrast(1.8) saturate(1.2) !important;
-  opacity: 1 !important; /* Forzar opacidad máxima */
-  mix-blend-mode: normal;
-}
+  /* Mejoras para las etiquetas de calles al estilo Google Maps */
+  :global(.street-labels-layer) {
+    filter: brightness(0.8) contrast(1.8) saturate(1.2) !important;
+    opacity: 1 !important;
+    mix-blend-mode: normal;
+  }
 
-/* Estilo para etiquetas de calles */
-:global(.leaflet-tile-loaded) {
-  font-family: 'Roboto', 'Arial', sans-serif;
-  font-weight: 1900;
-  font-size: 1.1em;
-  -webkit-text-stroke: 0.2px black; /* Contorno fino para mejorar legibilidad */
-}
+  /* Estilo para etiquetas de calles */
+  :global(.leaflet-tile-loaded) {
+    font-family: 'Roboto', 'Arial', sans-serif;
+    font-weight: 900;
+    font-size: 1.1em;
+    -webkit-text-stroke: 0.2px black;
+  }
 
-/* Mejoras para los nombres de calles */
-:global(.leaflet-tile-pane text),
-:global(.leaflet-tile-container path) {
-  fill: #000000 !important; /* Negro puro */
-  stroke: none !important; /* Sin contorno */
-  paint-order: normal;
-  text-shadow: 0px 0px 2px black; /* Sombra clara sutil */
-}
+  /* Mejoras para los nombres de calles */
+  :global(.leaflet-tile-pane text),
+  :global(.leaflet-tile-container path) {
+    fill: #000000 !important;
+    stroke: none !important;
+    paint-order: normal;
+    text-shadow: 0px 0px 2px rgba(255,255,255,0.5);
+  }
 
-/* Para mayor contraste en áreas oscuras */
-:global(.leaflet-tile-container img) {
-  filter: brightness(1.0) !important; /* Iluminar ligeramente las imágenes de fondo */
-}mix-blend-mode: screen; /* Mejora visibilidad sobre fondos oscuros */
+  /* Para mayor contraste en áreas oscuras */
+  :global(.leaflet-tile-container img) {
+    filter: brightness(1.05) !important;
+  }
 
   /* Estilos para asegurar que el mapa ocupe toda la pantalla */
   :global(body), :global(html) {
@@ -572,55 +780,48 @@ L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_only_label
   /* Estilos para los iconos de iglesias */
   :global(.iglesia-container) {
     position: relative;
-    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.5));
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+    transition: transform 0.2s ease;
+  }
+
+  :global(.iglesia-container:hover) {
+    transform: translateY(-3px);
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.7));
   }
 
   :global(.marker-title) {
     position: absolute;
-    bottom: -15px;
+    bottom: -22px;
     left: 50%;
     transform: translateX(-50%);
     white-space: nowrap;
-    background-color: rgba(0,0,0,0.6);
+    background-color: rgba(0,0,0,0.7);
     color: white;
-    font-size: 10px;
-    padding: 2px 4px;
-    border-radius: 2px;
+    font-size: 11px;
+    padding: 3px 6px;
+    border-radius: 3px;
     visibility: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
   }
 
-  :global(.iglesia-container:hover .marker-title) {
+  :global(.iglesia-container:hover .marker-title),
+  :global(.plaza-container:hover .marker-title) {
     visibility: visible;
   }
   
   /* Mejoras para botones en móvil y ordenador */
   :global(.leaflet-control-zoom) {
-    margin-bottom: 80px !important; /* Para evitar solapamiento con los controles de reproducción */
+    margin-bottom: 120px !important; /* Para evitar solapamiento con los controles */
   }
 
   @media (max-width: 640px) {
-	:global(.leaflet-control-zoom) {
-		margin-bottom: 100px !important;
-		display: none !important; /* Ocultar controles de zoom en móvil */
-  }
+      :global(.leaflet-control-zoom) {
+          display: none !important;
+      }
     
-    :global(.leaflet-control-attribution) {
-		display: none !important;
-    }
-  }
-
-  /* Asegurar que los SVG en los botones sean visibles */
-  :global(button svg) {
-    stroke: black;
-    display: block;
-  }
-
-  :global(button:hover svg) {
-    stroke: black;
-  }
-
-  :global(button:active svg) {
-    stroke: black;
+      :global(.leaflet-control-attribution) {
+          display: none !important;
+      }
   }
 
   /* Estilos para el marcador de ubicación del usuario */
@@ -661,75 +862,156 @@ L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_only_label
   }
 
   @keyframes pulse {
-    0% {
-      transform: scale(0.5);
-      opacity: 1;
-    }
-    100% {
-      transform: scale(2);
-      opacity: 0;
-    }
+    0% { transform: scale(0.5); opacity: 1; }
+    100% { transform: scale(2); opacity: 0; }
   }
 
-  /* Mejora del contraste para botones activos */
-  :global(.bg-blue-500) {
-    background-color: #3b82f6 !important;
+  /* Estilos para los iconos de plaza */
+  :global(.plaza-container) {
+    position: relative;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+    transition: transform 0.2s ease;
   }
 
-  :global(.text-white) {
-    color: white !important;
+  :global(.plaza-container:hover) {
+    transform: translateY(-3px);
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.7));
   }
 
-  :global(.bg-blue-500 svg) {
-    stroke: white !important;
+  :global(.water-drop) {
+    animation: water-pulse 2s infinite alternate ease-in-out;
+  }
+
+  @keyframes water-pulse {
+    0% { opacity: 0.4; r: 0.8; }
+    100% { opacity: 0.9; r: 1.5; }
   }
 
   /* Estilos mejorados para el título */
-.title-container {
-  position: absolute;
-  z-index: 20;
-  padding: 0.75rem 1rem;
-  background: linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.8));
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-  top: 1rem;
-  right: 1rem;
-  max-width: 80%;
-  backdrop-filter: blur(2px);
-  border-left: 3px solid black;
-  transition: all 0.3s ease;
-}
-
-.title-text {
-  font-size: 1.25rem;
-  font-weight: bold;
-  color: white;
-  margin: 0;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Adaptar título en dispositivos móviles */
-@media (max-width: 640px) {
   .title-container {
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
-    text-align: center;
-    width: 90%;
-    max-width: 90%;
-    background: rgba(0,0,0,0.75);
-    padding: 0.5rem 0.75rem;
-    border-left: none;
-    border-bottom: 2px solid black;
+    position: absolute;
+    z-index: 20;
+    padding: 0.75rem 1rem;
+    background: linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.8));
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    top: 1rem;
+    right: 1rem;
+    max-width: 80%;
+    backdrop-filter: blur(2px);
+    border-left: 3px solid black;
+    transition: all 0.3s ease;
   }
-  
+
   .title-text {
-    font-size: 1.1rem;
-    white-space: normal;
-    line-height: 1.3;
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: white;
+    margin: 0;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
-}
+
+  /* Nuevo contenedor para info de calles y botones */
+  .street-info-container {
+    position: absolute;
+    z-index: 20;
+    padding: 0.75rem 1rem;
+    background: linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.8));
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 500px;
+    backdrop-filter: blur(2px);
+    border-left: 3px solid black;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .current-street-text {
+    font-size: 1.15rem;
+    font-weight: bold;
+    color: white;
+    margin: 0;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+  }
+
+  .buttons-container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .control-btn {
+    background-color: rgba(255, 255, 255, 0.85);
+    border: none;
+    border-radius: 50%;
+    width: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s ease;
+  }
+
+  .control-btn:hover {
+    background-color: rgba(255, 255, 255, 0.95);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .control-btn:active {
+    transform: translateY(0);
+    background-color: rgba(235, 235, 235, 1);
+  }
+
+  .control-btn svg {
+    stroke: #333;
+    width: 26px;
+    height: 26px;
+  }
+
+  .active-btn {
+    background-color: #3b82f6 !important;
+  }
+
+  .active-btn svg {
+    stroke: white !important;
+  }
+
+  /* Adaptar título en dispositivos móviles */
+  @media (max-width: 640px) {
+    .title-container {
+      left: 50%;
+      right: auto;
+      transform: translateX(-50%);
+      text-align: center;
+      width: 90%;
+      max-width: 90%;
+      background: rgba(0,0,0,0.75);
+      padding: 0.5rem 0.75rem;
+      border-left: none;
+      border-bottom: 2px solid black;
+    }
+    
+    .title-text {
+      font-size: 1.1rem;
+      white-space: normal;
+      line-height: 1.3;
+    }
+
+    .street-info-container {
+      width: 95%;
+    }
+  }
 </style>
+</div>
