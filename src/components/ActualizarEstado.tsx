@@ -24,7 +24,7 @@ export default function ActualizarEstado() {
 
         setIsSessionValid(true);
       } catch {
-        window.location.href = "/admin";
+       // window.location.href = "/admin";
       }
     };
 
