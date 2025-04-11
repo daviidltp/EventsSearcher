@@ -105,20 +105,21 @@ const pointsJSON = JSON.stringify(points);
 		attributionControl: false  // Esto desactiva el panel de atribución
 	});
       
-      // Añadir capa base de imágenes satelitales
-      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        attribution: '',
-        maxZoom: 19
-      }).addTo(map);
-      
-      // Añadir capa de etiquetas para que los nombres de calles sean visibles
-      L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/toner-labels/{z}/{x}/{y}{r}.png', {
-        attribution: '',
-        subdomains: 'abcd',
-        minZoom: 13,
-        maxZoom: 19,
-        opacity: 0.7
-      }).addTo(map);
+      // Capa base de imágenes satelitales
+	L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+	attribution: false, // Cambia cadena vacía a false
+	maxZoom: 19
+	}).addTo(map);
+
+	// Capa de etiquetas para nombres de calles con mejor contraste y legibilidad
+		// Capa de etiquetas para nombres de calles al estilo Google Maps
+L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_only_labels/{z}/{x}/{y}{r}.png', {
+  attribution: false,
+  subdomains: 'abcd',
+  maxZoom: 19,
+  opacity: 1.0,
+  className: 'street-labels-layer'
+}).addTo(map);
       
       // Capa para la ruta completa con efecto "ant path"
       routeLayer = L.polyline.antPath(route, {
@@ -469,6 +470,36 @@ const pointsJSON = JSON.stringify(points);
 </script>
 
 <style>
+	/* Mejoras para las etiquetas de calles al estilo Google Maps */
+/* Mejoras para las etiquetas de calles al estilo Google Maps */
+:global(.street-labels-layer) {
+  filter: brightness(0.8) contrast(1.8) saturate(1.2) !important;
+  opacity: 1 !important; /* Forzar opacidad máxima */
+  mix-blend-mode: normal;
+}
+
+/* Estilo para etiquetas de calles */
+:global(.leaflet-tile-loaded) {
+  font-family: 'Roboto', 'Arial', sans-serif;
+  font-weight: 1900;
+  font-size: 1.1em;
+  -webkit-text-stroke: 0.2px black; /* Contorno fino para mejorar legibilidad */
+}
+
+/* Mejoras para los nombres de calles */
+:global(.leaflet-tile-pane text),
+:global(.leaflet-tile-container path) {
+  fill: #000000 !important; /* Negro puro */
+  stroke: none !important; /* Sin contorno */
+  paint-order: normal;
+  text-shadow: 0px 0px 2px black; /* Sombra clara sutil */
+}
+
+/* Para mayor contraste en áreas oscuras */
+:global(.leaflet-tile-container img) {
+  filter: brightness(1.0) !important; /* Iluminar ligeramente las imágenes de fondo */
+}mix-blend-mode: screen; /* Mejora visibilidad sobre fondos oscuros */
+
   /* Estilos para asegurar que el mapa ocupe toda la pantalla */
   :global(body), :global(html) {
     margin: 0;
