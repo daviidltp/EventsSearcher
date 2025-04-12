@@ -53,6 +53,8 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
       img.onerror = resolve;
     });
 
+  // ...
+
   useEffect(() => {
     const inicio = performance.now();
 
@@ -132,48 +134,57 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
         }
 
         const procesionesMostradas = enCalle.length > 0 ? enCalle : proxima ? [proxima] : [];
-        const ids = procesionesMostradas.map((p) => `id=${p.id}`).join('&');
-        const urlFetch = `https://owntracks-api.semanasantatracker.workers.dev/procesiones?${ids}`;
 
-        let datosApi: { id: string; estado: string; alerta: string }[] = [];
-
-        const cacheKey = `procesiones_estado_${ids}`;
-        const cache = sessionStorage.getItem(cacheKey);
-        if (cache) {
-          datosApi = JSON.parse(cache);
-        } else {
-  
-          const response = await fetch(urlFetch);
-
-          if (!response.ok) throw new Error(`API error: ${response.status}`);
-          datosApi = await response.json();
-          sessionStorage.setItem(cacheKey, JSON.stringify(datosApi));
-        }
-
-        for (const p of procesionesMostradas) {
-          const data = datosApi.find((d) => d.id === p.id);
-          if (data) {
-            p.estado = data.estado;
-            p.alerta = data.alerta;
-          }
-        }
-
-        await Promise.all(procesionesMostradas.map((p) => preloadImage(p.imagenCaratula)));
-
+        // Primero setear estado para mostrar la procesión, aunque sea sin datos extra
         setProcesionesEnCalle(enCalle);
         setProximaProcesion(enCalle.length === 0 && proxima ? proxima : null);
         setDiseno(disenoElegido);
 
+        // Luego intentar traer estado y alerta — si falla, no rompe nada.
+        try {
+          if (procesionesMostradas.length > 0) {
+            const ids = procesionesMostradas.map((p) => `id=${p.id}`).join('&');
+            const urlFetch = `https://owntracks-api.semanasantatracker.workers.dev/procesiones?${ids}`;
+
+            let datosApi: { id: string; estado: string; alerta: string }[] = [];
+            const cacheKey = `procesiones_estado_${ids}`;
+            const cache = sessionStorage.getItem(cacheKey);
+            if (cache) {
+              datosApi = JSON.parse(cache);
+            } else {
+              const response = await fetch(urlFetch);
+              if (!response.ok) throw new Error(`API error: ${response.status}`);
+              datosApi = await response.json();
+              sessionStorage.setItem(cacheKey, JSON.stringify(datosApi));
+            }
+
+            for (const p of procesionesMostradas) {
+              const data = datosApi.find((d) => d.id === p.id);
+              if (data) {
+                p.estado = data.estado;
+                p.alerta = data.alerta;
+              }
+            }
+          }
+        } catch (err) {
+          console.error('Error al obtener estado y alerta:', err);
+        }
+
+        // Preload imágenes para optimizar la carga visual
+        await Promise.all(procesionesMostradas.map((p) => preloadImage(p.imagenCaratula)));
+
         requestAnimationFrame(() => {
           const fin = performance.now();
-              });
+        });
+
       } catch (err) {
-        console.error('Error al cargar datos de procesiones:', err);
+        console.error('Error general en fetchHoraEspaña:', err);
       }
     };
 
     fetchHoraEspaña();
   }, []);
+
 
   useEffect(() => {
     const handleScroll = () => {
