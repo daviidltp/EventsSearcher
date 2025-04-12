@@ -26,6 +26,7 @@ try {
   if (Array.isArray(data) && data.length > 0 && data[0].estado === 'Directo') {
     enCalle = true;
   }
+  console.log(enCalle);
 } catch (error) {
   console.error('Error al consultar estado de procesión:', error);
 }
@@ -331,11 +332,12 @@ const pointsJSON = JSON.stringify(points);
       updatePosition(0);
       updateCurrentStreet(0);
       // Coger ultima ubicacion
-      const enCalle = JSON.parse(enCalleJSON);
+      const estaEnCalle = JSON.parse(enCalleJSON);
 
-      if (enCalle) {
+      if (estaEnCalle) {
         addLastLocationMarker();
       }
+      console.log("En calle ", estaEnCalle);
 
       
     } catch (error) {
