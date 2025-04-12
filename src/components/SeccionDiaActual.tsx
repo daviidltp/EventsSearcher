@@ -145,7 +145,7 @@ export default function SeccionDiaActual(props: Props) {
         </a>
       </div>
 
-	Modificar donde está el botón de recorrido para añadir el de pronóstico
+	{/* Modificar donde está el botón de recorrido para añadir el de pronóstico
 	<div className="hidden md:flex absolute bottom-6 right-6 z-10 space-x-3">
 	<a href={`/cofradia/${rutaId}/pronostico`} className="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-lg flex items-center shadow-lg">
 		<svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -153,10 +153,10 @@ export default function SeccionDiaActual(props: Props) {
 		</svg>
 		Pronóstico
 	</a>
-	</div>
+	</div>*/}
 
 	{/* Botón móvil - también añadir versión móvil */}
-	<div className="flex md:hidden absolute bottom-6 right-6 z-10 space-y-2 flex-col">
+	{/* <div className="flex md:hidden absolute bottom-6 right-6 z-10 space-y-2 flex-col">
 	<a href={`/cofradia/${rutaId}/pronostico`} className="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-3 rounded-lg flex items-center shadow-lg text-sm">
 		<svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
 		<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
@@ -164,6 +164,7 @@ export default function SeccionDiaActual(props: Props) {
 		Pronóstico
 	</a>
 	</div>
+  */}
 
     </section>
   );
