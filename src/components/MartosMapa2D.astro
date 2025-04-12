@@ -286,27 +286,27 @@ const pointsJSON = JSON.stringify(points);
       }
       
       // Configurar eventos para los botones con stopPropagation
-	document.getElementById('location-btn').addEventListener('click', function(e) {
-		e.stopPropagation(); // Detiene la propagación
-		handleLocationRequest();
-	});
+	// document.getElementById('location-btn').addEventListener('click', function(e) {
+	// 	e.stopPropagation(); // Detiene la propagación
+	// 	handleLocationRequest();
+	// });
 
-	document.getElementById('back-btn').addEventListener('click', function(e) {
-		e.stopPropagation(); // Detiene la propagación
-		window.history.back();
-	});
+	// document.getElementById('back-btn').addEventListener('click', function(e) {
+	// 	e.stopPropagation(); // Detiene la propagación
+	// 	window.history.back();
+	// });
 
-	document.getElementById('play-btn').addEventListener('click', function(e) {
-		e.stopPropagation(); // Detiene la propagación
-		toggleAnimation();
-	});
+	// document.getElementById('play-btn').addEventListener('click', function(e) {
+	// 	e.stopPropagation(); // Detiene la propagación
+	// 	toggleAnimation();
+	// });
       
       
       // Inicializar la visualización en la posición inicial
       updatePosition(0);
       updateCurrentStreet(0);
       // Coger ultima ubicacion
-    //   addLastLocationMarker();
+      addLastLocationMarker();
       
     } catch (error) {
       console.error("Error al inicializar el mapa:", error);
@@ -317,29 +317,54 @@ const pointsJSON = JSON.stringify(points);
 
   async function addLastLocationMarker() {
   try {
+    // Obtener la última ubicación desde la API
     const response = await fetch("https://owntracks-api.semanasantatracker.workers.dev/last-location");
     const data = await response.json();
-    const { lat, lon, battery } = data;
-
-    const icon = L.divIcon({
-      className: 'last-location-marker',
-      html: `<div style="
-        background: #f87171;
-        border: 3px solid white;
-        border-radius: 50%;
-        width: 18px;
-        height: 18px;
-        box-shadow: 0 0 6px rgba(0,0,0,0.5);
-      " title="Última ubicación (batería: ${battery}%)"></div>`,
-      iconSize: [18, 18],
-      iconAnchor: [9, 9]
-    });
-
-    L.marker([lat, lon], { icon })
-      .addTo(map)
-      .bindPopup(`<strong>Última ubicación conocida</strong><br>Lat: ${lat}<br>Lon: ${lon}<br>Batería: ${battery}%`);
+    const { lat, lon } = data;
+    
+    // Encontrar el punto de la ruta más cercano a la ubicación actual
+    let closestPointIndex = 0;
+    let minDistance = Infinity;
+    
+    for (let i = 0; i < route.length; i++) {
+      const routePoint = route[i];
+      // Calcular distancia entre la ubicación real y el punto de la ruta
+      const distance = Math.sqrt(
+        Math.pow(routePoint[0] - lat, 2) + 
+        Math.pow(routePoint[1] - lon, 2)
+      );
+      
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestPointIndex = i;
+      }
+    }
+    
+    // Actualizar la posición del marcador del trono
+    if (animatedMarker) {
+      animatedMarker.setLatLng([lat, lon]);
+    }
+    
+    // Actualizar la ruta completada (en dorado)
+    currentPosition = closestPointIndex;
+    const completedPath = route.slice(0, closestPointIndex + 1).concat([[lat, lon]]);
+    if (completedRouteLayer) {
+      completedRouteLayer.setLatLngs(completedPath);
+    }
+    
+    // Centrar el mapa en la nueva posición
+    if (map) {
+      map.panTo([lat, lon]);
+    }
+    
+    // Actualizar estado
+    isPaused = true; // Para que la animación automática no interfiera
+    
+    // Programar la siguiente actualización
+    setTimeout(addLastLocationMarker, 10000); // Actualizar cada 10 segundos
   } catch (err) {
     console.error("Error obteniendo la última ubicación:", err);
+    setTimeout(addLastLocationMarker, 30000); // Reintentar tras error con más tiempo
   }
 }
 

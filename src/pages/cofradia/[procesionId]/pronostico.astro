@@ -1,0 +1,416 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { rutasProcesiones, puntosInteresProcesiones } from '../../../data/rutas-procesiones';
+import diasRaw from '../../../data/dias.json';
+
+// Obtener el parámetro de ruta dinámica
+const { procesionId = 'borriquita' } = Astro.params as { procesionId: string };
+
+// Encontrar los datos de la procesión
+const dias = diasRaw;
+let procesion = null;
+let diaProcesion = null;
+
+for (let i = 0; i < dias.length; i++) {
+  for (const p of dias[i].procesiones) {
+    const id = p.nombre.toLowerCase().replace(/\s+/g, '-');
+    if (id === procesionId) {
+      diaProcesion = dias[i];
+      procesion = p;
+      break;
+    }
+  }
+  if (procesion) break;
+}
+
+// Título formateado para mostrar
+const titulo = procesionId
+  .split('-')
+  .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+  .join(' ');
+
+// Definir las rutas estáticas que se deben generar
+export function getStaticPaths() {
+  return Object.keys(rutasProcesiones).map(id => ({
+    params: { procesionId: id }
+  }));
+}
+
+// Variables para datos meteorológicos
+let weatherData;
+let weatherForProcession = null;
+let probabilidadSalida = 100; // Por defecto 100%
+let fechaProcesion = null;
+let errorMeteo = null;
+
+try {
+  // Generar fechas de Semana Santa 2025 basadas en los títulos de días en el JSON
+// Definir correctamente el tipo para semanaSantaFechas
+const semanaSantaFechas: Record<string, Date> = {};
+const añoProcesion = 2025;
+const mesSemanaSanta = 3; // Abril (0-indexado)
+
+// Mapeamos cada título de día a su fecha correspondiente
+dias.forEach((dia, index) => {
+  // Fecha base: comenzamos con el primer día de procesiones (12 de abril 2025)
+  const fecha = new Date(añoProcesion, mesSemanaSanta, 12 + index);
+  // Usamos la propiedad como string con seguridad de tipos
+  semanaSantaFechas[dia.titulo as string] = fecha;
+});
+
+fechaProcesion = diaProcesion ? semanaSantaFechas[diaProcesion.titulo as string] : null;
+  
+  // Solo intentar obtener datos meteorológicos si tenemos una fecha válida
+  if (fechaProcesion && procesion?.horaSalida) {
+    // Calcular hora para la API
+    const horaParts = procesion.horaSalida.split(':');
+    const hora = parseInt(horaParts[0], 10);
+    
+    // Obtener datos meteorológicos para Martos (37.7219, -3.9699)
+    const weatherApiUrl = `https://api.open-meteo.com/v1/forecast?latitude=37.72&longitude=-3.97&hourly=temperature_2m,precipitation_probability,windspeed_10m,weathercode&forecast_days=7&timezone=Europe/Madrid`;
+    const response = await fetch(weatherApiUrl);
+    
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+    
+    weatherData = await response.json();
+    
+    // Encontrar el índice en los datos horarios
+    const fechaStr = `${fechaProcesion.getFullYear()}-${String(fechaProcesion.getMonth() + 1).padStart(2, '0')}-${String(fechaProcesion.getDate()).padStart(2, '0')}`;
+    const timeIndex = weatherData.hourly.time.findIndex((time: string) =>
+  	time.includes(fechaStr) && time.includes(`T${String(hora).padStart(2, '0')}`)
+	);
+    
+    if (timeIndex !== -1) {
+      weatherForProcession = {
+        temperatura: weatherData.hourly.temperature_2m[timeIndex],
+        precipitacion: weatherData.hourly.precipitation_probability[timeIndex],
+        viento: weatherData.hourly.windspeed_10m[timeIndex],
+        codigo: weatherData.hourly.weathercode[timeIndex]
+      };
+      
+      // Calcular probabilidad de salida basada en condiciones
+      if (weatherForProcession.precipitacion > 70) {
+        probabilidadSalida = 10; // Alta probabilidad de lluvia
+      } else if (weatherForProcession.precipitacion > 50) {
+        probabilidadSalida = 30;
+      } else if (weatherForProcession.precipitacion > 30) {
+        probabilidadSalida = 60;
+      } else if (weatherForProcession.viento > 40) {
+        probabilidadSalida = 40; // Viento fuerte
+      } else if (weatherForProcession.precipitacion > 20) {
+        probabilidadSalida = 80;
+      }
+    }
+  }
+} catch (error) {
+  console.error("Error al procesar datos meteorológicos:", error);
+  errorMeteo = error instanceof Error ? error.message : "Error desconocido";
+}
+
+// Funciones auxiliares para la interfaz
+function getWeatherDescription(code: string | number) {
+  const weatherCodes: Record<string | number, string> = {
+    0: "Cielo despejado",
+    1: "Principalmente despejado",
+    2: "Parcialmente nublado",
+    3: "Nublado",
+    45: "Niebla",
+    48: "Niebla con escarcha",
+    51: "Llovizna ligera",
+    53: "Llovizna moderada",
+    55: "Llovizna densa",
+    61: "Lluvia ligera",
+    63: "Lluvia moderada",
+    65: "Lluvia fuerte",
+    80: "Lluvia ligera intermitente",
+    95: "Tormenta"
+  };
+  return weatherCodes[code] || "Condiciones desconocidas";
+}
+
+function getWeatherIcon(code: number) {
+  if (code === 0) return "sun";
+  if (code <= 2) return "sun-cloud";
+  if (code <= 3) return "cloud";
+  if (code <= 48) return "fog";
+  if (code <= 55) return "drizzle";
+  if (code <= 65) return "rain";
+  if (code <= 80) return "showers";
+  return "storm";
+}
+
+function getIconPath(iconName: string) {
+  return `/assets/icons/weather/${iconName}.svg`;
+}
+
+function getProbabilidadColor(probabilidad: number) {
+  if (probabilidad > 75) return { color: '#22c55e', text: 'text-green-600' }; // Verde
+  if (probabilidad > 50) return { color: '#eab308', text: 'text-yellow-600' }; // Amarillo
+  if (probabilidad > 25) return { color: '#f97316', text: 'text-orange-600' }; // Naranja
+  return { color: '#ef4444', text: 'text-red-600' }; // Rojo
+}
+
+function formatDate(date: Date | null | undefined) {
+  if (!date) return '';
+  const options: Intl.DateTimeFormatOptions = { 
+    weekday: 'long', 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  };
+  return date.toLocaleDateString('es-ES', options);
+}
+
+const metaTitle = procesion ? `Pronóstico del tiempo para ${procesion.nombre} - Semana Santa Martos` : 'Pronóstico - Semana Santa Martos';
+const metaDesc = procesion ? `Consulta las condiciones meteorológicas para la procesión de ${procesion.nombre} en Martos el ${fechaProcesion ? formatDate(fechaProcesion) : ''}` : 'Información meteorológica para procesiones de Semana Santa en Martos';
+---
+
+<Layout 
+  title={metaTitle}
+  description={metaDesc}
+  keywords={`pronóstico tiempo Semana Santa Martos, meteorología ${procesion?.nombre || 'procesiones'}, probabilidad lluvia Semana Santa`}
+>
+  <main class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-200">
+    <div class="max-w-4xl mx-auto pt-6 pb-16 px-4">
+		<div class="mb-6">
+			<a href={`/cofradia/${procesionId}`} class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition-colors">
+			  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+			  </svg>
+			  Volver
+			</a>
+		</div>
+      
+      <h1 class="text-3xl sm:text-4xl font-bold mb-3 text-center text-gray-800">
+        {procesion ? `Pronóstico para ${procesion.nombre}` : 'Procesión no encontrada'}
+      </h1>
+      
+      {procesion && diaProcesion ? (
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+          <div class="bg-gradient-to-r from-indigo-600 to-blue-500 text-white py-0 px-0">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-0">
+              <div>
+                <h2 class="text-2xl font-bold">{diaProcesion.titulo}</h2>
+                <p class="text-indigo-100 mt-1">
+                  {fechaProcesion ? formatDate(fechaProcesion) : 'Fecha por determinar'}
+                </p>
+                <div class="flex items-center gap-2 mt-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <p>{procesion.horaSalida} - Salida</p>
+                </div>
+                <div class="flex items-center gap-2 mt-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                  </svg>
+                  <p>{procesion.parroquia}</p>
+                </div>
+              </div>
+              
+              {weatherForProcession && (
+                <div class="bg-white/20 backdrop-blur-sm p-3 rounded-lg flex items-center">
+                  <img 
+                    src={getIconPath(getWeatherIcon(weatherForProcession.codigo))} 
+                    alt="Icono del tiempo" 
+                    width="80" 
+                    height="80"
+                    class="w-20 h-20 object-contain" 
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <div class="p-6">
+            {weatherForProcession ? (
+              <div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                  <div class="bg-blue-50 p-5 rounded-lg text-center transform transition hover:scale-105">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto text-blue-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <h3 class="text-lg font-semibold text-blue-800">Temperatura</h3>
+                    <p class="text-4xl font-bold text-blue-600 mt-2">{weatherForProcession.temperatura}°C</p>
+                  </div>
+                  
+                  <div class="bg-blue-50 p-5 rounded-lg text-center transform transition hover:scale-105">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto text-blue-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <h3 class="text-lg font-semibold text-blue-800">Probabilidad de lluvia</h3>
+                    <p class="text-4xl font-bold text-blue-600 mt-2">{weatherForProcession.precipitacion}%</p>
+                  </div>
+                  
+                  <div class="bg-blue-50 p-5 rounded-lg text-center transform transition hover:scale-105">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto text-blue-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
+                    </svg>
+                    <h3 class="text-lg font-semibold text-blue-800">Viento</h3>
+                    <p class="text-4xl font-bold text-blue-600 mt-2">{weatherForProcession.viento} km/h</p>
+                  </div>
+                </div>
+                
+                <div class="mb-8 p-5 bg-gray-50 rounded-lg">
+                  <h3 class="text-xl font-bold mb-3 text-gray-700 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Condiciones meteorológicas
+                  </h3>
+                  <p class="text-lg text-gray-700">{getWeatherDescription(weatherForProcession.codigo)}</p>
+                </div>
+                
+                <div class="border-t border-gray-200 pt-8">
+                  <h3 class="text-2xl font-bold mb-6 text-center text-gray-700">Probabilidad de salida</h3>
+                  
+                  {/* Medidor visual */}
+                  <div class="w-full bg-gray-200 rounded-full h-8 mb-6 overflow-hidden shadow-inner">
+                    <div class="h-8 rounded-full text-center text-white font-medium flex items-center justify-center transition-all duration-1000 ease-out" 
+                         style={`width: ${probabilidadSalida}%; background-color: ${getProbabilidadColor(probabilidadSalida).color};`}>
+                      <span class="drop-shadow-md">{probabilidadSalida}%</span>
+                    </div>
+                  </div>
+                  
+                  <div class={`text-center p-4 rounded-lg bg-opacity-20 ${getProbabilidadColor(probabilidadSalida).text} bg-${getProbabilidadColor(probabilidadSalida).text.replace('text-', '')}-100`}>
+                    <p class="text-lg font-semibold">
+                      {probabilidadSalida > 75 ? 'Alta probabilidad de que la procesión salga con normalidad.' : 
+                       probabilidadSalida > 50 ? 'Es probable que la procesión salga, pero podría haber cambios según evolucione el tiempo.' :
+                       probabilidadSalida > 25 ? 'Hay riesgo de que la procesión no pueda salir o se vea alterada por las condiciones climáticas.' : 
+                       'Es muy probable que la procesión se suspenda debido a las condiciones meteorológicas adversas.'}
+                    </p>
+                    
+                    <div class="text-sm mt-2">
+                      {weatherForProcession.precipitacion > 30 && (
+                        <p class="inline-flex items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                          </svg>
+                          Riesgo de lluvia elevado ({weatherForProcession.precipitacion}%)
+                        </p>
+                      )}
+                      
+                      {weatherForProcession.viento > 30 && (
+                        <p class="inline-flex items-center ml-4">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                          </svg>
+                          Viento fuerte ({weatherForProcession.viento} km/h)
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="mt-10 text-center text-sm text-gray-500 bg-gray-50 p-4 rounded-lg">
+                  <p class="flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Los datos meteorológicos son orientativos y pueden cambiar. Consulta fuentes oficiales para información actualizada.
+                  </p>
+                  
+                  <p class="mt-2 text-xs">
+                    Última actualización: {new Date().toLocaleString('es-ES')}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div class="text-center py-10 px-4">
+                {errorMeteo ? (
+                  <div class="text-red-500">
+                    <svg class="mx-auto w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                    <h3 class="text-xl font-bold mt-4 mb-2">Error al obtener datos meteorológicos</h3>
+                    <p>{errorMeteo}</p>
+                  </div>
+                ) : !fechaProcesion ? (
+                  <div class="text-amber-600">
+                    <svg class="mx-auto w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <h3 class="text-xl font-bold mt-4">Fecha no disponible</h3>
+                    <p class="mt-2">No se pudo determinar la fecha exacta para esta procesión.</p>
+                  </div>
+                ) : (
+                  <div class="text-gray-600">
+                    <svg class="mx-auto w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path>
+                    </svg>
+                    <h3 class="text-xl font-bold mt-4">Predicción no disponible</h3>
+                    <p class="mt-2">Los datos meteorológicos para la fecha {formatDate(fechaProcesion)} aún no están disponibles.</p>
+                    <p class="mt-1 text-sm">Vuelve a consultar más cerca de la fecha de la procesión.</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div class="text-center py-16 bg-white rounded-xl shadow-md border border-gray-100">
+          <svg class="mx-auto w-20 h-20 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <h2 class="text-3xl font-bold text-red-600 mt-4">Procesión no encontrada</h2>
+          <p class="mt-4 text-gray-600">No se ha encontrado información sobre esta procesión.</p>
+          <a href="/" class="mt-6 inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            Volver al inicio
+          </a>
+        </div>
+      )}
+      
+      <div class="mt-10 text-center">
+        <a href="/cofradia" class="text-blue-600 hover:text-blue-800 inline-flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+          Ver todas las cofradías
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Schema.org para SEO -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Event",
+    "name": procesion?.nombre,
+    "description": procesion?.descripcion,
+    "startDate": fechaProcesion?.toISOString(),
+    "location": {
+      "@type": "Place",
+      "name": procesion?.parroquia,
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Martos",
+        "addressRegion": "Jaén",
+        "addressCountry": "ES"
+      }
+    },
+    "eventStatus": probabilidadSalida > 50 ? "https://schema.org/EventScheduled" : "https://schema.org/EventCancelled",
+    "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+    "organizer": {
+      "@type": "Organization",
+      "name": procesion?.cofradia,
+      "url": `https://semanasantamartos.es/cofradia/${procesionId}`
+    }
+  })}>
+  </script>
+</Layout>
+
+<style>
+/* Efecto de transición para los elementos */
+.transform {
+  transition: transform 0.2s ease-in-out;
+}
+
+/* Mejora para las cajas de información */
+.bg-blue-50 {
+  background-color: black;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(191, 219, 254, 0.3);
+}
+</style>
