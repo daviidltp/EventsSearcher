@@ -34,9 +34,9 @@ const pointsJSON = JSON.stringify(points);
   <!-- Bottom Sheet para la calle actual y botones -->
   <div id="street-info-container" class="bottom-sheet-container">
     <!-- Indicador de arrastre (puramente decorativo) -->
-    <div class="drag-handle">
-      <div class="drag-indicator"></div>
-    </div>
+    <div id="bottom-sheet-handle" class="drag-handle">
+		<div class="drag-indicator"></div>
+	</div>
     
     <!-- Información de la calle -->
     <p id="current-street" class="current-street-text">Iniciando recorrido...</p>
@@ -285,10 +285,21 @@ const pointsJSON = JSON.stringify(points);
         });
       }
       
-      // Configurar eventos para los botones
-      document.getElementById('location-btn').addEventListener('click', handleLocationRequest);
-      document.getElementById('back-btn').addEventListener('click', () => window.history.back());
-      document.getElementById('play-btn').addEventListener('click', toggleAnimation);
+      // Configurar eventos para los botones con stopPropagation
+	document.getElementById('location-btn').addEventListener('click', function(e) {
+		e.stopPropagation(); // Detiene la propagación
+		handleLocationRequest();
+	});
+
+	document.getElementById('back-btn').addEventListener('click', function(e) {
+		e.stopPropagation(); // Detiene la propagación
+		window.history.back();
+	});
+
+	document.getElementById('play-btn').addEventListener('click', function(e) {
+		e.stopPropagation(); // Detiene la propagación
+		toggleAnimation();
+	});
       
       
       // Inicializar la visualización en la posición inicial
@@ -469,13 +480,15 @@ function createPlazaIcon(title) {
   });
 }
   
+  let isGpsRequestInProgress = false;
   // Función para mostrar la ubicación del usuario
   function handleLocationRequest() {
-    if (!map) return;
+	if (!map || isGpsRequestInProgress) return; // Prevenir múltiples clics
     
     if (!isLocationActive) {
       // Activar
       if ("geolocation" in navigator) {
+		isGpsRequestInProgress = true;
         // Cambiar estilo del botón para indicar activación
         document.getElementById('location-btn').classList.add('active-btn');
         
@@ -485,7 +498,7 @@ function createPlazaIcon(title) {
           function(position) {
             const userLat = position.coords.latitude;
             const userLng = position.coords.longitude;
-            
+            isGpsRequestInProgress = false;
             // Crear icono de ubicación si no existe
             if (!userLocationMarker) {
               // Crear icono personalizado para la ubicación
@@ -520,6 +533,7 @@ function createPlazaIcon(title) {
           // Error
           function(error) {
             let errorMsg;
+			isGpsRequestInProgress = false;
             switch(error.code) {
               case error.PERMISSION_DENIED:
                 errorMsg = "Necesitas permitir el acceso a tu ubicación para usar esta función.";
@@ -548,6 +562,7 @@ function createPlazaIcon(title) {
         );
       } else {
         alert("Tu navegador no soporta geolocalización");
+		isGpsRequestInProgress = false;
       }
     } else {
       // Desactivar
@@ -555,6 +570,7 @@ function createPlazaIcon(title) {
         userLocationMarker.closePopup();
         map.removeLayer(userLocationMarker);
         userLocationMarker = null;
+		isGpsRequestInProgress = false;
       }
       
       document.getElementById('location-btn').classList.remove('active-btn');
@@ -563,104 +579,90 @@ function createPlazaIcon(title) {
   }
   // Inicializar el manejo del bottom sheet
   function initBottomSheet() {
-    const bottomSheet = document.getElementById('street-info-container');
-    bottomSheetHeight = bottomSheet.offsetHeight;
-    
-    // Añadir botón para mostrar panel si está oculto
-    const mapContainer = document.querySelector('.map-container');
-    const showButton = document.createElement('button');
-    showButton.id = 'show-bottom-sheet';
-    showButton.innerHTML = '↑';
-    showButton.className = 'show-bottom-btn hidden';
-    showButton.addEventListener('click', showBottomSheet);
-    mapContainer.appendChild(showButton);
-    
-    // Solo activar para móviles
-    if (window.innerWidth <= 768) {
-      // Evento para iniciar el arrastre
-      bottomSheet.addEventListener('touchstart', function(e) {
-        touchStartY = e.touches[0].clientY;
-        bottomSheet.style.transition = 'none';
-      }, { passive: true });
-
-      // Evento para el arrastre
-      bottomSheet.addEventListener('touchmove', function(e) {
-        touchCurrentY = e.touches[0].clientY;
-        const deltaY = touchCurrentY - touchStartY;
-        
-        // Permitir arrastres en ambas direcciones
-        const newHeight = Math.max(0, Math.min(window.innerHeight * 0.8, bottomSheetHeight - deltaY));
-        bottomSheet.style.height = `${newHeight}px`;
-        
-        // Si el arrastre es grande hacia abajo, permitir ocultarlo completamente
-        if (deltaY > bottomSheetHeight/2) {
-          bottomSheet.style.transform = `translateY(${deltaY}px)`;
-        } else {
-          bottomSheet.style.transform = `translateY(${Math.max(0, deltaY)}px)`;
-        }
-      }, { passive: true });
-
-      // Evento para finalizar el arrastre
-      bottomSheet.addEventListener('touchend', function() {
-        bottomSheet.style.transition = 'transform 0.3s ease, height 0.3s ease';
-        
-        // Si arrastró hacia arriba lo suficiente, expandir
-        if (touchCurrentY < touchStartY - 50 && bottomSheetState === 'collapsed') {
-          expandBottomSheet();
-        } 
-        // Si arrastró hacia abajo lo suficiente desde estado colapsado, ocultar
-        else if (touchCurrentY > touchStartY + 100 && bottomSheetState === 'collapsed') {
-          hideBottomSheet();
-        }
-        // Si arrastró hacia abajo desde estado expandido, colapsar
-        else if (touchCurrentY > touchStartY + 50 && bottomSheetState === 'expanded') {
-          collapseBottomSheet();
-        } 
-        // Volver al estado inicial
-        else {
-          bottomSheet.style.transform = '';
-          bottomSheet.style.height = '';
-        }
-      }, { passive: true });
-
-	  bottomSheet.addEventListener('touchend', function() {
-  bottomSheet.style.transition = 'transform 0.3s ease, height 0.3s ease';
+  const bottomSheet = document.getElementById('street-info-container');
+  const dragHandle = document.getElementById('bottom-sheet-handle');
+  bottomSheetHeight = bottomSheet.offsetHeight;
   
-  // Si arrastró hacia arriba lo suficiente, expandir
-  if (touchCurrentY < touchStartY - 50 && (bottomSheetState === 'collapsed' || bottomSheetState === 'peeking')) {
-    expandBottomSheet();
-  } 
-  // Si arrastró hacia abajo lo suficiente desde estado colapsado, mostrar solo tirador
-  else if (touchCurrentY > touchStartY + 100 && bottomSheetState === 'collapsed') {
-    hideBottomSheet();
-  }
-  // Si arrastró hacia abajo desde estado expandido, colapsar
-  else if (touchCurrentY > touchStartY + 50 && bottomSheetState === 'expanded') {
-    collapseBottomSheet();
-  }
-  // Si estamos en estado peeking y hay un toque en el tirador, mostrar
-  else if (bottomSheetState === 'peeking') {
-    showBottomSheet();
-  }
-  // Volver al estado inicial
-  else {
-    bottomSheet.style.transform = '';
-    bottomSheet.style.height = '';
-  }
-}, { passive: true });
-      // Evento click en el indicador de arrastre
-      document.querySelector('.drag-handle').addEventListener('click', function() {
-        if (bottomSheetState === 'collapsed') {
-          expandBottomSheet();
-        } else if (bottomSheetState === 'expanded') {
-          collapseBottomSheet();
-        }
-      });
+  // Añadir botón para mostrar panel si está oculto (mantener por si acaso)
+  const mapContainer = document.querySelector('.map-container');
+  const showButton = document.createElement('button');
+  showButton.id = 'show-bottom-sheet';
+  showButton.innerHTML = '↑';
+  showButton.className = 'show-bottom-btn hidden';
+  showButton.addEventListener('click', showBottomSheet);
+  mapContainer.appendChild(showButton);
+  
+  // Solo activar para móviles
+  if (window.innerWidth <= 768) {
+    let isDragging = false;
+    
+    // Evento para iniciar el arrastre SOLO en el tirador
+    dragHandle.addEventListener('touchstart', function(e) {
+      touchStartY = e.touches[0].clientY;
+      bottomSheet.style.transition = 'none';
+      isDragging = true;
+      e.stopPropagation(); // Importante: detiene la propagación
+    }, { passive: false });
+
+    // Evento para el arrastre - solo si comenzó en el tirador
+    document.addEventListener('touchmove', function(e) {
+      if (!isDragging) return;
       
-      // Doble toque para ocultar
-    //   document.querySelector('.drag-handle').addEventListener('dblclick', hideBottomSheet);
-    }
+      touchCurrentY = e.touches[0].clientY;
+      const deltaY = touchCurrentY - touchStartY;
+      
+      // Permitir arrastres
+      const newHeight = Math.max(0, Math.min(window.innerHeight * 0.8, bottomSheetHeight - deltaY));
+      bottomSheet.style.height = `${newHeight}px`;
+      
+      // Movimiento vertical
+      if (deltaY > bottomSheetHeight/2) {
+        bottomSheet.style.transform = `translateY(${deltaY}px)`;
+      } else {
+        bottomSheet.style.transform = `translateY(${Math.max(0, deltaY)}px)`;
+      }
+    }, { passive: true });
+
+    // Evento para finalizar el arrastre
+    document.addEventListener('touchend', function() {
+      if (!isDragging) return;
+      isDragging = false;
+      
+      bottomSheet.style.transition = 'transform 0.3s ease, height 0.3s ease';
+      
+      // Procesar el resultado del arrastre
+      if (touchCurrentY < touchStartY - 50 && (bottomSheetState === 'collapsed' || bottomSheetState === 'peeking')) {
+        expandBottomSheet();
+      } 
+      else if (touchCurrentY > touchStartY + 100 && bottomSheetState === 'collapsed') {
+        hideBottomSheet();
+      }
+      else if (touchCurrentY > touchStartY + 50 && bottomSheetState === 'expanded') {
+        collapseBottomSheet();
+      }
+      else if (bottomSheetState === 'peeking') {
+        showBottomSheet();
+      }
+      else {
+        bottomSheet.style.transform = '';
+        bottomSheet.style.height = '';
+      }
+    }, { passive: true });
+    
+    // Evento click solo en el tirador (no arrastre)
+    dragHandle.addEventListener('click', function(e) {
+      e.stopPropagation();
+      
+      if (bottomSheetState === 'collapsed') {
+        expandBottomSheet();
+      } else if (bottomSheetState === 'expanded') {
+        collapseBottomSheet();
+      } else if (bottomSheetState === 'peeking') {
+        showBottomSheet();
+      }
+    });
   }
+}
 
   function expandBottomSheet() {
     const bottomSheet = document.getElementById('street-info-container');
@@ -976,7 +978,8 @@ function showBottomSheet() {
   padding-bottom: 0.5rem;
   display: flex;
   justify-content: center;
-  cursor: grab;
+  cursor: default;
+  pointer-events: auto !important; /* Permitir interacciones específicas */
 }
 
 .drag-indicator {
@@ -984,8 +987,14 @@ function showBottomSheet() {
   height: 5px;
   background-color: rgba(255, 255, 255, 0.5);
   border-radius: 2.5px;
+  pointer-events: none; /* El indicador visual no captura eventos */
 }
 
+/* Para estado peeking */
+.bottom-sheet-container.peeking .drag-handle {
+  padding-top: 8px;
+  padding-bottom: 12px;
+}
 
 
 /* Comportamiento en escritorio */
