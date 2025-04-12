@@ -7,15 +7,31 @@ interface Props {
     description?: string
   }>;
   title?: string;
-  enCalle?: boolean;
 }
 
 const { 
   route = [], 
   points = [], 
-  title = "Martos - Semana Santa" ,
-  enCalle = false
+  title = "Martos - Semana Santa" 
 } = Astro.props;
+
+const { procesionId = 'borriquita' } = Astro.params as { procesionId: string };
+
+let enCalle = false;
+
+try {
+  const response = await fetch(`https://owntracks-api.semanasantatracker.workers.dev/procesiones?id=${procesionId}`);
+  const data = await response.json();
+
+  if (Array.isArray(data) && data.length > 0 && data[0].estado === 'Directo') {
+    enCalle = true;
+    console.log('enCalle');
+  }
+} catch (error) {
+  console.error('Error al consultar estado de procesión:', error);
+}
+
+const enCalleJSON = JSON.stringify(enCalle); 
 
 // Centro de Martos
 const MARTOS_CENTER = [37.7219, -3.9699];
@@ -23,6 +39,7 @@ const MARTOS_CENTER = [37.7219, -3.9699];
 // Convertimos los datos a JSON para pasarlos al cliente
 const routeJSON = JSON.stringify(route);
 const pointsJSON = JSON.stringify(points);
+
 ---
 
 <div class="map-container w-full h-full relative">
@@ -80,7 +97,7 @@ const pointsJSON = JSON.stringify(points);
 <script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script is:inline src="https://unpkg.com/leaflet-ant-path/dist/leaflet-ant-path.js"></script>
 
-<script define:vars={{ routeJSON, pointsJSON, MARTOS_CENTER }}>
+<script define:vars={{ routeJSON, pointsJSON, MARTOS_CENTER, enCalleJSON }}>
   // Parsear datos JSON
   const route = JSON.parse(routeJSON);
   const points = JSON.parse(pointsJSON);
@@ -138,10 +155,17 @@ const pointsJSON = JSON.stringify(points);
       });
       
       // Capa base de imágenes satelitales
-      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+   /*   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
         attribution: false,
         maxZoom: 19
+      }).addTo(map);*/
+
+      // Capa base de mapa "normal" tipo Google Maps
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
       }).addTo(map);
+
 
       // Capa de etiquetas para nombres de calles con mejor contraste y legibilidad
       L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_only_labels/{z}/{x}/{y}{r}.png', {
@@ -308,7 +332,12 @@ const pointsJSON = JSON.stringify(points);
       updatePosition(0);
       updateCurrentStreet(0);
       // Coger ultima ubicacion
-     // addLastLocationMarker();
+      const enCalle = JSON.parse(enCalleJSON);
+
+      if (enCalle) {
+        addLastLocationMarker();
+      }
+
       
     } catch (error) {
       console.error("Error al inicializar el mapa:", error);

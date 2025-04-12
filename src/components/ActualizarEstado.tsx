@@ -141,7 +141,7 @@ export default function ActualizarEstado() {
               onChange={(e) => setEstado(e.target.value)}
               className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white p-2 rounded"
             >
-              <option value="OK">En marcha</option>
+              <option value="OK">Correcto</option>
               <option value="Directo">En directo</option>
               <option value="Cancelada por lluvia">Cancelada por lluvia</option>
               <option value="Retrasada">Retrasada</option>
