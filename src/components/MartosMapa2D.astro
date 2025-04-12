@@ -7,12 +7,14 @@ interface Props {
     description?: string
   }>;
   title?: string;
+  enCalle?: boolean;
 }
 
 const { 
   route = [], 
   points = [], 
-  title = "Martos - Semana Santa" 
+  title = "Martos - Semana Santa" ,
+  enCalle = false
 } = Astro.props;
 
 // Centro de Martos
@@ -306,7 +308,7 @@ const pointsJSON = JSON.stringify(points);
       updatePosition(0);
       updateCurrentStreet(0);
       // Coger ultima ubicacion
-      addLastLocationMarker();
+     // addLastLocationMarker();
       
     } catch (error) {
       console.error("Error al inicializar el mapa:", error);
@@ -453,7 +455,7 @@ const pointsJSON = JSON.stringify(points);
     // }
     
     // Actualizar el texto de la calle actual
-    document.getElementById('current-street').textContent = streetName;
+    //document.getElementById('current-street').textContent = streetName;
   }
   
   // Función para crear iconos personalizados

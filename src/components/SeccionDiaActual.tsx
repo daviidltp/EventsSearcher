@@ -153,9 +153,6 @@ export default function SeccionDiaActual(props: Props) {
 		</svg>
 		Pronóstico
 	</a>
-	<a href={`/cofradia/${rutaId}/recorrido`}>
-		<BotonEstado estado={estado} estaEnCalle={estaEnCalle} />
-	</a>
 	</div>
 
 	{/* Botón móvil - también añadir versión móvil */}
@@ -165,9 +162,6 @@ export default function SeccionDiaActual(props: Props) {
 		<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
 		</svg>
 		Pronóstico
-	</a>
-	<a href={`/cofradia/${rutaId}/recorrido`}>
-		<BotonEstado estado={estado} estaEnCalle={estaEnCalle} />
 	</a>
 	</div>
 

@@ -114,9 +114,9 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
             }
 
             const margenAntes = new Date(fechaSalida);
-            margenAntes.setMinutes(margenAntes.getMinutes() - 30);
+            margenAntes.setMinutes(margenAntes.getMinutes() - 5);
             const margenDespues = new Date(fechaLlegada);
-            margenDespues.setMinutes(margenDespues.getMinutes() + 30);
+            margenDespues.setMinutes(margenDespues.getMinutes() + 10);
 
             if (ahora >= margenAntes && ahora <= margenDespues) {
               enCalle.push(procesion);
