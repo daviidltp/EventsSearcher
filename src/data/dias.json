@@ -1,5 +1,38 @@
 [
   {
+    "titulo": "Sábado de Pasión",
+    "procesiones": [
+      {
+        "id": "via-crucis",
+        "nombre": "Via Crucis",
+        "descripcion": "Cristo de las Penas - Via Crucis",
+        "cofradia": "",
+        "fundacion": "",  
+        "parroquia": "Iglesia parroquial de San Amador y Santa Ana",
+        "diaSalida": "Sábado de Pasión",
+        "horaSalida": "20:00",
+        "horaLlegada": "22:30",
+        "entradaCruzGuiaCarreraOficial": "22:40",
+        "salidaCruzGuiaCarreraOficial": "23:00",
+        "itinerario": [
+          "Placeta de San Amador",
+          "Llana Baja",
+          "Las Parras",
+          "Carnicería",
+          "La Fuente"
+        ],
+        "sitios_interes": [
+        ],
+        "autor_imagen": {
+        },
+        "imagenCaratula": "/assets/toWEBP/via-crucis.webp",
+        "imagenExtendida": "/assets/toWEBP/via-crucis-extended.webp",
+        "posicionImagen": "center",
+        "acompaniamiento-musical" : ""
+      }
+    ]
+  },
+  {
     "titulo": "Domingo de Ramos",
     "procesiones": [
       {
