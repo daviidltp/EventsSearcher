@@ -1,5 +1,10 @@
 [
   {
+    "nombre": "Sábado de Pasión",
+    "posicionTexto": "izquierda",
+    "colorTexto": "blanco"
+  },
+  {
     "nombre": "Domingo de Ramos",
     "posicionTexto": "izquierda",
     "colorTexto": "blanco"

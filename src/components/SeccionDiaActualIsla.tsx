@@ -68,14 +68,15 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
         let menorDiferenciaTiempo = Infinity;
 
         const fechasPorDia: Record<number, Date> = {
-          0: new Date(2025, 3, 13),
-          1: new Date(2025, 3, 14),
-          2: new Date(2025, 3, 15),
-          3: new Date(2025, 3, 16),
-          4: new Date(2025, 3, 17),
-          5: new Date(2025, 3, 18),
-          6: new Date(2025, 3, 19),
-          7: new Date(2025, 3, 20),
+          0: new Date(2025, 3, 12),
+          1: new Date(2025, 3, 13),
+          2: new Date(2025, 3, 14),
+          3: new Date(2025, 3, 15),
+          4: new Date(2025, 3, 16),
+          5: new Date(2025, 3, 17),
+          6: new Date(2025, 3, 18),
+          7: new Date(2025, 3, 19),
+          8: new Date(2025, 3, 20),
         };
 
         const fechaFinSemanaSanta = new Date(fechasPorDia[7]);

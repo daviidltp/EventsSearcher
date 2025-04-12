@@ -29,7 +29,6 @@ for (let i = 0; i < dias.length; i++) {
   if (procesion) break;
 }
 
-// Aquí puedes poner la lógica real para determinar si está en la calle
 const estaEnCalle = false;
 
 export async function getStaticPaths() {
@@ -66,57 +65,70 @@ export async function getStaticPaths() {
       />
 
       <section class="mx-auto py-10 md:px-15 px-5 space-y-6">
-        <div>
-          <h3 class="text-3xl font-bold">{procesion.cofradia} ({procesion.fundacion})</h3>
-        </div>
 
-        <div class="flex items-center">
-        <span class="w-10 h-10 bg-white rounded-full flex items-center justify-center mr-4">
-          <img src="/assets/icons/building-church.svg" alt="Iglesia" class="w-6 h-6" />
-        </span>
-        <span class="text-md">{procesion.parroquia}</span>
-      </div>
+        {procesion.cofradia && procesion.fundacion && (
+          <div>
+            <h3 class="text-3xl font-bold">{procesion.cofradia} ({procesion.fundacion})</h3>
+          </div>
+        )}
 
+        {procesion.parroquia && (
+          <div class="flex items-center">
+            <span class="w-10 h-10 bg-white rounded-full flex items-center justify-center mr-4">
+              <img src="/assets/icons/building-church.svg" alt="Iglesia" class="w-6 h-6" />
+            </span>
+            <span class="text-md">{procesion.parroquia}</span>
+          </div>
+        )}
 
-        <div>
-          <h3 class="text-xl font-bold">Horarios de salida y entrada</h3>
-          <p>Salida: {procesion.horaSalida}</p>
-          <p>Llegada a su templo: {procesion.horaLlegada}</p>
-        </div>
+        {(procesion.horaSalida || procesion.horaLlegada) && (
+          <div>
+            <h3 class="text-xl font-bold">Horarios de salida y entrada</h3>
+            {procesion.horaSalida && <p>Salida: {procesion.horaSalida}</p>}
+            {procesion.horaLlegada && <p>Llegada a su templo: {procesion.horaLlegada}</p>}
+          </div>
+        )}
 
-        <div>
-          <h3 class="text-xl font-bold">Carrera Oficial</h3>
-          <p>Entrada de la Cruz de Guía: {procesion.entradaCruzGuiaCarreraOficial}</p>
-          <p>Salida del último paso o músico: {procesion.salidaCruzGuiaCarreraOficial}</p>
-        </div>
+        {(procesion.entradaCruzGuiaCarreraOficial || procesion.salidaCruzGuiaCarreraOficial) && (
+          <div>
+            <h3 class="text-xl font-bold">Carrera Oficial</h3>
+            {procesion.entradaCruzGuiaCarreraOficial && <p>Entrada de la Cruz de Guía: {procesion.entradaCruzGuiaCarreraOficial}</p>}
+            {procesion.salidaCruzGuiaCarreraOficial && <p>Salida del último paso o músico: {procesion.salidaCruzGuiaCarreraOficial}</p>}
+          </div>
+        )}
 
-        <div>
-          <h3 class="text-xl font-bold">Itinerario</h3>
-          <p>{procesion.itinerario.join(', ')} y a su templo</p>
-        </div>
+        {Array.isArray(procesion.itinerario) && procesion.itinerario.length > 0 && (
+          <div>
+            <h3 class="text-xl font-bold">Itinerario</h3>
+            <p>{procesion.itinerario.join(', ')} y a su templo</p>
+          </div>
+        )}
 
-        <div>
-          <h3 class="text-xl font-bold">Sitios de interés</h3>
-          <p>{procesion.sitios_interes.join(', ')}</p>
-        </div>
+        {Array.isArray(procesion.sitios_interes) && procesion.sitios_interes.length > 0 && (
+          <div>
+            <h3 class="text-xl font-bold">Sitios de interés</h3>
+            <p>{procesion.sitios_interes.join(', ')}</p>
+          </div>
+        )}
 
-        {procesion.autor_imagen && (
+        {procesion.autor_imagen && Object.keys(procesion.autor_imagen).length > 0 && (
           <div>
             <h3 class="text-xl font-bold">Autoría de las imágenes titulares</h3>
             <div class="space-y-1 mt-1">
-              {Object.entries(procesion.autor_imagen).map(([nombre, autor]) => {
-                return (
-                  <p>{nombre} de {autor}</p>
-                );
-              })}
+              {Object.entries(procesion.autor_imagen).map(([nombre, autor]) => (
+                <p>{nombre} de {autor}</p>
+              ))}
             </div>
           </div>
-
-        <div>
-          <h3 class="text-xl font-bold">Acompañamiento musical</h3>
-          <p>{procesion['acompaniamiento-musical']}</p>
-        </div>
         )}
+
+        {procesion['acompaniamiento-musical'] && (
+          <div>
+            <h3 class="text-xl font-bold">Acompañamiento musical</h3>
+            <p>{procesion['acompaniamiento-musical']}</p>
+          </div>
+        )}
+
       </section>
     </>
   ) : (
