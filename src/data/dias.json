@@ -12,8 +12,8 @@
         "diaSalida": "Sábado de Pasión",
         "horaSalida": "20:00",
         "horaLlegada": "22:30",
-        "entradaCruzGuiaCarreraOficial": "22:40",
-        "salidaCruzGuiaCarreraOficial": "23:00",
+        "entradaCruzGuiaCarreraOficial": "",
+        "salidaCruzGuiaCarreraOficial": "",
         "itinerario": [
           "Placeta de San Amador",
           "Llana Baja",
@@ -38,8 +38,8 @@
       {
         "id": "borriquita",
         "nombre": "Borriquita",
-        "descripcion": "Nuestro Padre Jesús en su Entrada Triunfal en Jerusalén",
-        "cofradia": "Cofradía de Nuestro Padre Jesús en su Entrada Triunfal en Jerusalén",
+        "descripcion": "Nuestro Padre Jesús en su Entrada en Jerusalén",
+        "cofradia": "Cofradía de Nuestro Padre Jesús en su Entrada en Jerusalén",
         "fundacion": "1960",
         "parroquia": "Capilla del Colegio San Antonio de Padua",
         "diaSalida": "Domingo de Ramos",
@@ -51,7 +51,7 @@
           "San Antonio de Padua",
           "Avda. Europa",
           "Juan Ramón Jiménez",
-          "Plaza Fuente Nueva",
+          "Plaza Fuente Nueva (estación de penitencia junto a la Iglesia parroquial de San Francisco)",
           "Campiña",
           "Menor",
           "Carrera",
@@ -67,7 +67,7 @@
           "Entrada a su templo"
         ],
         "autor_imagen": {
-          "Ambas imágenes": "Talleres de Olot (Gerona)"
+          "Imágenes": "Talleres de Olot (Gerona)"
         },
         "imagenCaratula": "/assets/toWEBP/borriquita.webp",
         "imagenExtendida": "/assets/toWEBP/borriquita-extended.webp",
