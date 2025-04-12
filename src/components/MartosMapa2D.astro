@@ -244,10 +244,10 @@ const pointsJSON = JSON.stringify(points);
       const tronoIcon = L.divIcon({
         className: 'custom-paso-marker',
         html: `
-          <div class="paso-container">
-            ${pasoColoridoSVG}
-            <div class="paso-shadow"></div>
-          </div>
+          <div class="paso-container" aria-label="Paso procesional avanzando por el recorrido">
+			${pasoColoridoSVG}
+		  <div class="paso-shadow" role="presentation"></div>
+		</div>
         `,
         iconSize: [60, 72],
         iconAnchor: [30, 45],
@@ -263,7 +263,7 @@ const pointsJSON = JSON.stringify(points);
       // Añadir marcadores de inicio y fin
       L.marker(route[0], {
         icon: createCustomIcon('green', 'Inicio')
-      }).addTo(map).bindPopup('<strong>Punto de Inicio</strong>');
+      }).addTo(map).bindPopup('<strong>Punto de Inicio</strong><p>Comienza el recorrido procesional</p>');
       
       L.marker(route[route.length - 1], {
         icon: createCustomIcon('red', 'Fin') 

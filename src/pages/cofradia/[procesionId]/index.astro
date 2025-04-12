@@ -136,4 +136,32 @@ export async function getStaticPaths() {
       <h2 class="text-3xl font-bold text-red-600">Procesión no encontrada</h2>
     </section>
   )}
+
+  <!-- Después del contenido principal -->
+<script type="application/ld+json" set:html={JSON.stringify({
+	"@context": "https://schema.org",
+	"@type": "Event",
+	"name": procesion?.nombre,
+	"description": procesion?.descripcion,
+	"startDate": `2025-${procesion?.diaSalida}T${procesion?.horaSalida}`,
+	"endDate": `2025-${procesion?.diaSalida}T${procesion?.horaLlegada}`,
+	"location": {
+	  "@type": "Place",
+	  "name": procesion?.parroquia,
+	  "address": {
+		"@type": "PostalAddress",
+		"addressLocality": "Martos",
+		"addressRegion": "Jaén",
+		"addressCountry": "ES"
+	  }
+	},
+	"image": `https://tudominio.com${procesion?.imagenCaratula}`,
+	"organizer": {
+	  "@type": "Organization",
+	  "name": procesion?.cofradia,
+	  "url": `https://tudominio.com/cofradia/${procesionId}`
+	}
+  })}>
+  </script>
 </Layout>
+

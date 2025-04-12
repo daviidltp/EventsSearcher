@@ -3,7 +3,6 @@
 import Layout from '../layouts/Layout.astro';
 import SeccionDia from '../components/SeccionDia.astro';
 import SeccionDiaActualIsla from '../components/SeccionDiaActualIsla.tsx';
-
 import diasRaw from '../data/dias.json';
 import disenoDiasRaw from '../data/disenoDias.json';
 
@@ -44,8 +43,19 @@ interface DisenoDia {
 const dias = diasRaw as Dia[];
 const disenoDias = disenoDiasRaw as DisenoDia[];
 
+// Preparar metadatos para SEO
+const title = "Semana Santa Martos 2025 - Guía completa de procesiones y recorridos";
+const description = "Información actualizada sobre horarios, itinerarios y cofradías de la Semana Santa de Martos. Descubre los mejores puntos para ver las procesiones.";
+const keywords = "Semana Santa Martos, procesiones Martos 2025, horarios Semana Santa, recorridos cofradías, puntos interés Via Crucis";
+
+
 ---
-<Layout>
+<Layout
+	title={title}
+	description={description}
+	keywords={keywords}
+	ogImage="/assets/images/portada-semana-santa-martos.jpg">
+
   <SeccionDiaActualIsla client:load 
     dias={dias} 
     disenoDias={disenoDias}
@@ -111,5 +121,25 @@ const disenoDias = disenoDiasRaw as DisenoDia[];
   </div>
 </footer>
 
+<script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "speakable": {
+      "@type": "SpeakableSpecification",
+      "cssSelector": ["h1", ".dia-semana-santa", ".destacado"]
+    },
+    "name": title,
+    "description": description,
+    "breadcrumb": {
+      "@type": "BreadcrumbList",
+      "itemListElement": [{
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Inicio",
+        "item": "https://semanasantamartos.es/"
+      }]
+    }
+  })}>
+  </script>
   
 </Layout>
