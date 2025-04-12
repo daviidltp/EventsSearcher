@@ -546,88 +546,20 @@ function createIglesiaIcon(title) {
 
 // Función para crear iconos de plazas
 function createPlazaIcon(title) {
-  // SVG de una plaza con efectos 3D y elementos típicos
-  const plazaSVG = `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120" width="40" height="48" filter="drop-shadow(0 3px 5px rgba(0,0,0,0.5))">
-      <defs>
-        <!-- Gradientes y filtros para efectos 3D -->
-        <linearGradient id="plazaFloor" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#c2c2c2" />
-          <stop offset="100%" stop-color="#a0a0a0" />
-        </linearGradient>
-        <linearGradient id="fountainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#7fb3d5" />
-          <stop offset="100%" stop-color="#2874a6" />
-        </linearGradient>
-        <linearGradient id="treeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#66bb6a" />
-          <stop offset="100%" stop-color="#2e7d32" />
-        </linearGradient>
-        <filter id="plazaShadow" x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur in="SourceAlpha" stdDeviation="2" />
-          <feOffset dx="2" dy="2" result="offsetblur" />
-          <feComponentTransfer>
-            <feFuncA type="linear" slope="0.5" />
-          </feComponentTransfer>
-          <feMerge>
-            <feMergeNode />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
-      
-      <!-- Base de la plaza -->
-      <polygon points="10,100 90,100 85,60 15,60" fill="url(#plazaFloor)" stroke="#777" stroke-width="0.5" filter="url(#plazaShadow)" />
-      
-      <!-- Patrón de adoquines/pavimento -->
-      <path d="M15,70 h70 M15,80 h70 M15,90 h70" stroke="#888" stroke-width="0.3" opacity="0.7" />
-      <path d="M25,60 v40 M40,60 v40 M55,60 v40 M70,60 v40" stroke="#888" stroke-width="0.3" opacity="0.7" />
-      
-      <!-- Fuente central -->
-      <circle cx="50" cy="75" r="12" fill="url(#plazaFloor)" stroke="#777" stroke-width="0.5" />
-      <circle cx="50" cy="75" r="8" fill="url(#fountainGradient)" stroke="#2874a6" stroke-width="0.5" />
-      <!-- Agua/chorro de la fuente -->
-      <path d="M50,75 v-15" stroke="#a9cce3" stroke-width="1" />
-      <circle cx="50" cy="55" r="2" fill="#a9cce3" opacity="0.8" class="water-drop" />
-      <circle cx="52" cy="60" r="1" fill="#a9cce3" opacity="0.6" class="water-drop" />
-      <circle cx="48" cy="58" r="1" fill="#a9cce3" opacity="0.6" class="water-drop" />
-      
-      <!-- Árboles -->
-      <!-- Árbol izquierdo -->
-      <rect x="20" y="85" width="4" height="10" fill="#795548" />
-      <circle cx="22" cy="80" r="6" fill="url(#treeGradient)" filter="url(#plazaShadow)" />
-      
-      <!-- Árbol derecho -->
-      <rect x="76" y="85" width="4" height="10" fill="#795548" />
-      <circle cx="78" cy="80" r="6" fill="url(#treeGradient)" filter="url(#plazaShadow)" />
-      
-      <!-- Banco izquierdo -->
-      <rect x="30" y="90" width="10" height="3" fill="#a0522d" />
-      <rect x="31" y="93" width="2" height="5" fill="#6d4c41" />
-      <rect x="37" y="93" width="2" height="5" fill="#6d4c41" />
-      
-      <!-- Banco derecho -->
-      <rect x="60" y="90" width="10" height="3" fill="#a0522d" />
-      <rect x="61" y="93" width="2" height="5" fill="#6d4c41" />
-      <rect x="67" y="93" width="2" height="5" fill="#6d4c41" />
-      
-      <!-- Sombras proyectadas de los árboles -->
-      <ellipse cx="22" cy="102" rx="5" ry="2" fill="#000" opacity="0.2" />
-      <ellipse cx="78" cy="102" rx="5" ry="2" fill="#000" opacity="0.2" />
-    </svg>
-  `;
+  // URL de la imagen 
+  const imageUrl = "/assets/icons/fuente-nueva.webp";
   
   return L.divIcon({
     className: 'plaza-marker',
     html: `
       <div class="plaza-container">
-        ${plazaSVG}
+        <img src="${imageUrl}" alt="${title}" width="4" height="5" />
         <div class="marker-title">${title}</div>
       </div>
     `,
-    iconSize: [40, 48],
+   /* iconSize: [2, 3],
     iconAnchor: [20, 48],
-    popupAnchor: [0, -42]
+    popupAnchor: [0, -42]*/
   });
 }
   
