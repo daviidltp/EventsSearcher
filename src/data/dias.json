@@ -498,7 +498,7 @@
         ],
         "autor_imagen": {
           "Cristo Yacente": "Escuela Valenciana de mediados del siglo XX",
-          "María Santísima de los Dolores": "José Cecilio Navas-Parejo Pérez",
+          "María Santísima de los Dolores": "José Navas Parejo",
           "San Juan Evangelista" : "Miguel Tirao Carpio"
         },
         "imagenCaratula": "/assets/toWEBP/santo-entierro.webp",
@@ -576,7 +576,6 @@
         "entradaCruzGuiaCarreraOficial": "12:30",
         "salidaCruzGuiaCarreraOficial": "13:30",
         "itinerario": [
-          "Plaza de la Constitución",
           "La Fuente",
           "Las Huertas",
           "Fuente del Baño",
