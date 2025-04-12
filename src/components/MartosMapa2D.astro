@@ -17,22 +17,6 @@ const {
 
 const { procesionId = 'borriquita' } = Astro.params as { procesionId: string };
 
-let enCalle = false; //
-
-try {
-  const response = await fetch(`https://owntracks-api.semanasantatracker.workers.dev/procesiones?id=${procesionId}`);
-  const data = await response.json();
-
-  if (Array.isArray(data) && data.length > 0 && data[0].estado === 'Directo') {
-    enCalle = true;
-  }
-  console.log(enCalle);
-} catch (error) {
-  console.error('Error al consultar estado de procesión:', error);
-}
-
-const enCalleJSON = JSON.stringify(enCalle); 
-
 // Centro de Martos
 const MARTOS_CENTER = [37.7219, -3.9699];
 
@@ -97,11 +81,27 @@ const pointsJSON = JSON.stringify(points);
 <script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script is:inline src="https://unpkg.com/leaflet-ant-path/dist/leaflet-ant-path.js"></script>
 
-<script define:vars={{ routeJSON, pointsJSON, MARTOS_CENTER, enCalleJSON }}>
+<script define:vars={{ routeJSON, pointsJSON, MARTOS_CENTER, procesionId}}>
   // Parsear datos JSON
   const route = JSON.parse(routeJSON);
   const points = JSON.parse(pointsJSON);
-  
+
+  async function checkEstadoProcesion() {
+  try {
+    const response = await fetch(`https://owntracks-api.semanasantatracker.workers.dev/procesiones?id=${procesionId}`);
+    const data = await response.json();
+
+    if (Array.isArray(data) && data.length > 0 && data[0].estado === 'Directo') {
+      addLastLocationMarker();  // si está en la calle, empieza la actualización en bucle.
+    } else {
+      console.log("Procesión no está en la calle actualmente.");
+    }
+  } catch (error) {
+    console.error("Error al consultar estado de procesión:", error);
+  }
+}
+
+
   // Variables globales del mapa
   let map;
   let routeLayer;
@@ -120,7 +120,11 @@ const pointsJSON = JSON.stringify(points);
 	// let bottomSheetHeight = 0;
   
   // Inicializar cuando la página esté cargada
-  window.onload = initMap;
+  window.onload = () => {
+  initMap();
+  checkEstadoProcesion();  // aquí llamas a la nueva función
+};
+
   
   // Datos de mapeo de calles - Define segmentos de la ruta y sus nombres de calles
   // Esto es un ejemplo y deberá ser adaptado a cada ruta específica
