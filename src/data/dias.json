@@ -72,12 +72,12 @@
         "imagenCaratula": "/assets/toWEBP/borriquita.webp",
         "imagenExtendida": "/assets/toWEBP/borriquita-extended.webp",
         "posicionImagen": "center",
-        "acompaniamiento-musical" : "Agrupación musical Santísimo Cristo de la Salud. Alcalá la real (Jaén)"
+        "acompaniamiento-musical" : "Agrupación Musical Santísimo Cristo de la Salud. Alcalá la Real (Jaén)"
       },
       {
         "id": "humildad-y-paciencia",
         "nombre": "Humildad y Paciencia",
-        "descripcion": "Cristo de Humildad y Paciencia y María de los Desamparados",
+        "descripcion": "Cristo de Humildad y Paciencia y María de los Desamparados, San Juan Evangelista y Nuestra Señora del Buen Remedio",
         "cofradia": "Hermandad del Stmo. Cristo de Humildad y Paciencia, María Santísima Madre de los Desamparados, San Juan Evangelista y Nuestra Señora del Buen Remedio, Patrona de la Orden Trinitaria",
         "fundacion": "1992",
         "parroquia": "Iglesia de las RR. MM. Trinitarias",
@@ -103,7 +103,7 @@
           "Entrada a su templo"
         ],
         "autor_imagen": {
-          "Ambas imágenes": "Francisco Romero Zafra"
+          "Autor de las imágenes": "Francisco Romero Zafra"
         },
         "imagenCaratula": "/assets/toWEBP/humildad-paciencia.webp",
         "imagenExtendida": "/assets/toWEBP/humildad-paciencia-extended.webp",
@@ -196,13 +196,13 @@
           "Entrada a su templo"
         ],
         "autor_imagen": {
-          "Jesús Cautivo": "José Navas-Parejo Pérez",
+          "Jesús Cautivo": "José Cecilio Navas-Parejo Pérez",
           "María Santísima de la Trinidad": "Anónimo"
         },
         "imagenCaratula": "/assets/toWEBP/cautivo.webp",
         "imagenExtendida": "/assets/images_big/cautivo-extended.jpg",
         "posicionImagen": "top",
-        "acompaniamiento-musical" : "Agrupación musical Nuestro Padre Jesús de la Fe en su Sagrada Cena (Córdoba) y asociación músico-cultural Pedro Lavirgen de Bujalance (Córdoba)"
+        "acompaniamiento-musical" : "Agrupación Musical Nuestro Padre Jesús de la Fe en su Sagrada Cena (Córdoba) y asociación músico-cultural Pedro Lavirgen de Bujalance (Córdoba)"
       }
     ]
   },
@@ -244,7 +244,7 @@
         ],
         "autor_imagen": {
           "Jesús en el Huerto": "Josefina Cuesta",
-          "María Santísima de la Amargura": "Antonio Aparacio Mota",
+          "María Santísima de la Amargura": "Antonio Aparicio Mota",
           "Ángel": "Jesús Vidal"
         },
         "imagenCaratula": "/assets/toWEBP/oracion-huerto.webp",
@@ -275,7 +275,7 @@
           "Rio Tinto", 
           "Ingeniero García Pimentel", "avda. de Los Olivares",
           "Cruz del Lloro",
-          "Avenida Príncipe Felipe", "Carrera", "Plaza de la Fuente Nueva",
+          "Avenida Príncipe Felipe", "Carrera", "Plaza de la Fuente Nueva", "Campiña",
           "El Llanete", "La Teja", "Avda. Príncipe Felipe", "Avda. Augusta",
           "Gemela Tuccitana", "Avda. de España", "Río Genil"
         ],
@@ -288,7 +288,7 @@
         ],
         "autor_imagen": {
           "Cristo del Amor, María Auxiliadora, San Juan Evangelista y Poncio Pilatos": "José Miguel Tirao Carpio",
-          "Barrabás, Claudia Prócula, Centurión y Sanedín": "Pedro García Velasco"
+          "Barrabás, Claudia Prócula, Centurión y Sanedrín": "Pedro García Velasco"
         },
         "imagenCaratula": "/assets/toWEBP/amor-y-auxilio.webp",
         "imagenExtendida": "/assets/toWEBP/amor-y-auxilio-extended.webp",
@@ -318,7 +318,7 @@
           "Avenida Oro Verde",
           "San Antonio de Padua",
           "Avenida de Europa",
-          "Alferería",
+          "Alfarería",
           "San Francisco",
           "Fuente Nueva"
         ],
@@ -330,7 +330,7 @@
           "Llegada a su templo"
         ],
         "autor_imagen": {
-          "Ambas imágenes": "Darío Fernández Parra"
+          "Ambas imágenes": "Darío Fernández Parras"
         },
         "imagenCaratula": "/assets/toWEBP/silencio.webp",
         "imagenExtendida": "/assets/toWEBP/silencio-extended.webp",
@@ -388,7 +388,7 @@
         "nombre": "Jesús Nazareno",
         "descripcion": "Nuestro Padre Jesús Nazareno, María Santísima de los Dolores y María Magdalena",
         "cofradia": "Cofradía de Nuestro Padre Jesús Nazareno, María Santísima de los Dolores y María Magdalena",
-        "fundacion": "1595. Reorganizada en 1901",
+        "fundacion": "s. XVI. Reorganizada en 1957",
         "parroquia": "Real Iglesia parroquial de Santa Marta",
         "diaSalida": "Viernes Santo",
         "horaSalida": "09:00",
@@ -416,13 +416,13 @@
           "Entrada a su templo"
         ],
         "autor_imagen": {
-          "Jesús Nazareno": "José Navas Parejo",
+          "Jesús Nazareno": "José Cecilio Navas-Parejo Pérez",
           "María Santísima de los Dolores": "Eduardo Espinosa Cuadros"
         },
         "imagenCaratula": "/assets/toWEBP/jesus-nazareno.webp",
         "imagenExtendida": "/assets/toWEBP/jesus-nazareno-extended.webp",
         "posicionImagen": "bottom",
-         "acompaniamiento-musical" : "Agrupación Musical Nuestro Padre Jesús Nazareno de Villanueva del Duque (Córdoba) y Agrupación Musical Maestro Soler de Martos (Jaén)"
+         "acompaniamiento-musical" : "Agrupación Musical Nuestro Padre Jesús Nazareno de Villanueva del Duque (Córdoba) y Agrupación Musical Maestro Soler de Martos (Jaén). Acompañada por la singular Trompeta de Juanillón"
       },
       {
         "id": "san-juan-magadalena",
@@ -492,13 +492,13 @@
         ],
         "sitios_interes": [
           "Salida",
-          "Patines de la Calle San Francisco (ncorporacion Banda Fe y Consuelo)",
+          "Patines de la Calle San Francisco (incorporación Banda Fe y Consuelo)",
           "Subida de la Calle Real",
           "Entrada a su templo"
         ],
         "autor_imagen": {
           "Cristo Yacente": "Escuela Valenciana de mediados del siglo XX",
-          "María Santísima de los Dolores": "José Navas Parejo",
+          "María Santísima de los Dolores": "José Cecilio Navas-Parejo Pérez",
           "San Juan Evangelista" : "Miguel Tirao Carpio"
         },
         "imagenCaratula": "/assets/toWEBP/santo-entierro.webp",
@@ -590,14 +590,14 @@
         ],
         "sitios_interes": [
           "Salida",
-          "Encuentro con el Santísimo Sacramento en Carrera Oficial",
+          "Encuentro en Plaza Fuente Nueva",
           "Campiña",
           "Bajada de la Calle La Fuente",
           "Entrada a su templo"
         ],
         "autor_imagen": {
           "Jesús Resucitado": "Francisco Romero Zafra",
-          "María Santísima de la Esperanza": "Talleres de Olof (Gerona)"
+          "María Santísima de la Esperanza": "Talleres de Olot (Gerona)"
         },
         "imagenCaratula": "/assets/toWEBP/resucitado.webp",
         "imagenExtendida": "/assets/toWEBP/resucitado-extended.webp",
