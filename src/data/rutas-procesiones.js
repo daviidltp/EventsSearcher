@@ -420,17 +420,17 @@ export const rutasProcesiones = {
 export const puntosInteresProcesiones = {
 	"humildad-y-paciencia": [
 	{
-		position: [37.722921, -3.966204],
+		position: [37.722911133307456, -3.9661871356186444],
 		title: "Iglesia de las RR. MM. Trinitarias",
 		description: "Punto de salida y llegada de la procesión"
 	},
 	{
-		position: [37.719146, -3.968374],
+		position: [37.722212, -3.970279],
 		title: "Plaza Fuente Nueva",
 		description: "Punto de interés en el recorrido"
 	},
 	{
-		position: [37.722085, -3.969919],
+		position: [37.72194083583843, -3.9699372578883625],
 		title: "Iglesia de San Francisco",
 		description: "Parada durante el recorrido"
 	}
@@ -438,35 +438,35 @@ export const puntosInteresProcesiones = {
 
 	"borriquita": [
 		{
-			position: [37.721917, -3.972389],
+			position: [37.72196147286351, -3.9729238171856758],
 			title: "Parroquia de San Antonio de Padua",
 			description: "Punto de salida y llegada"
 		},
 		{
-			position: [37.72222, -3.970412],
+			position: [37.72347505124692, -3.9655904939993407],
 			title: "Plaza de la Constitución",
 			description: "Punto central del recorrido"
 		},
-		{
-			position: [37.720101, -3.973355],
-			title: "Avenida del Oro Verde",
-			description: "Punto de interés en el recorrido"
-		}
+		// {
+		// 	position: [37.72179324113651, -3.973841630676522],
+		// 	title: "Avenida del Oro Verde",
+		// 	description: "Punto de interés en el recorrido"
+		// }
 	],
 
 	"santa-vera-cruz": [
 		{
-		position: [37.711234, -3.970917],
+		position: [37.711456411724434, -3.9709345576585973],
 		title: "Parroquia de San Juan de Dios",
 		description: "Punto de salida y llegada de la procesión"
 		},
 		{
-		position: [37.722218, -3.970412],
+		position: [37.72347505124692, -3.9655904939993407],
 		title: "Plaza de la Constitución",
 		description: "Punto central del recorrido"
 		},
 		{
-		position: [37.719804, -3.968127],
+		position: [37.722212, -3.970279],
 		title: "Plaza Fuente Nueva",
 		description: "Punto de interés en el recorrido"
 		}
@@ -475,41 +475,41 @@ export const puntosInteresProcesiones = {
 	"nuestro-padre-jesús-cautivo":
 	[
 		{
-		position: [37.722912, -3.966185],
+		position: [37.722911133307456, -3.9661871356186444],
 		title: "Iglesia de las RR. MM. Trinitarias",
 		description: "Punto de salida y llegada de la procesión"
 		},
-		{
-		position: [37.724928, -3.964407],
-		title: "Cuesta del Caño",
-		description: "Tramo destacado por la estrechez y recogimiento"
-		},
-		{
-		position: [37.724401, -3.969441],
-		title: "Calle Real",
-		description: "Momento de encuentro con los vecinos"
-		}
+		// {
+		// position: [37.724928, -3.964407],
+		// title: "Cuesta del Caño",
+		// description: "Tramo destacado por la estrechez y recogimiento"
+		// },
+		// {
+		// position: [37.72166956849556, -3.9675121190405584],
+		// title: "Calle Real",
+		// description: "Momento de encuentro con los vecinos"
+		// }
 	],
 
 	"oración-en-el-huerto": 
 	[
 		{
-			position: [37.724546, -3.963495],
+			position: [37.724708152038616, -3.9636714613676225],
 			title: "Iglesia parroquial de San Amador y Santa Ana",
 			description: "Punto de salida y llegada de la procesión"
 		},
+		// {
+		// 	position: [37.72292063894027, -3.966792974858457],
+		// 	title: "Calle San José",
+		// 	description: "Punto de interés en el recorrido"
+		// },
 		{
-			position: [37.722778, -3.966789],
-			title: "Calle San José",
-			description: "Punto de interés en el recorrido"
-		},
-		{
-			position: [37.722057, -3.968489],
+			position: [37.722212, -3.970279],
 			title: "Plaza Fuente Nueva",
 			description: "Punto destacado del recorrido"
 		},
 		{
-			position: [37.722246, -3.97042],
+			position: [37.72347505124692, -3.9655904939993407],
 			title: "Plaza de la Constitución",
 			description: "Punto central del recorrido"
 		}
@@ -517,22 +517,22 @@ export const puntosInteresProcesiones = {
 
 	"amor-y-auxilio": [
 		{
-			position: [37.711255, -3.970938],
+			position: [37.711456411724434, -3.9709345576585973],
 			title: "Parroquia de San Juan de Dios",
 			description: "Punto de salida y llegada de la procesión"
 		},
+		// {
+		// 	position: [37.716354, -3.969294],
+		// 	title: "Plaza Central",
+		// 	description: "Zona destacada del recorrido"
+		// },
 		{
-			position: [37.716354, -3.969294],
-			title: "Plaza Central",
-			description: "Zona destacada del recorrido"
-		},
-		{
-			position: [37.722163, -3.970222],
+			position: [37.72347505124692, -3.9655904939993407],
 			title: "Plaza de la Constitución",
 			description: "Punto emblemático del recorrido"
 		},
 		{
-			position: [37.719045, -3.969728],
+			position: [37.722212, -3.970279],
 			title: "Plaza Fuente Nueva",
 			description: "Punto de interés en el recorrido"
 		}
@@ -541,46 +541,46 @@ export const puntosInteresProcesiones = {
 
 	"fe-y-consuelo": [
 		{
-			position: [37.722914, -3.965136],
+			position: [37.722911133307456, -3.9661871356186444],
 			title: "Iglesia de las RR. MM. Trinitarias",
 			description: "Punto de salida y llegada de la procesión"
 		},
 		{
-			position: [37.723846, -3.964731],
+			position: [37.72347505124692, -3.9655904939993407],
 			title: "Plaza de la Constitución",
 			description: "Punto central del recorrido"
 		},
-		{
-			position: [37.724928, -3.964407],
-			title: "Cuesta del Caño",
-			description: "Tramo destacado por la estrechez y recogimiento"
-		},
-		{
-			position: [37.723871, -3.9703],
-			title: "Calle Real",
-			description: "Momento de encuentro con los vecinos"
-		}
+		// {
+		// 	position: [37.724928, -3.964407],
+		// 	title: "Cuesta del Caño",
+		// 	description: "Tramo destacado por la estrechez y recogimiento"
+		// },
+		// {
+		// 	position: [37.72166956849556, -3.9675121190405584],
+		// 	title: "Calle Real",
+		// 	description: "Momento de encuentro con los vecinos"
+		// }
 	],
 
 	"jesús-nazareno": 
 	[
 		{
-			position: [37.72291, -3.965123],
+			position: [37.723060570092755, -3.96489097300368],
 			title: "Real Iglesia parroquial de Santa Marta",
 			description: "Punto de salida y llegada de la procesión"
 		},
+		// {
+		// 	position: [37.724987, -3.96482],
+		// 	title: "Cuesta del Caño",
+		// 	description: "Tramo de gran recogimiento y devoción"
+		// },
 		{
-			position: [37.724987, -3.96482],
-			title: "Cuesta del Caño",
-			description: "Tramo de gran recogimiento y devoción"
-		},
-		{
-			position: [37.723366, -3.970404],
+			position: [37.72347505124692, -3.9655904939993407],
 			title: "Plaza de la Constitución",
 			description: "Punto central del recorrido"
 		},
 		{
-			position: [37.719851, -3.968199],
+			position: [37.722212, -3.970279],
 			title: "Plaza Fuente Nueva",
 			description: "Lugar tradicional de encuentro de fieles"
 		}
@@ -589,22 +589,22 @@ export const puntosInteresProcesiones = {
 	"san-juan-y-maría-magdalena": 
 	[
 		{
-			position: [37.72291, -3.965123],
+			position: [37.723060570092755, -3.96489097300368],
 			title: "Real Iglesia parroquial de Santa Marta",
 			description: "Punto de salida y llegada de la procesión"
 		},
+		// {
+		// 	position: [37.724987, -3.96482],
+		// 	title: "Cuesta del Caño",
+		// 	description: "Tramo de gran recogimiento y devoción"
+		// },
 		{
-			position: [37.724987, -3.96482],
-			title: "Cuesta del Caño",
-			description: "Tramo de gran recogimiento y devoción"
-		},
-		{
-			position: [37.723366, -3.970404],
+			position: [37.72347505124692, -3.9655904939993407],
 			title: "Plaza de la Constitución",
 			description: "Punto central del recorrido"
 		},
 		{
-			position: [37.719851, -3.968199],
+			position: [37.722212, -3.970279],
 			title: "Plaza Fuente Nueva",
 			description: "Lugar tradicional de encuentro de fieles"
 		}
@@ -613,22 +613,22 @@ export const puntosInteresProcesiones = {
 	"santo-entierro": 
 	[
 		{
-			position: [37.723124, -3.968492],
+			position: [37.72331541068009, -3.968456971148871],
 			title: "Santuario de María Santísima de la Villa",
 			description: "Punto de salida y llegada de la procesión"
 		},
+		// {
+		// 	position: [37.723413, -3.965126],
+		// 	title: "Calle Triana",
+		// 	description: "Tramo de gran recogimiento"
+		// },
+		// {
+		// 	position: [37.724987, -3.96482],
+		// 	title: "Cuesta del Caño",
+		// 	description: "Punto destacado del recorrido"
+		// },
 		{
-			position: [37.723413, -3.965126],
-			title: "Calle Triana",
-			description: "Tramo de gran recogimiento"
-		},
-		{
-			position: [37.724987, -3.96482],
-			title: "Cuesta del Caño",
-			description: "Punto destacado del recorrido"
-		},
-		{
-			position: [37.722348, -3.970305],
+			position: [37.72347505124692, -3.9655904939993407],
 			title: "Plaza de la Constitución",
 			description: "Punto central del recorrido"
 		}
@@ -637,46 +637,46 @@ export const puntosInteresProcesiones = {
 	"soledad": 
 	[
 		{
-			position: [37.722918, -3.966193],
+			position: [37.722911133307456, -3.9661871356186444],
 			title: "Iglesia de las RR. MM. Trinitarias",
 			description: "Punto de salida y llegada de la procesión"
 		},
+		// {
+		// 	position: [37.724928, -3.964407],
+		// 	title: "Cuesta del Caño",
+		// 	description: "Tramo de máxima devoción y recogimiento"
+		// },
 		{
-			position: [37.724928, -3.964407],
-			title: "Cuesta del Caño",
-			description: "Tramo de máxima devoción y recogimiento"
-		},
-		{
-			position: [37.723366, -3.970404],
+			position: [37.72347505124692, -3.9655904939993407],
 			title: "Plaza de la Constitución",
 			description: "Punto central del recorrido"
 		},
-		{
-			position: [37.716732, -3.966558],
-			title: "Calle La Teja",
-			description: "Punto de interés en el recorrido"
-		}
+		// {
+		// 	position: [37.716732, -3.966558],
+		// 	title: "Calle La Teja",
+		// 	description: "Punto de interés en el recorrido"
+		// }
 	],
 
 	"resurección-y-esperanza": 
 	[
 		{
-			position: [37.724575, -3.96349],
+			position: [37.724708152038616, -3.9636714613676225],
 			title: "Iglesia parroquial de San Amador y Santa Ana",
 			description: "Punto de salida y llegada de la procesión"
 		},
+		// {
+		// 	position: [37.725051, -3.966598],
+		// 	title: "Calle La Villa",
+		// 	description: "Punto más elevado del recorrido"
+		// },
 		{
-			position: [37.725051, -3.966598],
-			title: "Calle La Villa",
-			description: "Punto más elevado del recorrido"
-		},
-		{
-			position: [37.722348, -3.97031],
+			position: [37.72347505124692, -3.9655904939993407],
 			title: "Plaza de la Constitución",
 			description: "Punto central del recorrido"
 		},
 		{
-			position: [37.719851, -3.968199],
+			position: [37.722212, -3.970279],
 			title: "Plaza Fuente Nueva",
 			description: "Punto destacado del recorrido"
 		}
@@ -684,27 +684,27 @@ export const puntosInteresProcesiones = {
 
 	"silencio-y-dolor": [
 	{
-		position: [37.7221, -3.969911],
+		position: [37.72194083583843, -3.9699372578883625],
 		title: "Iglesia de San Francisco",
 		description: "Punto de salida de la procesión"
 	},
 	{
-		position: [37.720292, -3.969793], 
+		position: [37.722212, -3.970279], 
 		title: "Plaza Fuente Nueva",
 		description: "Punto destacado del recorrido"
 	},
+	// {
+	// 	position: [37.720194, -3.972904],
+	// 	title: "Avenida Pierre Cibié",
+	// 	description: "Tramo importante del recorrido"
+	// },
 	{
-		position: [37.720194, -3.972904],
-		title: "Avenida Pierre Cibié",
-		description: "Tramo importante del recorrido"
-	},
-	{
-		position: [37.723975, -3.970383],
+		position: [37.72347505124692, -3.9655904939993407],
 		title: "Plaza de la Constitución",
 		description: "Punto central del recorrido"
 	},
 	{
-		position: [37.722133, -3.970013],
+		position: [37.72194083583843, -3.9699372578883625],
 		title: "Iglesia de San Francisco",
 		description: "Punto de llegada de la procesión"
 	}
