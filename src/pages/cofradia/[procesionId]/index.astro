@@ -106,7 +106,7 @@ export async function getStaticPaths() {
             <div class="space-y-1 mt-1">
               {Object.entries(procesion.autor_imagen).map(([nombre, autor]) => {
                 return (
-                  <p>Autor de la imagen {nombre}: {autor}</p>
+                  <p>{nombre} de {autor}</p>
                 );
               })}
             </div>
@@ -114,7 +114,7 @@ export async function getStaticPaths() {
 
         <div>
           <h3 class="text-xl font-bold">Acompañamiento musical</h3>
-          <p></p>
+          <p>{procesion['acompaniamiento-musical']}</p>
         </div>
         )}
       </section>

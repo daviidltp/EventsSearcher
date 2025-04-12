@@ -34,11 +34,12 @@
           "Entrada a su templo"
         ],
         "autor_imagen": {
-          "": "Talleres de Olot (Gerona)"
+          "Ambas imágenes": "Talleres de Olot (Gerona)"
         },
         "imagenCaratula": "/assets/toWEBP/borriquita.webp",
         "imagenExtendida": "/assets/toWEBP/borriquita-extended.webp",
-        "posicionImagen": "center"
+        "posicionImagen": "center",
+        "acompaniamiento-musical" : "Agrupación musical Santísimo Cristo de la Salud. Alcalá la real (Jaén)"
       },
       {
         "id": "humildad-y-paciencia",
@@ -64,7 +65,6 @@
         ],
         "sitios_interes": [
           "Salida",
-          "Carrera Oficial",
           "San José",
           "Petalada en Dolores Torres",
           "Entrada a su templo"
@@ -74,7 +74,8 @@
         },
         "imagenCaratula": "/assets/toWEBP/humildad-paciencia.webp",
         "imagenExtendida": "/assets/toWEBP/humildad-paciencia-extended.webp",
-        "posicionImagen": "center"
+        "posicionImagen": "center",
+        "acompaniamiento-musical" : "Banda de Cornetas y Tambores el Amarrado (Ávila) y Banda de Música Ciudad de Porcuna (Jaén)"
       }
     ]
   },
@@ -84,7 +85,7 @@
       {
         "id": "santa-vera-cruz",
         "nombre": "Santa Vera Cruz",
-        "descripcion": "Cristo de la Santa Vera Cruz y María Santísima de Nazareth",
+        "descripcion": "Nuestro Padre Jesús de Pasión y María Santísima de Nazareth",
         "cofradia": "Faustiniana Hermandad de la Santa Vera Cruz y Cofradía de Penitencia y Silencio de Nuestro Padre Jesús de Pasión y Nuestra Señora María de Nazareth",
         "fundacion": "1542. Reorganizada en 1991",
         "parroquia": "Parroquia de San Juan de Dios",
@@ -111,7 +112,7 @@
         ],
         "sitios_interes": [
           "Salida",
-          "Entrada a su templo, acompañada musicalmente por un piano"
+          "El discurrir silente y penitencial de la corporación por cualquiera de las calles de nuestra ciudad, así como el momento más íntimo de la entrada de la corporación ya de madrugada"
         ],
         "autor_imagen": {
           "Jesús de Pasión": "José Antonio Navarro Arteaga",
@@ -119,7 +120,8 @@
         },
         "imagenCaratula": "/assets/toWEBP/vera-cruz.webp",
         "imagenExtendida": "/assets/toWEBP/vera-cruz-extended.webp",
-        "posicionImagen": "center"
+        "posicionImagen": "center",
+        "acompaniamiento-musical" : "Trío musical Böhem de Jaén y Asociación Cultural Musical Lázaro Rueda de los Villares (Jaén)"
       }
     ]
   },
@@ -153,7 +155,11 @@
         "sitios_interes": [
           "Salida",
           "La Fuente",
+          "Esquina de la Fuente y Las Huertas",
+          "Entrada en carrera oficial",
+          "Paso por la Tribuna",
           "Encuentro en Plaza Fuente Nueva",
+          "Real",
           "Entrada a su templo"
         ],
         "autor_imagen": {
@@ -162,7 +168,8 @@
         },
         "imagenCaratula": "/assets/toWEBP/cautivo.webp",
         "imagenExtendida": "/assets/images_big/cautivo-extended.jpg",
-        "posicionImagen": "top"
+        "posicionImagen": "top",
+        "acompaniamiento-musical" : "Agrupación musical Nuestro Padre Jesús de la Fe en su Sagrada Cena (Córdoba) y asociación músico-cultural Pedro Lavirgen de Bujalance (Córdoba)"
       }
     ]
   },
@@ -198,8 +205,8 @@
         "sitios_interes": [
           "Salida",
           "Calle La Fuente",
-          "Penitencia en Convento Trinitarias",
-          "Encuentro en la plaza de San Amador",
+          "Iglesia de las RR. MM. Trinitarias",
+          "San José",
           "Entrada a su templo"
         ],
         "autor_imagen": {
@@ -209,7 +216,8 @@
         },
         "imagenCaratula": "/assets/toWEBP/oracion-huerto.webp",
         "imagenExtendida": "/assets/toWEBP/oracion-huerto-extended.webp",
-        "posicionImagen": "top"
+        "posicionImagen": "top",
+        "acompaniamiento-musical" : "Agrupación Musical Nuestro Padre Jesús Redentor de Moral de Calatrava (Ciudad Real) y Asociación músico-cultural Pedro Lavirgen de Bujalance (Córdoba)"
       }
     ]
   },
@@ -241,7 +249,8 @@
         "sitios_interes": [
           "Salida",
           "Plaza Fuente Nueva",
-          "Cuartel de la Guardia Civil",
+          "Carrera",
+          "Cuartel de la Guardia Civil al regreso",
           "Entrada a su templo"
         ],
         "autor_imagen": {
@@ -250,7 +259,8 @@
         },
         "imagenCaratula": "/assets/toWEBP/amor-y-auxilio.webp",
         "imagenExtendida": "/assets/toWEBP/amor-y-auxilio-extended.webp",
-        "posicionImagen": "top"
+        "posicionImagen": "top",
+        "acompaniamiento-musical" : "Banda de Cornetas y Tambores Nuestro Padre Jesús Nazareno de Torredelcampo (Jaén) y Agrupación Musical Maestro Soler de Martos (Jaén)"
       },
       {
         "id": "silencio-dolor",
@@ -287,12 +297,12 @@
           "Llegada a su templo"
         ],
         "autor_imagen": {
-          "Cristo Yacente": "Darío Fernández Parra",
-          "María Santísima de los Dolores": "Darío Fernández Parra"
+          "Ambas imágenes": "Darío Fernández Parra"
         },
         "imagenCaratula": "/assets/toWEBP/silencio.webp",
         "imagenExtendida": "/assets/toWEBP/silencio-extended.webp",
-        "posicionImagen": "center"
+        "posicionImagen": "center",
+        "acompaniamiento-musical" : "Capilla Musical Santo Reino (Jaén)"
       },
       {
         "id": "fe-y-consuelo",
@@ -320,18 +330,20 @@
         ],
         "sitios_interes": [
           "Salida",
-          "Esquina de La Fuente y Las Huertas",
-          "Plaza de San Amador y Santa Ana",
+          "Bajada de la Calle La Fuente",
+          "Paso por la Parroquia de San Amador y Santa Ana",
+          "Plaza Fuente Nueva",
           "El Llanete",
           "Subida de la Calle Real",
           "Entrada a su templo"
         ],
         "autor_imagen": {
-          "Cristo fe y consuelo": "Luis Vassallo Parodi"
+          "Cristo de la Fe y del Consuelo": "Luis Vassallo Parodi"
         },
         "imagenCaratula": "/assets/toWEBP/fe-y-consuelo-variant.webp",
         "imagenExtendida": "/assets/toWEBP/fe-y-consuelo-extended.webp",
-        "posicionImagen": "top"
+        "posicionImagen": "top",
+         "acompaniamiento-musical" : "Banda de Cornetas y Tambores del Santísimo Cristo de la Fe y el Consuelo de Martos (Jaén)"
       }
     ]
   },
@@ -364,7 +376,9 @@
         ],
         "sitios_interes": [
           "Salida",
+          "Calle San Francisco",
           "Plaza Fuente Nueva",
+          "Giro de El Llanete",
           "Encuentro entre Jesús y María en Plaza de la Constitución",
           "Entrada a su templo"
         ],
@@ -374,7 +388,8 @@
         },
         "imagenCaratula": "/assets/toWEBP/jesus-nazareno.webp",
         "imagenExtendida": "/assets/toWEBP/jesus-nazareno-extended.webp",
-        "posicionImagen": "bottom"
+        "posicionImagen": "bottom",
+         "acompaniamiento-musical" : "Agrupación Musical Nuestro Padre Jesús Nazareno de Villanueva del Duque (Córdoba) y Agrupación Musical Maestro Soler de Martos (Jaén)"
       },
       {
         "id": "san-juan-magadalena",
@@ -402,8 +417,7 @@
         ],
         "sitios_interes": [
           "Salida",
-          "Plaza Fuente Nueva",
-          "Encuentro entre Jesús y María en Plaza de la Constitución",
+          "Carrera Oficial",
           "Entrada a su templo"
         ],
         "autor_imagen": {
@@ -412,7 +426,8 @@
         },
         "imagenCaratula": "/assets/toWEBP/san-juan.webp",
         "imagenExtendida": "/assets/toWEBP/san-juan-extended.webp",
-        "posicionImagen": "top"
+        "posicionImagen": "top",
+         "acompaniamiento-musical" : "Banda de Cornetas y Tambores Santa María Magdalena (Albacete)"
       },
       {
         "id": "santo-entierro",
@@ -444,7 +459,7 @@
         ],
         "sitios_interes": [
           "Salida",
-          "Incorporacion Banda fe y consuelo en calle San Francisco",
+          "Patines de la Calle San Francisco (ncorporacion Banda Fe y Consuelo)",
           "Subida de la Calle Real",
           "Entrada a su templo"
         ],
@@ -455,7 +470,8 @@
         },
         "imagenCaratula": "/assets/toWEBP/santo-entierro.webp",
         "imagenExtendida": "/assets/toWEBP/santo-entierro-extended.webp",
-        "posicionImagen": "center"
+        "posicionImagen": "center",
+        "acompaniamiento-musical" : "Banda de cornetas y Tambores Monte Calvario de Martos (Jaén), Banda de Cornetas y Tambores del Santísimo Cristo de la Fe y el Consuelo de Martos (Jaén) y Agrupación Musical Maestro Soler de Martos (Jaén)"
       },
       {
         "id": "soledad",
@@ -502,7 +518,8 @@
         },
         "imagenCaratula": "/assets/toWEBP/soledad.webp",
         "imagenExtendida": "/assets/toWEBP/soledad-extended.webp",
-        "posicionImagen": "center"
+        "posicionImagen": "center",
+        "acompaniamiento-musical" : "Un ronco tambor"
       }
     ]
   },
@@ -541,6 +558,8 @@
         "sitios_interes": [
           "Salida",
           "Encuentro con el Santísimo Sacramento en Carrera Oficial",
+          "Campiña",
+          "Bajada de la Calle La Fuente",
           "Entrada a su templo"
         ],
         "autor_imagen": {
@@ -549,7 +568,8 @@
         },
         "imagenCaratula": "/assets/toWEBP/resucitado.webp",
         "imagenExtendida": "/assets/toWEBP/resucitado-extended.webp",
-        "posicionImagen": "top"
+        "posicionImagen": "top",
+         "acompaniamiento-musical" : "Banda de Cornetas y Tambores Monte Calvario de Martos (Jaén) y Sociedad Filarmónica de Jaén"
       }
     ]
   }
