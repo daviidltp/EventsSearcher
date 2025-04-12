@@ -80,7 +80,7 @@ export default function SeccionDiaActual(props: Props) {
       )}
 
       {/* Imagen de cancelado */}
-      {estado === 'Cancelada por lluvia' && (
+      {/* estado === 'Cancelada por lluvia' && (
         <div className="absolute inset-0 flex items-center justify-center z-20">
           <img
             src="/assets/icons/cancelado.png"
@@ -88,7 +88,7 @@ export default function SeccionDiaActual(props: Props) {
             className="max-w-[500px] w-full h-auto opacity-0 scale-75 animate-show-cancel transition-all duration-500 ease-in-out"
           />
         </div>
-      )}
+      ) */}
 
 
       <div className="absolute bottom-0 w-full h-2/3 bg-gradient-to-t from-black/90 to-transparent z-10"></div>
