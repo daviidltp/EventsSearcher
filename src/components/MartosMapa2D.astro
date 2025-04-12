@@ -32,26 +32,26 @@ const pointsJSON = JSON.stringify(points);
   </div>
   
   <!-- Bottom Sheet para la calle actual y botones -->
-  <div id="street-info-container" class="bottom-sheet-container">
+  <!-- <div id="street-info-container" class="bottom-sheet-container">
     <!-- Indicador de arrastre (puramente decorativo) -->
-    <div id="bottom-sheet-handle" class="drag-handle">
-		<div class="drag-indicator"></div>
-	</div>
+    <!-- <div id="bottom-sheet-handle" class="drag-handle"> -->
+		<!-- <div class="drag-indicator"></div> -->
+	<!-- </div> -->
     
     <!-- Información de la calle -->
-    <p id="current-street" class="current-street-text">Iniciando recorrido...</p>
+    <!-- <p id="current-street" class="current-street-text">Iniciando recorrido...</p> -->
     
     <!-- Contenedor de botones -->
-    <div class="buttons-container">
+    <!-- <div class="buttons-container"> -->
       <!-- Botón de volver (izquierda) -->
-      <button id="back-btn" class="control-btn" title="Volver">
+      <!-- <button id="back-btn" class="control-btn" title="Volver">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
         </svg>
-      </button>
+      </button> -->
       
       <!-- Botón de play/pausa (centro) -->
-      <button id="play-btn" class="control-btn" title="Iniciar/Pausar animación">
+      <!-- <button id="play-btn" class="control-btn" title="Iniciar/Pausar animación">
         <svg xmlns="http://www.w3.org/2000/svg" id="play-icon" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
           <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -59,17 +59,17 @@ const pointsJSON = JSON.stringify(points);
         <svg xmlns="http://www.w3.org/2000/svg" id="pause-icon" class="h-7 w-7 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-      </button>
+      </button> -->
       
       <!-- Botón de ubicación actual (derecha) -->
-      <button id="location-btn" class="control-btn" title="Mi ubicación">
+      <!-- <button id="location-btn" class="control-btn" title="Mi ubicación">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
           <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
       </button>
     </div>
-  </div>
+  </div> --> 
 
 <!-- Importar CSS de Leaflet -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
@@ -95,24 +95,24 @@ const pointsJSON = JSON.stringify(points);
   let userLocationMarker = null;
   let isLocationActive = false;
   // Añade después de la declaración de variables existentes
-	let bottomSheetState = 'collapsed'; // Estados posibles: collapsed, expanded
-	let touchStartY = 0;
-	let touchCurrentY = 0;
-	let bottomSheetHeight = 0;
+	// let bottomSheetState = 'collapsed'; // Estados posibles: collapsed, expanded
+	// let touchStartY = 0;
+	// let touchCurrentY = 0;
+	// let bottomSheetHeight = 0;
   
   // Inicializar cuando la página esté cargada
   window.onload = initMap;
   
   // Datos de mapeo de calles - Define segmentos de la ruta y sus nombres de calles
   // Esto es un ejemplo y deberá ser adaptado a cada ruta específica
-  const streetSegments = [
-    { startIndex: 0, endIndex: 5, name: "Plaza de la Constitución" },
-    { startIndex: 6, endIndex: 15, name: "Calle Real" },
-    { startIndex: 16, endIndex: 25, name: "Calle Dolores Torres" },
-    { startIndex: 26, endIndex: 40, name: "Plaza Fuente Nueva" },
-    { startIndex: 41, endIndex: 50, name: "Calle La Villa" },
-    // Añadir más segmentos según sea necesario
-  ];
+//   const streetSegments = [
+//     { startIndex: 0, endIndex: 5, name: "Plaza de la Constitución" },
+//     { startIndex: 6, endIndex: 15, name: "Calle Real" },
+//     { startIndex: 16, endIndex: 25, name: "Calle Dolores Torres" },
+//     { startIndex: 26, endIndex: 40, name: "Plaza Fuente Nueva" },
+//     { startIndex: 41, endIndex: 50, name: "Calle La Villa" },
+//     // Añadir más segmentos según sea necesario
+//   ];
   
   function initMap() {
     // Verificar si hay datos de ruta
@@ -306,13 +306,13 @@ const pointsJSON = JSON.stringify(points);
       updatePosition(0);
       updateCurrentStreet(0);
       // Coger ultima ubicacion
-      addLastLocationMarker();
+    //   addLastLocationMarker();
       
     } catch (error) {
       console.error("Error al inicializar el mapa:", error);
     }
 	// Añadir al final de initMap() justo antes del } de cierre
-	initBottomSheet();
+	// initBottomSheet();
   }
 
   async function addLastLocationMarker() {
@@ -420,12 +420,12 @@ const pointsJSON = JSON.stringify(points);
     let streetName = "Recorrido procesional";
     
     // Buscar en qué segmento de calle estamos
-    for (const segment of streetSegments) {
-      if (currentIndex >= segment.startIndex && currentIndex <= segment.endIndex) {
-        streetName = segment.name;
-        break;
-      }
-    }
+    // for (const segment of streetSegments) {
+    //   if (currentIndex >= segment.startIndex && currentIndex <= segment.endIndex) {
+    //     streetName = segment.name;
+    //     break;
+    //   }
+    // }
     
     // Actualizar el texto de la calle actual
     document.getElementById('current-street').textContent = streetName;
@@ -578,91 +578,91 @@ function createPlazaIcon(title) {
     }
   }
   // Inicializar el manejo del bottom sheet
-  function initBottomSheet() {
-  const bottomSheet = document.getElementById('street-info-container');
-  const dragHandle = document.getElementById('bottom-sheet-handle');
-  bottomSheetHeight = bottomSheet.offsetHeight;
+//   function initBottomSheet() {
+//   const bottomSheet = document.getElementById('street-info-container');
+//   const dragHandle = document.getElementById('bottom-sheet-handle');
+//   bottomSheetHeight = bottomSheet.offsetHeight;
   
-  // Añadir botón para mostrar panel si está oculto (mantener por si acaso)
-  const mapContainer = document.querySelector('.map-container');
-  const showButton = document.createElement('button');
-  showButton.id = 'show-bottom-sheet';
-  showButton.innerHTML = '↑';
-  showButton.className = 'show-bottom-btn hidden';
-  showButton.addEventListener('click', showBottomSheet);
-  mapContainer.appendChild(showButton);
+//   // Añadir botón para mostrar panel si está oculto (mantener por si acaso)
+//   const mapContainer = document.querySelector('.map-container');
+//   const showButton = document.createElement('button');
+//   showButton.id = 'show-bottom-sheet';
+//   showButton.innerHTML = '↑';
+//   showButton.className = 'show-bottom-btn hidden';
+//   showButton.addEventListener('click', showBottomSheet);
+//   mapContainer.appendChild(showButton);
   
-  // Solo activar para móviles
-  if (window.innerWidth <= 768) {
-    let isDragging = false;
+//   // Solo activar para móviles
+//   if (window.innerWidth <= 768) {
+//     let isDragging = false;
     
-    // Evento para iniciar el arrastre SOLO en el tirador
-    dragHandle.addEventListener('touchstart', function(e) {
-      touchStartY = e.touches[0].clientY;
-      bottomSheet.style.transition = 'none';
-      isDragging = true;
-      e.stopPropagation(); // Importante: detiene la propagación
-    }, { passive: false });
+//     // Evento para iniciar el arrastre SOLO en el tirador
+//     dragHandle.addEventListener('touchstart', function(e) {
+//       touchStartY = e.touches[0].clientY;
+//       bottomSheet.style.transition = 'none';
+//       isDragging = true;
+//       e.stopPropagation(); // Importante: detiene la propagación
+//     }, { passive: false });
 
-    // Evento para el arrastre - solo si comenzó en el tirador
-    document.addEventListener('touchmove', function(e) {
-      if (!isDragging) return;
+//     // Evento para el arrastre - solo si comenzó en el tirador
+//     document.addEventListener('touchmove', function(e) {
+//       if (!isDragging) return;
       
-      touchCurrentY = e.touches[0].clientY;
-      const deltaY = touchCurrentY - touchStartY;
+//       touchCurrentY = e.touches[0].clientY;
+//       const deltaY = touchCurrentY - touchStartY;
       
-      // Permitir arrastres
-      const newHeight = Math.max(0, Math.min(window.innerHeight * 0.8, bottomSheetHeight - deltaY));
-      bottomSheet.style.height = `${newHeight}px`;
+//       // Permitir arrastres
+//       const newHeight = Math.max(0, Math.min(window.innerHeight * 0.8, bottomSheetHeight - deltaY));
+//       bottomSheet.style.height = `${newHeight}px`;
       
-      // Movimiento vertical
-      if (deltaY > bottomSheetHeight/2) {
-        bottomSheet.style.transform = `translateY(${deltaY}px)`;
-      } else {
-        bottomSheet.style.transform = `translateY(${Math.max(0, deltaY)}px)`;
-      }
-    }, { passive: true });
+//       // Movimiento vertical
+//       if (deltaY > bottomSheetHeight/2) {
+//         bottomSheet.style.transform = `translateY(${deltaY}px)`;
+//       } else {
+//         bottomSheet.style.transform = `translateY(${Math.max(0, deltaY)}px)`;
+//       }
+//     }, { passive: true });
 
-    // Evento para finalizar el arrastre
-    document.addEventListener('touchend', function() {
-      if (!isDragging) return;
-      isDragging = false;
+//     // Evento para finalizar el arrastre
+//     document.addEventListener('touchend', function() {
+//       if (!isDragging) return;
+//       isDragging = false;
       
-      bottomSheet.style.transition = 'transform 0.3s ease, height 0.3s ease';
+//       bottomSheet.style.transition = 'transform 0.3s ease, height 0.3s ease';
       
-      // Procesar el resultado del arrastre
-      if (touchCurrentY < touchStartY - 50 && (bottomSheetState === 'collapsed' || bottomSheetState === 'peeking')) {
-        expandBottomSheet();
-      } 
-      else if (touchCurrentY > touchStartY + 100 && bottomSheetState === 'collapsed') {
-        hideBottomSheet();
-      }
-      else if (touchCurrentY > touchStartY + 50 && bottomSheetState === 'expanded') {
-        collapseBottomSheet();
-      }
-      else if (bottomSheetState === 'peeking') {
-        showBottomSheet();
-      }
-      else {
-        bottomSheet.style.transform = '';
-        bottomSheet.style.height = '';
-      }
-    }, { passive: true });
+//       // Procesar el resultado del arrastre
+//       if (touchCurrentY < touchStartY - 50 && (bottomSheetState === 'collapsed' || bottomSheetState === 'peeking')) {
+//         expandBottomSheet();
+//       } 
+//       else if (touchCurrentY > touchStartY + 100 && bottomSheetState === 'collapsed') {
+//         hideBottomSheet();
+//       }
+//       else if (touchCurrentY > touchStartY + 50 && bottomSheetState === 'expanded') {
+//         collapseBottomSheet();
+//       }
+//       else if (bottomSheetState === 'peeking') {
+//         showBottomSheet();
+//       }
+//       else {
+//         bottomSheet.style.transform = '';
+//         bottomSheet.style.height = '';
+//       }
+//     }, { passive: true });
     
-    // Evento click solo en el tirador (no arrastre)
-    dragHandle.addEventListener('click', function(e) {
-      e.stopPropagation();
+//     // Evento click solo en el tirador (no arrastre)
+//     dragHandle.addEventListener('click', function(e) {
+//       e.stopPropagation();
       
-      if (bottomSheetState === 'collapsed') {
-        expandBottomSheet();
-      } else if (bottomSheetState === 'expanded') {
-        collapseBottomSheet();
-      } else if (bottomSheetState === 'peeking') {
-        showBottomSheet();
-      }
-    });
-  }
-}
+//       if (bottomSheetState === 'collapsed') {
+//         expandBottomSheet();
+//       } else if (bottomSheetState === 'expanded') {
+//         collapseBottomSheet();
+//       } else if (bottomSheetState === 'peeking') {
+//         showBottomSheet();
+//       }
+//     });
+//   }
+// }
 
   function expandBottomSheet() {
     const bottomSheet = document.getElementById('street-info-container');
