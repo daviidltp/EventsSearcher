@@ -42,7 +42,7 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
   const [puedeScrollIzq, setPuedeScrollIzq] = useState(false);
   const [puedeScrollDer, setPuedeScrollDer] = useState(false);
 
-  const FECHA_DEBUG = new Date('2025-04-06T12:30:00');
+  const FECHA_DEBUG = new Date('2025-04-17T12:30:00');
   const FECHA_DEBUG_ACTIVA = false;
 
   const preloadImage = (src: string) =>
@@ -66,14 +66,14 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
         let menorDiferenciaTiempo = Infinity;
 
         const fechasPorDia: Record<number, Date> = {
-          0: new Date(2025, 3, 6),
-          1: new Date(2025, 3, 7),
-          2: new Date(2025, 3, 8),
-          3: new Date(2025, 3, 9),
-          4: new Date(2025, 3, 10),
-          5: new Date(2025, 3, 11),
-          6: new Date(2025, 3, 12),
-          7: new Date(2025, 3, 13),
+          0: new Date(2025, 3, 13),
+          1: new Date(2025, 3, 14),
+          2: new Date(2025, 3, 15),
+          3: new Date(2025, 3, 16),
+          4: new Date(2025, 3, 17),
+          5: new Date(2025, 3, 18),
+          6: new Date(2025, 3, 19),
+          7: new Date(2025, 3, 20),
         };
 
         const fechaFinSemanaSanta = new Date(fechasPorDia[7]);
