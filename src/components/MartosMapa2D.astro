@@ -17,7 +17,7 @@ const {
 
 const { procesionId = 'borriquita' } = Astro.params as { procesionId: string };
 
-let enCalle = false;
+let enCalle = false; //
 
 try {
   const response = await fetch(`https://owntracks-api.semanasantatracker.workers.dev/procesiones?id=${procesionId}`);
