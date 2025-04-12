@@ -443,10 +443,10 @@ export const puntosInteresProcesiones = {
 			description: "Punto de salida y llegada"
 		},
 		{
-			position: [37.72347505124692, -3.9655904939993407],
-			title: "Plaza de la Constitución",
-			description: "Punto central del recorrido"
-		},
+			position: [37.722212, -3.970279],
+			title: "Plaza Fuente Nueva",
+			description: "Punto de interés en el recorrido"
+		}
 		// {
 		// 	position: [37.72179324113651, -3.973841630676522],
 		// 	title: "Avenida del Oro Verde",
@@ -459,11 +459,6 @@ export const puntosInteresProcesiones = {
 		position: [37.711456411724434, -3.9709345576585973],
 		title: "Parroquia de San Juan de Dios",
 		description: "Punto de salida y llegada de la procesión"
-		},
-		{
-		position: [37.72347505124692, -3.9655904939993407],
-		title: "Plaza de la Constitución",
-		description: "Punto central del recorrido"
 		},
 		{
 		position: [37.722212, -3.970279],
@@ -526,11 +521,6 @@ export const puntosInteresProcesiones = {
 		// 	title: "Plaza Central",
 		// 	description: "Zona destacada del recorrido"
 		// },
-		{
-			position: [37.72347505124692, -3.9655904939993407],
-			title: "Plaza de la Constitución",
-			description: "Punto emblemático del recorrido"
-		},
 		{
 			position: [37.722212, -3.970279],
 			title: "Plaza Fuente Nueva",
@@ -698,11 +688,6 @@ export const puntosInteresProcesiones = {
 	// 	title: "Avenida Pierre Cibié",
 	// 	description: "Tramo importante del recorrido"
 	// },
-	{
-		position: [37.72347505124692, -3.9655904939993407],
-		title: "Plaza de la Constitución",
-		description: "Punto central del recorrido"
-	},
 	{
 		position: [37.72194083583843, -3.9699372578883625],
 		title: "Iglesia de San Francisco",
