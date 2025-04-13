@@ -98,6 +98,7 @@ const pointsJSON = JSON.stringify(points);
       } else if (estado === 'Finalizada') {
         addLastLocationMarker(estado);
       } else {
+       // addLastLocationMarker('OK');
         console.log("Procesión no está en la calle actualmente.");
       }
     }
@@ -364,16 +365,39 @@ const pointsJSON = JSON.stringify(points);
 
   async function addLastLocationMarker(estadoProcesion) {
   try {
+    if (estadoProcesion !== "Finalizada" && estadoProcesion !== "Directo") {
+      return;
+    } else {
+      console.log(estadoProcesion);
+    }
+
     const response = await fetch("https://owntracks-api.semanasantatracker.workers.dev/last-location");
     const data = await response.json();
     const { lat, lon } = data;
+
+    const start = route[0];
+    const end = route[route.length - 1];
 
     let closestSegmentIndex = 0;
     let minDistance = Infinity;
     let tClosest = 0;
 
-    // Busca el segmento más cercano a la posición GPS
-    for (let i = 0; i < route.length - 1; i++) {
+    // Configura el rango de búsqueda según el estado
+    let segmentStart = 0;
+    let segmentEnd = route.length - 1;
+
+    const excluirTramos = 5;
+
+    if (estadoProcesion === "Finalizada") {
+      segmentStart = Math.min(excluirTramos, route.length - 2);
+    }
+
+    if (estadoProcesion === "Directo") {
+      segmentEnd = Math.max(0, route.length - 1 - excluirTramos);
+    }
+
+    // Proyección sobre los segmentos permitidos
+    for (let i = segmentStart; i < segmentEnd; i++) {
       const p1 = route[i];
       const p2 = route[i + 1];
 
@@ -381,7 +405,7 @@ const pointsJSON = JSON.stringify(points);
       const dy = p2[1] - p1[1];
 
       let t = ((lat - p1[0]) * dx + (lon - p1[1]) * dy) / (dx * dx + dy * dy);
-      t = Math.max(0, Math.min(1, t)); // Clampear a rango [0,1]
+      t = Math.max(0, Math.min(1, t));
 
       const projLat = p1[0] + t * dx;
       const projLon = p1[1] + t * dy;
@@ -395,7 +419,7 @@ const pointsJSON = JSON.stringify(points);
       }
     }
 
-    // Punto corregido sobre la ruta (proyectado)
+    // Punto corregido sobre la ruta
     const p1 = route[closestSegmentIndex];
     const p2 = route[closestSegmentIndex + 1];
     const correctedLat = p1[0] + tClosest * (p2[0] - p1[0]);
@@ -407,12 +431,12 @@ const pointsJSON = JSON.stringify(points);
       hasCenteredMap = true;
     }
 
-    // Mover marcador dorado a la posición proyectada
+    // Mover el marcador animado
     if (animatedMarker) {
       animatedMarker.setLatLng([correctedLat, correctedLon]);
     }
 
-    // Crear o mover el marcador gris a la posición real
+    // Mostrar punto GPS real
     if (!gpsRealMarker) {
       gpsRealMarker = L.marker([lat, lon], {
         icon: L.divIcon({
@@ -423,12 +447,11 @@ const pointsJSON = JSON.stringify(points);
         })
       }).addTo(map);
     } else {
-      gpsRealMarker.setLatLng([lat, lon]); // Posición real
+      gpsRealMarker.setLatLng([lat, lon]);
     }
 
     currentPosition = closestSegmentIndex;
 
-    // Construir el recorrido hasta el punto proyectado
     const completedPath = [
       ...route.slice(0, closestSegmentIndex + 1),
       [correctedLat, correctedLon]
@@ -440,7 +463,6 @@ const pointsJSON = JSON.stringify(points);
 
     isPaused = true;
 
-    // Actualización en bucle solo si está en "Directo"
     if (estadoProcesion === "Directo") {
       setTimeout(() => addLastLocationMarker(estadoProcesion), 5000);
     }
@@ -450,6 +472,9 @@ const pointsJSON = JSON.stringify(points);
     setTimeout(() => addLastLocationMarker(estadoProcesion), 30000);
   }
 }
+
+
+
 
 
 
