@@ -3,10 +3,8 @@ import Layout from '../../../layouts/Layout.astro';
 import { rutasProcesiones, puntosInteresProcesiones } from '../../../data/rutas-procesiones';
 import diasRaw from '../../../data/dias.json';
 
-// Obtener el parámetro de ruta dinámica
 const { procesionId = 'borriquita' } = Astro.params as { procesionId: string };
 
-// Encontrar los datos de la procesión
 const dias = diasRaw;
 let procesion = null;
 let diaProcesion = null;
@@ -23,50 +21,40 @@ for (let i = 0; i < dias.length; i++) {
   if (procesion) break;
 }
 
-// Título formateado para mostrar
 const titulo = procesionId
   .split('-')
   .map(word => word.charAt(0).toUpperCase() + word.slice(1))
   .join(' ');
 
-// Definir las rutas estáticas que se deben generar
 export function getStaticPaths() {
   return Object.keys(rutasProcesiones).map(id => ({
     params: { procesionId: id }
   }));
 }
 
-// Variables para datos meteorológicos
 let weatherData;
 let weatherForProcession = null;
-let probabilidadSalida = 100; // Por defecto 100%
+let probabilidadSalida = 100;
 let fechaProcesion = null;
 let errorMeteo = null;
 
 try {
-  // Generar fechas de Semana Santa 2025 basadas en los títulos de días en el JSON
-// Definir correctamente el tipo para semanaSantaFechas
-const semanaSantaFechas: Record<string, Date> = {};
-const añoProcesion = 2025;
-const mesSemanaSanta = 3; // Abril (0-indexado)
-
-// Mapeamos cada título de día a su fecha correspondiente
-dias.forEach((dia, index) => {
-  // Fecha base: comenzamos con el primer día de procesiones (12 de abril 2025)
-  const fecha = new Date(añoProcesion, mesSemanaSanta, 12 + index);
-  // Usamos la propiedad como string con seguridad de tipos
-  semanaSantaFechas[dia.titulo as string] = fecha;
-});
-
-fechaProcesion = diaProcesion ? semanaSantaFechas[diaProcesion.titulo as string] : null;
-  
-  // Solo intentar obtener datos meteorológicos si tenemos una fecha válida
-  if (fechaProcesion && procesion?.horaSalida) {
-    // Calcular hora para la API
-    const horaParts = procesion.horaSalida.split(':');
-    const hora = parseInt(horaParts[0], 10);
+  const semanaSantaFechas: Record<string, Date> = {};
+  const añoProcesion = 2025;
+  const mesSemanaSanta = 3; // Abril (0-indexado)
+  dias.forEach((dia, index) => {
+    const fecha = new Date(añoProcesion, mesSemanaSanta, 12 + index);
+    semanaSantaFechas[dia.titulo as string] = fecha;
+  });
+  fechaProcesion = diaProcesion ? semanaSantaFechas[diaProcesion.titulo as string] : null;
     
-    // Obtener datos meteorológicos para Martos (37.7219, -3.9699)
+  if (fechaProcesion && procesion?.horaSalida) {
+    const horaParts = procesion.horaSalida.split(':');
+    const horaSalida = parseInt(horaParts[0], 10);
+    
+    // Duración estimada de la procesión (horas)
+    const duracionProcesion = 4; 
+    
     const weatherApiUrl = `https://api.open-meteo.com/v1/forecast?latitude=37.72&longitude=-3.97&hourly=temperature_2m,precipitation_probability,windspeed_10m,weathercode&forecast_days=7&timezone=Europe/Madrid`;
     const response = await fetch(weatherApiUrl);
     
@@ -75,32 +63,72 @@ fechaProcesion = diaProcesion ? semanaSantaFechas[diaProcesion.titulo as string]
     }
     
     weatherData = await response.json();
-    
-    // Encontrar el índice en los datos horarios
     const fechaStr = `${fechaProcesion.getFullYear()}-${String(fechaProcesion.getMonth() + 1).padStart(2, '0')}-${String(fechaProcesion.getDate()).padStart(2, '0')}`;
-    const timeIndex = weatherData.hourly.time.findIndex((time: string) =>
-  	time.includes(fechaStr) && time.includes(`T${String(hora).padStart(2, '0')}`)
-	);
     
-    if (timeIndex !== -1) {
-      weatherForProcession = {
-        temperatura: weatherData.hourly.temperature_2m[timeIndex],
-        precipitacion: weatherData.hourly.precipitation_probability[timeIndex],
-        viento: weatherData.hourly.windspeed_10m[timeIndex],
-        codigo: weatherData.hourly.weathercode[timeIndex]
-      };
+    // Recogemos datos para varias horas durante la procesión
+    let horasProcesion = [];
+    let precipitacionMaxima = 0;
+    let vientoMaximo = 0;
+    let precipitacionPromedio = 0;
+    let vientoPromedio = 0;
+    let horasValidas = 0;
+    
+    for (let i = 0; i < duracionProcesion; i++) {
+      const horaActual = horaSalida + i;
+      if (horaActual > 23) continue; // No seguimos después de medianoche
       
-      // Calcular probabilidad de salida basada en condiciones
-      if (weatherForProcession.precipitacion > 70) {
-        probabilidadSalida = 10; // Alta probabilidad de lluvia
-      } else if (weatherForProcession.precipitacion > 50) {
+      const timeIndex = weatherData.hourly.time.findIndex((time: string) =>
+        time.includes(fechaStr) && time.includes(`T${String(horaActual).padStart(2, '0')}`)
+      );
+      
+      if (timeIndex !== -1) {
+        horasValidas++;
+        const precipitacionHora = weatherData.hourly.precipitation_probability[timeIndex];
+        const vientoHora = weatherData.hourly.windspeed_10m[timeIndex];
+        
+        // Guardamos máximos
+        precipitacionMaxima = Math.max(precipitacionMaxima, precipitacionHora);
+        vientoMaximo = Math.max(vientoMaximo, vientoHora);
+        
+        // Sumamos para promedios
+        precipitacionPromedio += precipitacionHora;
+        vientoPromedio += vientoHora;
+        
+        // La primera hora es la que mostramos en pantalla
+        if (i === 0) {
+          weatherForProcession = {
+            temperatura: weatherData.hourly.temperature_2m[timeIndex],
+            precipitacion: precipitacionHora,
+            viento: vientoHora,
+            codigo: weatherData.hourly.weathercode[timeIndex]
+          };
+        }
+      }
+    }
+    
+    // Calculamos promedios
+    if (horasValidas > 0) {
+      precipitacionPromedio = precipitacionPromedio / horasValidas;
+      vientoPromedio = vientoPromedio / horasValidas;
+      
+      // Determinamos probabilidad de salida usando una combinación de máximos y promedios
+      // Damos más peso a los valores máximos de precipitación
+      if (precipitacionMaxima > 70) {
+        probabilidadSalida = 10;
+      } else if (precipitacionMaxima > 50) {
+        probabilidadSalida = 20;
+      } else if (precipitacionPromedio > 40) {
         probabilidadSalida = 30;
-      } else if (weatherForProcession.precipitacion > 30) {
-        probabilidadSalida = 60;
-      } else if (weatherForProcession.viento > 40) {
-        probabilidadSalida = 40; // Viento fuerte
-      } else if (weatherForProcession.precipitacion > 20) {
+      } else if (precipitacionMaxima > 30) {
+        probabilidadSalida = 50;
+      } else if (vientoMaximo > 45) {
+        probabilidadSalida = 40;
+      } else if (precipitacionPromedio > 20) {
+        probabilidadSalida = 70;
+      } else if (vientoPromedio > 35) {
         probabilidadSalida = 80;
+      } else {
+        probabilidadSalida = 95;
       }
     }
   }
@@ -109,7 +137,6 @@ fechaProcesion = diaProcesion ? semanaSantaFechas[diaProcesion.titulo as string]
   errorMeteo = error instanceof Error ? error.message : "Error desconocido";
 }
 
-// Funciones auxiliares para la interfaz
 function getWeatherDescription(code: string | number) {
   const weatherCodes: Record<string | number, string> = {
     0: "Cielo despejado",
@@ -146,10 +173,10 @@ function getIconPath(iconName: string) {
 }
 
 function getProbabilidadColor(probabilidad: number) {
-  if (probabilidad > 75) return { color: '#22c55e', text: 'text-green-600' }; // Verde
-  if (probabilidad > 50) return { color: '#eab308', text: 'text-yellow-600' }; // Amarillo
-  if (probabilidad > 25) return { color: '#f97316', text: 'text-orange-600' }; // Naranja
-  return { color: '#ef4444', text: 'text-red-600' }; // Rojo
+  if (probabilidad > 75) return { color: '#22c55e', text: 'text-green-600' };
+  if (probabilidad > 50) return { color: '#eab308', text: 'text-yellow-600' };
+  if (probabilidad > 25) return { color: '#f97316', text: 'text-orange-600' };
+  return { color: '#ef4444', text: 'text-red-600' };
 }
 
 function formatDate(date: Date | null | undefined) {
@@ -165,6 +192,49 @@ function formatDate(date: Date | null | undefined) {
 
 const metaTitle = procesion ? `Pronóstico del tiempo para ${procesion.nombre} - Semana Santa Martos` : 'Pronóstico - Semana Santa Martos';
 const metaDesc = procesion ? `Consulta las condiciones meteorológicas para la procesión de ${procesion.nombre} en Martos el ${fechaProcesion ? formatDate(fechaProcesion) : ''}` : 'Información meteorológica para procesiones de Semana Santa en Martos';
+let siguienteProcesionId = '';
+let siguienteProcesionNombre = '';
+
+if (procesion && diaProcesion) {
+  // Encontrar el índice del día actual
+  const indiceDiaActual = dias.findIndex(d => d.titulo === diaProcesion.titulo);
+  
+  if (indiceDiaActual !== -1) {
+    const procesionesDelDia = dias[indiceDiaActual].procesiones;
+    // Encontrar el índice de la procesión actual
+    const indiceProcesionActual = procesionesDelDia.findIndex(p => 
+      p.nombre.toLowerCase().replace(/\s+/g, '-') === procesionId
+    );
+    
+    if (indiceProcesionActual !== -1 && indiceProcesionActual < procesionesDelDia.length - 1) {
+      // Si hay más procesiones en el mismo día, tomar la siguiente
+      const siguienteProcesion = procesionesDelDia[indiceProcesionActual + 1];
+      siguienteProcesionId = siguienteProcesion.nombre.toLowerCase().replace(/\s+/g, '-');
+      siguienteProcesionNombre = siguienteProcesion.nombre;
+    } else if (indiceDiaActual < dias.length - 1) {
+      // Si es la última procesión del día, tomar la primera del día siguiente
+      const siguienteDia = dias[indiceDiaActual + 1];
+      if (siguienteDia.procesiones && siguienteDia.procesiones.length > 0) {
+        const siguienteProcesion = siguienteDia.procesiones[0];
+        siguienteProcesionId = siguienteProcesion.nombre.toLowerCase().replace(/\s+/g, '-');
+        siguienteProcesionNombre = siguienteProcesion.nombre;
+      }
+    } else {
+      // Si es la última procesión del último día, volver a la primera
+      if (dias[0].procesiones && dias[0].procesiones.length > 0) {
+        const primeraProcesion = dias[0].procesiones[0];
+        siguienteProcesionId = primeraProcesion.nombre.toLowerCase().replace(/\s+/g, '-');
+        siguienteProcesionNombre = primeraProcesion.nombre;
+      }
+    }
+  }
+}
+
+// Si no se pudo determinar la siguiente procesión
+if (!siguienteProcesionId) {
+  siguienteProcesionId = 'borriquita'; // Primera procesión por defecto
+  siguienteProcesionNombre = 'Ver todas las cofradías';
+}
 ---
 
 <Layout 
@@ -172,177 +242,183 @@ const metaDesc = procesion ? `Consulta las condiciones meteorológicas para la p
   description={metaDesc}
   keywords={`pronóstico tiempo Semana Santa Martos, meteorología ${procesion?.nombre || 'procesiones'}, probabilidad lluvia Semana Santa`}
 >
-  <main class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-200">
-    <div class="max-w-4xl mx-auto pt-6 pb-16 px-4">
-		<div class="mb-6">
-			<a href={`/cofradia/${procesionId}`} class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition-colors">
-			  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-			  </svg>
-			  Volver
-			</a>
-		</div>
-      
-      <h1 class="text-3xl sm:text-4xl font-bold mb-3 text-center text-gray-800">
-        {procesion ? `Pronóstico para ${procesion.nombre}` : 'Procesión no encontrada'}
-      </h1>
+  <main class="min-h-screen bg-[#1e293b]">
+    <div class="max-w-7xl mx-auto py-4 px-4">
+	<div class="relative flex items-center justify-between mb-6 px-2">
+	<!-- Botón de volver -->
+	<div class="flex-shrink-0">
+		<a href={`/cofradia/${procesionId}`} 
+		class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 hover:bg-blue-700 text-white transition-colors">
+		<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+		</svg>
+		</a>
+
+	</div>
+
+	<!-- Título centrado y responsivo -->
+	<div class="absolute left-1/2 transform -translate-x-1/2 text-center px-2">
+		<h1 class="text-lg sm:text-2xl md:text-3xl font-bold text-white-800 whitespace-nowrap truncate max-w-[90vw]">
+		{procesion ? `Pronóstico para ${procesion.nombre}` : 'Procesión no encontrada'}
+		</h1>
+	</div>
+
+	<!-- Espacio derecho para equilibrar -->
+	<div class="w-[80px] sm:w-[120px]"></div>
+	</div>
+
+
       
       {procesion && diaProcesion ? (
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
-          <div class="bg-gradient-to-r from-indigo-600 to-blue-500 text-white py-0 px-0">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-0">
-              <div>
-                <h2 class="text-2xl font-bold">{diaProcesion.titulo}</h2>
-                <p class="text-indigo-100 mt-1">
-                  {fechaProcesion ? formatDate(fechaProcesion) : 'Fecha por determinar'}
-                </p>
-                <div class="flex items-center gap-2 mt-3">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+          <div class="p-5 border-b border-gray-200 flex flex-col md:flex-row items-center justify-between">
+            <div class="mb-4 md:mb-0">
+              <h2 class="text-2xl font-semibold text-gray-800">{diaProcesion.titulo}</h2>
+              <p class="text-gray-500 mt-1">
+                {fechaProcesion ? formatDate(fechaProcesion) : 'Fecha por determinar'}
+              </p>
+              <div class="mt-3 space-y-1">
+                <div class="flex items-center text-gray-600">
+                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <p>{procesion.horaSalida} - Salida</p>
+                  <span>{procesion.horaSalida} - Salida</span>
                 </div>
-                <div class="flex items-center gap-2 mt-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="flex items-center text-gray-600">
+                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                   </svg>
-                  <p>{procesion.parroquia}</p>
+                  <span>{procesion.parroquia}</span>
                 </div>
               </div>
-              
-              {weatherForProcession && (
-                <div class="bg-white/20 backdrop-blur-sm p-3 rounded-lg flex items-center">
-                  <img 
-                    src={getIconPath(getWeatherIcon(weatherForProcession.codigo))} 
-                    alt="Icono del tiempo" 
-                    width="80" 
-                    height="80"
-                    class="w-20 h-20 object-contain" 
-                  />
-                </div>
-              )}
             </div>
+            {weatherForProcession && (
+              <div class="flex-shrink-0">
+                <img 
+                  src={getIconPath(getWeatherIcon(weatherForProcession.codigo))} 
+                  alt="Estado del tiempo" 
+                  class="w-16 h-16 object-contain" 
+                />
+              </div>
+            )}
           </div>
           
-          <div class="p-6">
+          <div class="p-5">
             {weatherForProcession ? (
-              <div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                  <div class="bg-blue-50 p-5 rounded-lg text-center transform transition hover:scale-105">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto text-blue-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              <>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                  <div class="flex flex-col items-center justify-center p-4 bg-gray-100 rounded">
+                    <svg class="w-8 h-8 text-blue-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-Linecap="round" stroke-Linejoin="round" stroke-Width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2z" />
                     </svg>
-                    <h3 class="text-lg font-semibold text-blue-800">Temperatura</h3>
-                    <p class="text-4xl font-bold text-blue-600 mt-2">{weatherForProcession.temperatura}°C</p>
+                    <h3 class="text-lg text-gray-700">Temperatura</h3>
+                    <p class="text-3xl font-bold text-blue-600">{weatherForProcession.temperatura}°C</p>
                   </div>
                   
-                  <div class="bg-blue-50 p-5 rounded-lg text-center transform transition hover:scale-105">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto text-blue-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  <div class="flex flex-col items-center justify-center p-4 bg-gray-100 rounded">
+                    <svg class="w-8 h-8 text-blue-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-Linecap="round" stroke-Linejoin="round" stroke-Width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                     </svg>
-                    <h3 class="text-lg font-semibold text-blue-800">Probabilidad de lluvia</h3>
-                    <p class="text-4xl font-bold text-blue-600 mt-2">{weatherForProcession.precipitacion}%</p>
+                    <h3 class="text-lg text-gray-700 text-center">Probabilidad de lluvia</h3>
+                    <p class="text-3xl font-bold text-blue-600">{weatherForProcession.precipitacion}%</p>
                   </div>
                   
-                  <div class="bg-blue-50 p-5 rounded-lg text-center transform transition hover:scale-105">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto text-blue-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
+                  <div class="flex flex-col items-center justify-center p-4 bg-gray-100 rounded">
+                    <svg class="w-8 h-8 text-blue-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-Linecap="round" stroke-Linejoin="round" stroke-Width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
                     </svg>
-                    <h3 class="text-lg font-semibold text-blue-800">Viento</h3>
-                    <p class="text-4xl font-bold text-blue-600 mt-2">{weatherForProcession.viento} km/h</p>
+                    <h3 class="text-lg text-gray-700">Viento</h3>
+                    <p class="text-3xl font-bold text-blue-600">{weatherForProcession.viento} km/h</p>
                   </div>
                 </div>
                 
-                <div class="mb-8 p-5 bg-gray-50 rounded-lg">
-                  <h3 class="text-xl font-bold mb-3 text-gray-700 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <div class="mb-8 p-4 bg-gray-50 rounded">
+                  <h3 class="text-xl font-semibold text-gray-700 mb-2 flex items-center">
+                    <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-Linecap="round" stroke-Linejoin="round" stroke-Width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     Condiciones meteorológicas
                   </h3>
-                  <p class="text-lg text-gray-700">{getWeatherDescription(weatherForProcession.codigo)}</p>
+                  <p class="text-gray-600">{getWeatherDescription(weatherForProcession.codigo)}</p>
                 </div>
                 
-                <div class="border-t border-gray-200 pt-8">
-                  <h3 class="text-2xl font-bold mb-6 text-center text-gray-700">Probabilidad de salida</h3>
-                  
-                  {/* Medidor visual */}
-                  <div class="w-full bg-gray-200 rounded-full h-8 mb-6 overflow-hidden shadow-inner">
-                    <div class="h-8 rounded-full text-center text-white font-medium flex items-center justify-center transition-all duration-1000 ease-out" 
-                         style={`width: ${probabilidadSalida}%; background-color: ${getProbabilidadColor(probabilidadSalida).color};`}>
-                      <span class="drop-shadow-md">{probabilidadSalida}%</span>
-                    </div>
-                  </div>
-                  
-                  <div class={`text-center p-4 rounded-lg bg-opacity-20 ${getProbabilidadColor(probabilidadSalida).text} bg-${getProbabilidadColor(probabilidadSalida).text.replace('text-', '')}-100`}>
-                    <p class="text-lg font-semibold">
-                      {probabilidadSalida > 75 ? 'Alta probabilidad de que la procesión salga con normalidad.' : 
-                       probabilidadSalida > 50 ? 'Es probable que la procesión salga, pero podría haber cambios según evolucione el tiempo.' :
-                       probabilidadSalida > 25 ? 'Hay riesgo de que la procesión no pueda salir o se vea alterada por las condiciones climáticas.' : 
-                       'Es muy probable que la procesión se suspenda debido a las condiciones meteorológicas adversas.'}
+                <div class="border-t border-gray-200 pt-6">
+                  <h3 class="text-2xl font-bold text-center text-gray-700 mb-4">Probabilidad de salida</h3>
+                  <div class="w-full bg-gray-200 rounded-full h-6 mb-4 overflow-hidden relative">
+				<!-- Barra de progreso sin texto -->
+				<div class="h-6 transition-all duration-700" 
+					style={`width: ${probabilidadSalida}%; background-color: ${getProbabilidadColor(probabilidadSalida).color};`}>
+				</div>
+				
+				<!-- Texto centrado en posición absoluta -->
+				<div class="absolute inset-0 flex items-center justify-center">
+					<span class="font-bold text-white text-shadow">{probabilidadSalida}%</span>
+				</div>
+				</div>
+                  <div class={`p-3 rounded text-center ${getProbabilidadColor(probabilidadSalida).text}`}>
+                    <p class="text-base font-medium">
+                      {probabilidadSalida > 75 ? 'La procesión saldrá con normalidad.' : 
+                       probabilidadSalida > 50 ? 'Es probable que la procesión salga, aunque podrían cambiar algunos detalles.' :
+                       probabilidadSalida > 25 ? 'La procesión podría sufrir alteraciones por el clima.' : 
+                       'Es muy probable que se suspenda la procesión.'}
                     </p>
-                    
-                    <div class="text-sm mt-2">
+                    <div class="mt-2 text-sm text-gray-600">
                       {weatherForProcession.precipitacion > 30 && (
-                        <p class="inline-flex items-center">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        <span class="mr-4 inline-flex items-center">
+                          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-Linecap="round" stroke-Linejoin="round" stroke-Width="2" d="M12 9v2m0 4h.01" />
                           </svg>
-                          Riesgo de lluvia elevado ({weatherForProcession.precipitacion}%)
-                        </p>
+                          Lluvia: {weatherForProcession.precipitacion}%
+                        </span>
                       )}
-                      
                       {weatherForProcession.viento > 30 && (
-                        <p class="inline-flex items-center ml-4">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        <span class="inline-flex items-center">
+                          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-Linecap="round" stroke-Linejoin="round" stroke-Width="2" d="M12 9v2m0 4h.01" />
                           </svg>
-                          Viento fuerte ({weatherForProcession.viento} km/h)
-                        </p>
+                          Viento: {weatherForProcession.viento} km/h
+                        </span>
                       )}
                     </div>
                   </div>
                 </div>
                 
-                <div class="mt-10 text-center text-sm text-gray-500 bg-gray-50 p-4 rounded-lg">
-                  <p class="flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <div class="mt-8 text-center text-sm text-gray-500">
+                  <p class="flex justify-center items-center">
+                    <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-Linecap="round" stroke-Linejoin="round" stroke-Width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    Los datos meteorológicos son orientativos y pueden cambiar. Consulta fuentes oficiales para información actualizada.
+                    Los datos son orientativos. Consulta fuentes oficiales para mayor información.
                   </p>
-                  
-                  <p class="mt-2 text-xs">
-                    Última actualización: {new Date().toLocaleString('es-ES')}
-                  </p>
+                  <p class="mt-2 text-xs">Última actualización: {new Date().toLocaleString('es-ES')}</p>
                 </div>
-              </div>
+              </>
             ) : (
-              <div class="text-center py-10 px-4">
+              <div class="py-10 text-center">
                 {errorMeteo ? (
                   <div class="text-red-500">
-                    <svg class="mx-auto w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-Linecap="round" stroke-Linejoin="round" stroke-Width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
-                    <h3 class="text-xl font-bold mt-4 mb-2">Error al obtener datos meteorológicos</h3>
+                    <h3 class="text-xl font-bold mb-2">Error al obtener datos meteorológicos</h3>
                     <p>{errorMeteo}</p>
                   </div>
                 ) : !fechaProcesion ? (
                   <div class="text-amber-600">
-                    <svg class="mx-auto w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-Linecap="round" stroke-Linejoin="round" stroke-Width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <h3 class="text-xl font-bold mt-4">Fecha no disponible</h3>
+                    <h3 class="text-xl font-bold">Fecha no disponible</h3>
                     <p class="mt-2">No se pudo determinar la fecha exacta para esta procesión.</p>
                   </div>
                 ) : (
                   <div class="text-gray-600">
-                    <svg class="mx-auto w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path>
+                    <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-Linecap="round" stroke-Linejoin="round" stroke-Width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
                     </svg>
-                    <h3 class="text-xl font-bold mt-4">Predicción no disponible</h3>
-                    <p class="mt-2">Los datos meteorológicos para la fecha {formatDate(fechaProcesion)} aún no están disponibles.</p>
-                    <p class="mt-1 text-sm">Vuelve a consultar más cerca de la fecha de la procesión.</p>
+                    <h3 class="text-xl font-bold">Predicción no disponible</h3>
+                    <p class="mt-2">Los datos para {formatDate(fechaProcesion)} aún no están disponibles.</p>
+                    <p class="mt-1 text-sm">Vuelve a consultarlo más cerca de la fecha.</p>
                   </div>
                 )}
               </div>
@@ -350,30 +426,30 @@ const metaDesc = procesion ? `Consulta las condiciones meteorológicas para la p
           </div>
         </div>
       ) : (
-        <div class="text-center py-16 bg-white rounded-xl shadow-md border border-gray-100">
-          <svg class="mx-auto w-20 h-20 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        <div class="bg-white rounded-lg border border-gray-200 shadow-sm text-center py-12">
+          <svg class="w-20 h-20 text-red-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-Linecap="round" stroke-Linejoin="round" stroke-Width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <h2 class="text-3xl font-bold text-red-600 mt-4">Procesión no encontrada</h2>
           <p class="mt-4 text-gray-600">No se ha encontrado información sobre esta procesión.</p>
-          <a href="/" class="mt-6 inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+          <a href="/" class="mt-6 inline-block px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
             Volver al inicio
           </a>
         </div>
       )}
       
       <div class="mt-10 text-center">
-        <a href="/cofradia" class="text-blue-600 hover:text-blue-800 inline-flex items-center">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-          </svg>
-          Ver todas las cofradías
-        </a>
-      </div>
+        <div class="mt-10 text-center">
+			<a href={`/cofradia/${siguienteProcesionId}`} class="text-blue-600 hover:text-blue-800 inline-flex items-center">
+			  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+			  </svg>
+			  Siguiente: {siguienteProcesionNombre}
+			</a>
+		  </div>
     </div>
   </main>
 
-  <!-- Schema.org para SEO -->
   <script type="application/ld+json" set:html={JSON.stringify({
     "@context": "https://schema.org",
     "@type": "Event",
@@ -402,15 +478,13 @@ const metaDesc = procesion ? `Consulta las condiciones meteorológicas para la p
 </Layout>
 
 <style>
-/* Efecto de transición para los elementos */
-.transform {
-  transition: transform 0.2s ease-in-out;
-}
-
-/* Mejora para las cajas de información */
-.bg-blue-50 {
-  background-color: black;
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(191, 219, 254, 0.3);
-}
+  /* Transición suave para hover */
+  .transition-colors {
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  /* Sombra de texto para legibilidad */
+  .text-shadow {
+    text-shadow: 0 0 2px rgba(0,0,0,0.5);
+  }
 </style>

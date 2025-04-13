@@ -189,8 +189,13 @@ export default function BotonPronostico({ rutaId }: Props) {
   }
   
   return (
-    <div className={`px-4 py-3 rounded-lg shadow-md flex items-center space-x-1 text-white
-                   ${isLoading ? 'bg-gray-400' : weatherData?.precipitacion && weatherData.precipitacion > 50 ? 'bg-yellow-500' : 'bg-blue-500'}`}>
+    <div className={`px-6 py-3 rounded-full shadow-md flex items-center space-x-1 text-white
+		transition-colors duration-200 ease-in-out
+		${isLoading 
+		  ? 'bg-gray-400 hover:bg-gray-500' 
+		  : weatherData?.precipitacion && weatherData.precipitacion > 50 
+			? 'bg-yellow-500 hover:bg-yellow-600' 
+			: 'bg-blue-500 hover:bg-blue-600'}`}>
       {isLoading ? (
         // Estado de carga
         <div className="animate-pulse flex items-center">

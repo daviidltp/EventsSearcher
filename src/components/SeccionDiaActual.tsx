@@ -140,7 +140,7 @@ export default function SeccionDiaActual(props: Props) {
 
       {/* Botones en escritorio */}
       <div className="hidden md:flex absolute bottom-6 right-6 z-10 space-x-3">
-        <a>
+        <a href={`/cofradia/${rutaId}/pronostico`}>
           <BotonPronostico rutaId={rutaId} />
         </a>
         <a href={`/cofradia/${rutaId}/recorrido`}>
@@ -150,7 +150,7 @@ export default function SeccionDiaActual(props: Props) {
 
       {/* Botón pronóstico en móvil (en el lado derecho) */}
       <div className="flex md:hidden absolute bottom-6 right-6 z-10">
-        <a>
+        <a href={`/cofradia/${rutaId}/pronostico`}>
           <BotonPronostico rutaId={rutaId} />
         </a>
       </div>
