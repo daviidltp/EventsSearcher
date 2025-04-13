@@ -9,23 +9,29 @@ export default function ActualizarEstado() {
   const [mensaje, setMensaje] = useState<{ tipo: "error" | "success"; texto: string } | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  const API_BASE = "https://owntracks-api.semanasantatracker.workers.dev";
+
   useEffect(() => {
     const verificarSesion = async () => {
+      const sessionId = localStorage.getItem("sessionId");
+      if (!sessionId) return redirectToLogin();
+
       try {
-        const res = await fetch("https://owntracks-api.semanasantatracker.workers.dev/verify-session", {
-          method: "GET",
-          credentials: "include", // 👈 Necesario para incluir cookies
+        const res = await fetch(`${API_BASE}/verify-session`, {
+          headers: { Authorization: sessionId },
         });
 
         const data = await res.json();
-        if (!res.ok || !data.valid) {
-          throw new Error("Sesión no válida");
-        }
-
+        if (!res.ok || !data.valid) throw new Error();
         setIsSessionValid(true);
       } catch {
-        window.location.href = "/admin";
+        redirectToLogin();
       }
+    };
+
+    const redirectToLogin = () => {
+      localStorage.removeItem("sessionId");
+      window.location.href = "/admin";
     };
 
     verificarSesion();
@@ -34,7 +40,7 @@ export default function ActualizarEstado() {
   useEffect(() => {
     const cargarProcesiones = async () => {
       try {
-        const res = await fetch("https://owntracks-api.semanasantatracker.workers.dev/procesiones");
+        const res = await fetch(`${API_BASE}/procesiones`);
         if (!res.ok) throw new Error("Error al cargar las procesiones");
 
         const data = await res.json();
@@ -60,11 +66,19 @@ export default function ActualizarEstado() {
     e.preventDefault();
     setMensaje(null);
 
+    const sessionId = localStorage.getItem("sessionId");
+    if (!sessionId) {
+      setMensaje({ tipo: "error", texto: "Sesión no válida. Vuelve a iniciar sesión." });
+      return;
+    }
+
     try {
-      const res = await fetch("https://owntracks-api.semanasantatracker.workers.dev/actualizar-estado", {
+      const res = await fetch(`${API_BASE}/actualizar-estado`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include", // 👈 Enviar cookie de sesión al actualizar
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: sessionId,
+        },
         body: JSON.stringify({ id: selectedProcesion, estado, alerta }),
       });
 

@@ -15,15 +15,22 @@ export default function AdminLogin() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ password }),
-        credentials: 'include', // 👈 ¡Importante para que se envíe y reciba la cookie!
       });
 
-      if (response.ok) {
-        window.location.href = '/admin/actualizar-estado';
-      } else {
+      if (!response.ok) {
         const message = await response.text();
         setError(message || 'Error al autenticar');
+        return;
       }
+
+      const data = await response.json();
+      if (!data.sessionId) {
+        setError('Respuesta inválida del servidor');
+        return;
+      }
+
+      localStorage.setItem('sessionId', data.sessionId);
+      window.location.href = '/admin/actualizar-estado';
     } catch {
       setError('Error de conexión');
     }
