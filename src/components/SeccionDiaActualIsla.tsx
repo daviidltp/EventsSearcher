@@ -166,6 +166,13 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
                 p.alerta = data.alerta;
               }
             }
+
+            if (enCalle.length > 0) {
+              setProcesionesEnCalle([...enCalle]); // crea una nueva copia
+            } else if (proxima) {
+              setProximaProcesion({ ...proxima }); // fuerza rerender
+            }
+            
           }
         } catch (err) {
           console.error('Error al obtener estado y alerta:', err);
