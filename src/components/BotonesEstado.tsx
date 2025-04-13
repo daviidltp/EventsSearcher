@@ -16,7 +16,7 @@ interface Props {
   
     return (estaEnCalle && estado === 'Directo')? (
       <button className="flex items-center gap-2 bg-white bg-opacity-80 text-black font-semibold 
-                         px-4 py-3 text-base rounded-full shadow-md 
+                         px- py-3 text-base rounded-full shadow-md 
                          hover:bg-opacity-100 transition cursor-pointer">
         ¡Síguela en directo!
         <span className="relative flex h-4 w-4">
