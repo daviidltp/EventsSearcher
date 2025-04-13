@@ -15,8 +15,8 @@ interface Props {
     }
   
     return (estaEnCalle)? (
-      <button className="flex items-center gap-3 bg-white bg-opacity-80 text-black font-semibold 
-                         px-6 py-3 text-base rounded-full shadow-md 
+      <button className="flex items-center gap-0 bg-white bg-opacity-80 text-black font-semibold 
+                         px-4 py-3 text-base rounded-full shadow-md 
                          hover:bg-opacity-100 transition cursor-pointer">
         ¡Síguela en directo!
         <span className="relative flex h-4 w-4">

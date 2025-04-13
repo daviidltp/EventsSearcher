@@ -213,9 +213,6 @@ export default function BotonPronostico({ rutaId }: Props) {
           {weatherData && (
             <div className="text-white font-medium text-sm flex items-center">
               <span className="mr-1">{weatherData.precipitacion}%</span>
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-              </svg>
             </div>
           )}
         </>
