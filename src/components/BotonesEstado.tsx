@@ -14,7 +14,7 @@ interface Props {
       );
     }
   
-    return (estaEnCalle && estado === 'Directo')? (
+    return (estaEnCalle)? (
       <button className="flex items-center gap-3 bg-white bg-opacity-80 text-black font-semibold 
                          px-6 py-3 text-base rounded-full shadow-md 
                          hover:bg-opacity-100 transition cursor-pointer">

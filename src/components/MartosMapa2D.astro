@@ -349,7 +349,7 @@ const pointsJSON = JSON.stringify(points);
       // Inicializar la visualización en la posición inicial
       updatePosition(0);
       updateCurrentStreet(0);
-     // addLastLocationMarker();
+      addLastLocationMarker();
       // Coger ultima ubicacion
       
       
@@ -366,76 +366,53 @@ const pointsJSON = JSON.stringify(points);
     const data = await response.json();
     const { lat, lon } = data;
 
-    // Coordenadas de inicio y fin de ruta
-    const start = route[0];
-    const end = route[route.length - 1];
-
-    // Distancias al inicio y al final
-    const distToStart = Math.sqrt(
-      Math.pow(start[0] - lat, 2) + Math.pow(start[1] - lon, 2)
-    );
-    const distToEnd = Math.sqrt(
-      Math.pow(end[0] - lat, 2) + Math.pow(end[1] - lon, 2)
-    );
-
-    // Umbral para considerar que está cerca de ambos (~20 metros)
-    const threshold = 0.0005;
-
-    let closestPointIndex = 0;
+    let closestSegmentIndex = 0;
     let minDistance = Infinity;
+    let tClosest = 0;
 
-    // Si está cerca tanto del inicio como del final → aplicar búsqueda restringida
-    if (distToStart < threshold && distToEnd < threshold) {
-      let searchStartIndex = 0;
-      let searchEndIndex = route.length;
+    // Busca el segmento más cercano a la posición GPS
+    for (let i = 0; i < route.length - 1; i++) {
+      const p1 = route[i];
+      const p2 = route[i + 1];
 
-      if (estadoProcesion === "Finalizada") {
-        searchStartIndex = Math.max(0, route.length - 20);
-      } else if (estadoProcesion === "Directo") {
-        searchEndIndex = Math.min(20, route.length);
-      }
+      const dx = p2[0] - p1[0];
+      const dy = p2[1] - p1[1];
 
-      for (let i = searchStartIndex; i < searchEndIndex; i++) {
-        const routePoint = route[i];
-        const distance = Math.sqrt(
-          Math.pow(routePoint[0] - lat, 2) +
-          Math.pow(routePoint[1] - lon, 2)
-        );
+      let t = ((lat - p1[0]) * dx + (lon - p1[1]) * dy) / (dx * dx + dy * dy);
+      t = Math.max(0, Math.min(1, t)); // Clampear a rango [0,1]
 
-        if (distance < minDistance) {
-          minDistance = distance;
-          closestPointIndex = i;
-        }
-      }
-    } else {
-      // Si no hay ambigüedad → buscar en toda la ruta
-      for (let i = 0; i < route.length; i++) {
-        const routePoint = route[i];
-        const distance = Math.sqrt(
-          Math.pow(routePoint[0] - lat, 2) +
-          Math.pow(routePoint[1] - lon, 2)
-        );
+      const projLat = p1[0] + t * dx;
+      const projLon = p1[1] + t * dy;
 
-        if (distance < minDistance) {
-          minDistance = distance;
-          closestPointIndex = i;
-        }
+      const distance = Math.sqrt(Math.pow(lat - projLat, 2) + Math.pow(lon - projLon, 2));
+
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestSegmentIndex = i;
+        tClosest = t;
       }
     }
 
-    const [correctedLat, correctedLon] = route[closestPointIndex];
+    // Punto corregido sobre la ruta (proyectado)
+    const p1 = route[closestSegmentIndex];
+    const p2 = route[closestSegmentIndex + 1];
+    const correctedLat = p1[0] + tClosest * (p2[0] - p1[0]);
+    const correctedLon = p1[1] + tClosest * (p2[1] - p1[1]);
 
+    // Centrar mapa solo una vez
     if (!hasCenteredMap && map) {
       map.setView([correctedLat, correctedLon], 19);
       hasCenteredMap = true;
     }
 
+    // Mover marcador dorado a la posición proyectada
     if (animatedMarker) {
       animatedMarker.setLatLng([correctedLat, correctedLon]);
     }
 
+    // Crear o mover el marcador gris a la posición real
     if (!gpsRealMarker) {
-      gpsRealMarker = L.marker([correctedLat, correctedLon], {
+      gpsRealMarker = L.marker([lat, lon], {
         icon: L.divIcon({
           className: 'gps-real-marker',
           html: `<div style="width: 14px; height: 14px; background-color: gray; border: 2px solid white; border-radius: 50%; box-shadow: 0 0 6px rgba(0,0,0,0.8);"></div>`,
@@ -444,19 +421,24 @@ const pointsJSON = JSON.stringify(points);
         })
       }).addTo(map);
     } else {
-      gpsRealMarker.setLatLng([correctedLat, correctedLon]);
+      gpsRealMarker.setLatLng([lat, lon]); // Posición real
     }
 
-    currentPosition = closestPointIndex;
-    const completedPath = route.slice(0, closestPointIndex + 1);
+    currentPosition = closestSegmentIndex;
+
+    // Construir el recorrido hasta el punto proyectado
+    const completedPath = [
+      ...route.slice(0, closestSegmentIndex + 1),
+      [correctedLat, correctedLon]
+    ];
+
     if (completedRouteLayer) {
       completedRouteLayer.setLatLngs(completedPath);
     }
 
-    //map.panTo([correctedLat, correctedLon]);
     isPaused = true;
 
-    // Solo seguir actualizando si está en marcha
+    // Actualización en bucle solo si está en "Directo"
     if (estadoProcesion === "Directo") {
       setTimeout(() => addLastLocationMarker(estadoProcesion), 5000);
     }
@@ -466,6 +448,7 @@ const pointsJSON = JSON.stringify(points);
     setTimeout(() => addLastLocationMarker(estadoProcesion), 30000);
   }
 }
+
 
 
 
