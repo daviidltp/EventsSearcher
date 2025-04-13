@@ -463,9 +463,8 @@ const pointsJSON = JSON.stringify(points);
 
     isPaused = true;
 
-    if (estadoProcesion === "Directo") {
-      setTimeout(() => addLastLocationMarker(estadoProcesion), 5000);
-    }
+    setTimeout(() => addLastLocationMarker(estadoProcesion), 5000);
+    
 
   } catch (err) {
     console.error("Error obteniendo la última ubicación:", err);
