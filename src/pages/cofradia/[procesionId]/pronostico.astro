@@ -66,71 +66,99 @@ try {
     const fechaStr = `${fechaProcesion.getFullYear()}-${String(fechaProcesion.getMonth() + 1).padStart(2, '0')}-${String(fechaProcesion.getDate()).padStart(2, '0')}`;
     
     // Recogemos datos para varias horas durante la procesión
-    let horasProcesion = [];
-    let precipitacionMaxima = 0;
-    let vientoMaximo = 0;
-    let precipitacionPromedio = 0;
-    let vientoPromedio = 0;
-    let horasValidas = 0;
+	let horasProcesion = [];
+	let precipitacionMaxima = 0;
+	let vientoMaximo = 0;
+	let precipitacionPromedio = 0;
+	let vientoPromedio = 0;
+	let horasValidas = 0;
+	let precipitacionPrimeraHora = 0;
+	let precipitacionUltimaHora = 0;
+	let tendenciaLluvia = 0;
     
     for (let i = 0; i < duracionProcesion; i++) {
-      const horaActual = horaSalida + i;
-      if (horaActual > 23) continue; // No seguimos después de medianoche
-      
-      const timeIndex = weatherData.hourly.time.findIndex((time: string) =>
-        time.includes(fechaStr) && time.includes(`T${String(horaActual).padStart(2, '0')}`)
-      );
-      
-      if (timeIndex !== -1) {
-        horasValidas++;
-        const precipitacionHora = weatherData.hourly.precipitation_probability[timeIndex];
-        const vientoHora = weatherData.hourly.windspeed_10m[timeIndex];
-        
-        // Guardamos máximos
-        precipitacionMaxima = Math.max(precipitacionMaxima, precipitacionHora);
-        vientoMaximo = Math.max(vientoMaximo, vientoHora);
-        
-        // Sumamos para promedios
-        precipitacionPromedio += precipitacionHora;
-        vientoPromedio += vientoHora;
-        
-        // La primera hora es la que mostramos en pantalla
-        if (i === 0) {
-          weatherForProcession = {
-            temperatura: weatherData.hourly.temperature_2m[timeIndex],
-            precipitacion: precipitacionHora,
-            viento: vientoHora,
-            codigo: weatherData.hourly.weathercode[timeIndex]
-          };
-        }
-      }
-    }
+	const horaActual = horaSalida + i;
+	if (horaActual > 23) continue; // No seguimos después de medianoche
+	
+	const timeIndex = weatherData.hourly.time.findIndex((time: string) =>
+		time.includes(fechaStr) && time.includes(`T${String(horaActual).padStart(2, '0')}`)
+	);
+	
+	if (timeIndex !== -1) {
+		horasValidas++;
+		const precipitacionHora = weatherData.hourly.precipitation_probability[timeIndex];
+		const vientoHora = weatherData.hourly.windspeed_10m[timeIndex];
+		
+		// Guardamos primera y última hora para calcular tendencia
+		if (horasValidas === 1) {
+		precipitacionPrimeraHora = precipitacionHora;
+		}
+		precipitacionUltimaHora = precipitacionHora; // Se actualizará con la última hora válida
+		
+		// Guardamos máximos
+		precipitacionMaxima = Math.max(precipitacionMaxima, precipitacionHora);
+		vientoMaximo = Math.max(vientoMaximo, vientoHora);
+		
+		// Sumamos para promedios
+		precipitacionPromedio += precipitacionHora;
+		vientoPromedio += vientoHora;
+		
+		// La primera hora es la que mostramos en pantalla
+		if (i === 0) {
+		weatherForProcession = {
+			temperatura: weatherData.hourly.temperature_2m[timeIndex],
+			precipitacion: precipitacionHora,
+			viento: vientoHora,
+			codigo: weatherData.hourly.weathercode[timeIndex]
+		};
+		}
+	}
+}
     
-    // Calculamos promedios
-    if (horasValidas > 0) {
-      precipitacionPromedio = precipitacionPromedio / horasValidas;
-      vientoPromedio = vientoPromedio / horasValidas;
-      
-      // Determinamos probabilidad de salida usando una combinación de máximos y promedios
-      // Damos más peso a los valores máximos de precipitación
-      if (precipitacionMaxima > 70) {
-        probabilidadSalida = 10;
-      } else if (precipitacionMaxima > 50) {
-        probabilidadSalida = 20;
-      } else if (precipitacionPromedio > 40) {
-        probabilidadSalida = 30;
-      } else if (precipitacionMaxima > 30) {
-        probabilidadSalida = 50;
-      } else if (vientoMaximo > 45) {
-        probabilidadSalida = 40;
-      } else if (precipitacionPromedio > 20) {
-        probabilidadSalida = 70;
-      } else if (vientoPromedio > 35) {
-        probabilidadSalida = 80;
-      } else {
-        probabilidadSalida = 95;
-      }
-    }
+    // Calculamos promedios y tendencia
+	if (horasValidas > 0) {
+	precipitacionPromedio = precipitacionPromedio / horasValidas;
+	vientoPromedio = vientoPromedio / horasValidas;
+	tendenciaLluvia = precipitacionUltimaHora - precipitacionPrimeraHora;
+	
+	// Normalizar viento (0-1)
+	const vientoNormalizado = Math.min(vientoPromedio / 100, 1);
+	
+	// NUEVO ALGORITMO: Determinar probabilidad de salida
+	// Base: Comenzamos con 100% y vamos restando según las condiciones
+	let probabilidadBase = 100;
+	
+	// Factor 1: Media de probabilidad de lluvia
+	// Reducimos 1 punto por cada punto porcentual de probabilidad de lluvia
+	probabilidadBase -= precipitacionPromedio * 0.5;
+	
+	// Factor 2: Intensidad máxima de lluvia
+	// Si el máximo es mucho mayor que la media, penalizamos más
+	if (precipitacionMaxima > 80) {
+		probabilidadBase -= 20;
+	} else if (precipitacionMaxima > 60) {
+		probabilidadBase -= 10;
+	} else if (precipitacionMaxima > 40) {
+		probabilidadBase -= 5;
+	}
+	
+	// Factor 3: Tendencia de lluvia
+	// Si la tendencia es positiva (empeora), penalizamos según lo drástico del cambio
+	if (tendenciaLluvia > 0) {
+		probabilidadBase -= Math.min(tendenciaLluvia * 0.4, 15);
+	} else if (tendenciaLluvia < -10) {
+		probabilidadBase += 5;
+	}
+	
+	// Factor 4: Viento
+	// El viento normalizado reduce directamente la probabilidad
+	if (vientoPromedio > 30) {
+  		probabilidadBase -= (vientoPromedio - 30) * 0.5;
+	}
+	
+	// Aseguramos que el resultado esté entre 0 y 100
+	probabilidadSalida = Math.max(0, Math.min(100, Math.round(probabilidadBase)));
+	}
   }
 } catch (error) {
   console.error("Error al procesar datos meteorológicos:", error);
