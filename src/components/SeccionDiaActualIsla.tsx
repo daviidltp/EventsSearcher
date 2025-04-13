@@ -42,7 +42,7 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
   const [puedeScrollIzq, setPuedeScrollIzq] = useState(false);
   const [puedeScrollDer, setPuedeScrollDer] = useState(false);
 
-  const FECHA_DEBUG = new Date('2025-04-13T12:30:00');
+  const FECHA_DEBUG = new Date('2025-04-13T14:29:00');
   const FECHA_DEBUG_ACTIVA = false; 
 
   const preloadImage = (src: string) =>
@@ -116,7 +116,7 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
             const margenAntes = new Date(fechaSalida);
             margenAntes.setMinutes(margenAntes.getMinutes() - 5);
             const margenDespues = new Date(fechaLlegada);
-            margenDespues.setMinutes(margenDespues.getMinutes() + 10);
+            margenDespues.setMinutes(margenDespues.getMinutes() + 30);
 
             if (ahora >= margenAntes && ahora <= margenDespues) {
               enCalle.push(procesion);
