@@ -43,7 +43,7 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
   const [puedeScrollDer, setPuedeScrollDer] = useState(false);
 
   const FECHA_DEBUG = new Date('2025-04-13T12:30:00');
-  const FECHA_DEBUG_ACTIVA = true;
+  const FECHA_DEBUG_ACTIVA = false; 
 
   const preloadImage = (src: string) =>
     new Promise((resolve) => {
