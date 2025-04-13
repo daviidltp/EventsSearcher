@@ -94,9 +94,9 @@ const pointsJSON = JSON.stringify(points);
     if (Array.isArray(data) && data.length > 0) {
       const estado = data[0].estado;
       if (estado === 'Directo') {
-        addLastLocationMarker(estado);
+        //addLastLocationMarker(estado);
       } else if (estado === 'Finalizada') {
-        addLastLocationMarker(estado);
+        //addLastLocationMarker(estado);
       } else {
         console.log("Procesión no está en la calle actualmente.");
       }
@@ -158,6 +158,8 @@ const pointsJSON = JSON.stringify(points);
       console.error("No se proporcionó una ruta válida");
       return;
     }
+
+
 
     
     try {
