@@ -5,6 +5,7 @@ export default function ActualizarEstado() {
   const [selectedProcesion, setSelectedProcesion] = useState<string>("");
   const [estado, setEstado] = useState<string>("OK");
   const [alerta, setAlerta] = useState<string>("Sin incidencias");
+  const [gps, setGps] = useState<string>("Móvil 1");
   const [isSessionValid, setIsSessionValid] = useState<boolean>(false);
   const [mensaje, setMensaje] = useState<{ tipo: "error" | "success"; texto: string } | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -14,7 +15,7 @@ export default function ActualizarEstado() {
       try {
         const res = await fetch("https://owntracks-api.semanasantatracker.workers.dev/verify-session", {
           method: "GET",
-          credentials: "include", // 👈 Necesario para incluir cookies
+          credentials: "include",
         });
 
         const data = await res.json();
@@ -64,8 +65,8 @@ export default function ActualizarEstado() {
       const res = await fetch("https://owntracks-api.semanasantatracker.workers.dev/actualizar-estado", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // 👈 Enviar cookie de sesión al actualizar
-        body: JSON.stringify({ id: selectedProcesion, estado, alerta }),
+        credentials: "include",
+        body: JSON.stringify({ id: selectedProcesion, estado, alerta, gps }),  // ← aquí se envía ahora el GPS
       });
 
       if (!res.ok) {
@@ -141,11 +142,11 @@ export default function ActualizarEstado() {
               onChange={(e) => setEstado(e.target.value)}
               className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white p-2 rounded"
             >
-              <option value="OK">Correcto</option>
-              <option value="Directo">En directo</option>
+              <option value="OK">Mostrar recorrido</option>
+              <option value="Directo">En trayecto de ida</option>
               <option value="Cancelada por lluvia">Cancelada por lluvia</option>
               <option value="Retrasada">Retrasada</option>
-              <option value="Finalizada">Finalizada</option>
+              <option value="Finalizada">En trayecto de vuelta</option>
             </select>
           </div>
 
@@ -162,6 +163,20 @@ export default function ActualizarEstado() {
               <option value="Emergencia">Emergencia</option>
             </select>
           </div>
+
+          <div>
+          <label className="block text-sm font-medium mb-1">GPS</label>
+          <select
+            value={gps}
+            onChange={(e) => setGps(e.target.value)}
+            className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white p-2 rounded"
+          >
+            <option value="gps-1">Móvil 1</option>
+            <option value="gps-2">Móvil 2</option>
+          </select>
+        </div>
+
+
 
           <button
             type="submit"
