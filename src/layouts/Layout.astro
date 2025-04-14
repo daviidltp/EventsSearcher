@@ -71,11 +71,13 @@ const {
 		<script>
 			import * as AOS from 'aos';
 			import 'aos/dist/aos.css';
-		  
+		    import { initScrollDirectionDetector } from '../scripts/scrollDirection.js';
 			AOS.init({
 			  duration: 1000, // Duración de la animación en milisegundos
-			  once: true, // Ejecutar la animación solo una vez
+			  once: false, // Ejecutar la animación solo una vez
 			});
+			// Inicializar detector de dirección de scroll
+  			initScrollDirectionDetector();
 		</script>
 		<slot />
 	</body>
