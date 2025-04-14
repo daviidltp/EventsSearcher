@@ -171,8 +171,8 @@ export default function ActualizarEstado() {
             onChange={(e) => setGps(e.target.value)}
             className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white p-2 rounded"
           >
-            <option value="gps-1">Móvil 1</option>
-            <option value="gps-2">Móvil 2</option>
+            <option value="gps-1">gps-1</option>
+            <option value="gps-2">gps-2</option>
           </select>
         </div>
 
