@@ -62,17 +62,31 @@ const keywords = "Semana Santa Martos, procesiones Martos 2025, horarios Semana 
   />
 
   {dias.map((dia, index) =>
-    index >= 0 && dia.procesiones.length > 0 ? (
-      <SeccionDia
-        titulo={dia.titulo}
-        imagenes={dia.procesiones.map((p) => ({
-          src: p.imagenCaratula,
-          alt: p.nombre,
-          descripcion: p.descripcion,
-          rutaId: p.nombre.toLowerCase().replace(/\s+/g, '-')
-        }))}
-      />
-    ) : null
+	index >= 0 && dia.procesiones.length > 0 ? (
+	  <SeccionDia
+		titulo={dia.titulo}
+		imagenes={dia.procesiones.map((p, procesionIndex) => {
+		  // Obtener la cantidad total de procesiones para este día
+		  const totalProcesiones = dia.procesiones.length;
+		  // Calcular el punto medio para dividir las animaciones
+		  const puntoMedio = Math.floor(totalProcesiones / 2);
+		  
+		  return {
+			src: p.imagenCaratula,
+			alt: p.nombre,
+			descripcion: p.descripcion,
+			rutaId: p.nombre.toLowerCase().replace(/\s+/g, '-'),
+			
+			// Lógica de animación basada en la posición relativa al punto medio
+			aos: totalProcesiones === 1 ? 'fade-right' : 
+           (procesionIndex < puntoMedio ? 'fade-right' : 'fade-left'),
+			
+			// Mantener el retraso escalonado
+			aosDelay: procesionIndex * 100
+		  };
+		})}
+	  />
+	) : null
   )}
 
 

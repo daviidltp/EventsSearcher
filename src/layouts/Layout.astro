@@ -11,10 +11,10 @@ interface Props {
 }
 
 const { 
-  title = "Semana Santa Martos",
+  title = "Semana Santa Martos 2025 - Procesiones, Horarios e Itinerarios",
   description = "Toda la información sobre los itinerarios, horarios y procesiones de la Semana Santa de Martos. Consulta los recorridos y puntos de interés.",
   ogImage = "/assets/icons/logo.jpg", 
-  canonicalUrl = Astro.url.href,
+  canonicalUrl = "https://semanasantamartos.es/",
   keywords = "Semana Santa Martos, procesiones, cofradías, itinerarios, Semana Santa Jaén"
 } = Astro.props;
 ---
@@ -68,6 +68,17 @@ const {
 		<title>Semana Santa Martos</title>
 	</head>
 	<body>
+		<script>
+			import * as AOS from 'aos';
+			import 'aos/dist/aos.css';
+		    import { initScrollDirectionDetector } from '../scripts/scrollDirection.js';
+			AOS.init({
+			  duration: 1000, // Duración de la animación en milisegundos
+			  once: false, // Ejecutar la animación solo una vez
+			});
+			// Inicializar detector de dirección de scroll
+  			initScrollDirectionDetector();
+		</script>
 		<slot />
 	</body>
 </html>
