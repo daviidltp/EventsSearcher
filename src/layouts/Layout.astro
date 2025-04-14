@@ -68,6 +68,15 @@ const {
 		<title>Semana Santa Martos</title>
 	</head>
 	<body>
+		<script>
+			import * as AOS from 'aos';
+			import 'aos/dist/aos.css';
+		  
+			AOS.init({
+			  duration: 1000, // Duración de la animación en milisegundos
+			  once: true, // Ejecutar la animación solo una vez
+			});
+		</script>
 		<slot />
 	</body>
 </html>

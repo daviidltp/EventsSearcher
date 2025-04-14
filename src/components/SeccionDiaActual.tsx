@@ -29,6 +29,8 @@ const posicionClaseMap: Record<string, string> = {
   derecha: 'right-6 text-right',
 };
 
+import { useState } from "react";
+
 export default function SeccionDiaActual(props: Props) {
   const {
     titulo,
@@ -47,6 +49,8 @@ export default function SeccionDiaActual(props: Props) {
     alerta,
   } = props;
 
+  const [loaded, setLoaded] = useState(false);
+
   const claseColorTexto = colorClaseMap[colorTexto] ?? 'text-white';
   const clasePosicionTexto = posicionClaseMap[posicionTexto] ?? 'left-6';
 
@@ -64,7 +68,12 @@ export default function SeccionDiaActual(props: Props) {
   return (
     <section className="relative w-full h-full overflow-hidden">
       {imagenNormal && imagenExtendida && (
-        <picture>
+        <picture
+		data-aos="zoom-out" 
+		data-aos-duration="1500" 
+		data-aos-delay="200"
+		className={`${loaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-1000`}
+		>
           <source srcSet={imagenExtendida} media="(min-width: 768px)" />
           <img
             src={imagenNormal}
@@ -103,6 +112,9 @@ export default function SeccionDiaActual(props: Props) {
           lineHeight: '1.1',
           whiteSpace: 'normal',
         }}
+		data-aos="fade-right"
+        data-aos-duration="1200"
+        data-aos-delay="200"
       >
         <span className="block">{linea1}</span>
         <span className="block">{linea2}</span>
@@ -118,12 +130,21 @@ export default function SeccionDiaActual(props: Props) {
           lineHeight: '1.1',
           whiteSpace: 'normal',
         }}
+		data-aos="fade-down"
+        data-aos-duration="1000"
+        data-aos-delay="200"
       >
         {titulo}
       </h2>
 
       {/* Información */}
-      <div className="absolute bottom-6 left-6 z-10 text-white space-y-1 text-lg drop-shadow-[0_1px_6px_rgba(0,0,0,0.8)] max-w-[80%]">
+      <div className="absolute bottom-6 left-6 z-10 text-white space-y-1 text-lg drop-shadow-[0_1px_6px_rgba(0,0,0,0.8)] max-w-[80%]"
+	  data-aos="fade-right"
+	  data-aos-duration="1000"
+	  data-aos-delay="200"
+	  data-aos-anchor-placement="top-bottom"
+	  data-aos-offset="0"
+	  >
         <p className="text-2xl font-semibold">{hermandad}</p>
         <p className="text-base">{iglesia}</p>
         <p className="text-base">
@@ -139,7 +160,13 @@ export default function SeccionDiaActual(props: Props) {
       </div>
 
       {/* Botones en escritorio */}
-      <div className="hidden md:flex absolute bottom-6 right-6 z-10 space-x-3">
+      <div className="hidden md:flex absolute bottom-6 right-6 z-10 space-x-3"
+	  data-aos="fade-left"
+	  data-aos-duration="1000"
+	  data-aos-delay="200"
+	  data-aos-anchor-placement="top-bottom"
+	  data-aos-offset="0"
+	  >
         <a href={`/cofradia/${rutaId}/pronostico`}>
           <BotonPronostico rutaId={rutaId} />
         </a>
@@ -149,7 +176,13 @@ export default function SeccionDiaActual(props: Props) {
       </div>
 
       {/* Botón pronóstico en móvil (en el lado derecho) */}
-      <div className="flex md:hidden absolute bottom-6 right-6 z-10">
+      <div className="flex md:hidden absolute bottom-6 right-6 z-10"
+	  data-aos="fade-up"
+	  data-aos-duration="1000"
+	  data-aos-delay="200"
+	  data-aos-anchor-placement="top-bottom"
+	  data-aos-offset="0"
+	  >
         <a href={`/cofradia/${rutaId}/pronostico`}>
           <BotonPronostico rutaId={rutaId} />
         </a>
