@@ -126,9 +126,8 @@ const voyager = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyag
   maxZoom: 19
 });
 
-const darkMatter = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png', {
-  attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
-  subdomains: 'abcd',
+const satelite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+  attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
   maxZoom: 19
 });
 
@@ -190,8 +189,8 @@ const MapPreviewToggle = L.Control.extend({
         container.title = "Cambiar a mapa claro";
       } else {
         // Si estamos en modo claro, mostrar vista previa del mapa oscuro
-        previewDiv.style.backgroundImage = "url('https://a.basemaps.cartocdn.com/dark_all/4/8/5.png')";
-        container.title = "Cambiar a mapa oscuro";
+        previewDiv.style.backgroundImage = "url('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}')";
+        container.title = "Cambiar a vista satélite";
       }
     }
     
@@ -219,11 +218,11 @@ const MapPreviewToggle = L.Control.extend({
       L.DomEvent.stopPropagation(e);
       
       if (isDarkMode) {
-        map.removeLayer(darkMatter);
+        map.removeLayer(satelite);
         voyager.addTo(map);
       } else {
         map.removeLayer(voyager);
-        darkMatter.addTo(map);
+        satelite.addTo(map);
       }
       
       isDarkMode = !isDarkMode;
