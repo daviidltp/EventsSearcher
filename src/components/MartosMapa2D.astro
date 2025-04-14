@@ -89,12 +89,7 @@ const pointsJSON = JSON.stringify(points);
   async function checkEstadoProcesion() {
   try {
     const url = `https://owntracks-api.semanasantatracker.workers.dev/procesiones?id=${procesionId}`;
-    const response = await fetch(url,
-    {
-      method: "GET",
-      credentials: "include", // ¡Esto es esencial para enviar cookies!
-      cache: "no-cache"
-    });
+    const response = await fetch(url, { cache: 'no-cache' });
 
     if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
 
@@ -168,9 +163,6 @@ const pointsJSON = JSON.stringify(points);
       return;
     }
 
-    
-
-    
     try {
       // Crear mapa base con Leaflet
       map = L.map('map', {
