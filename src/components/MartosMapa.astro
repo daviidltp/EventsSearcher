@@ -145,11 +145,115 @@ voyager.addTo(map);
 labelsOnly.addTo(map);
 
 // Control de capas
-L.control.layers({
-  "Voyager (Claro)": voyager,
-  "Dark Matter (Oscuro)": darkMatter
-}).addTo(map);
+// L.control.layers({
+//   "Voyager (Claro)": voyager,
+//   "Dark Matter (Oscuro)": darkMatter
+// }, {}, {
+//   position: 'bottomleft' // Cambia esto según la posición deseada
+// }).addTo(map);
 
+// Crea un control personalizado con preview del mapa alternativo
+const MapPreviewToggle = L.Control.extend({
+  options: {
+    position: 'bottomleft'
+  },
+
+  onAdd: function(map) {
+    // Crear el contenedor principal
+    const container = L.DomUtil.create('div', 'map-style-preview leaflet-bar leaflet-control');
+    container.style.width = '60px';
+    container.style.height = '60px';
+    container.style.padding = '2px';
+    container.style.backgroundColor = 'white';
+    container.style.cursor = 'pointer';
+    container.style.borderRadius = '4px';
+    container.style.boxShadow = '0 2px 5px rgba(0,0,0,0.3)';
+    container.style.overflow = 'hidden';
+    container.title = 'Cambiar estilo de mapa';
+
+    // Crear el div para el mini-mapa de previsualización
+    const previewDiv = L.DomUtil.create('div', 'preview-map', container);
+    previewDiv.style.width = '100%';
+    previewDiv.style.height = '100%';
+    previewDiv.style.borderRadius = '2px';
+    previewDiv.style.backgroundSize = 'cover';
+    previewDiv.style.backgroundPosition = 'center';
+    
+    // Inicializar variable para seguimiento del estado actual
+    let isDarkMode = false;
+    
+    // Actualizar la vista previa según el modo actual
+    function updatePreview() {
+      if (isDarkMode) {
+        // Si estamos en modo oscuro, mostrar vista previa del mapa claro
+        previewDiv.style.backgroundImage = "url('https://a.basemaps.cartocdn.com/rastertiles/voyager/4/8/5.png')";
+        container.title = "Cambiar a mapa claro";
+      } else {
+        // Si estamos en modo claro, mostrar vista previa del mapa oscuro
+        previewDiv.style.backgroundImage = "url('https://a.basemaps.cartocdn.com/dark_all/4/8/5.png')";
+        container.title = "Cambiar a mapa oscuro";
+      }
+    }
+    
+    // Configuración inicial
+    updatePreview();
+    
+    // Etiqueta de cambio
+    const switchLabel = L.DomUtil.create('div', 'switch-label', container);
+    switchLabel.style.position = 'absolute';
+    switchLabel.style.bottom = '2px';
+    switchLabel.style.right = '2px';
+    switchLabel.style.backgroundColor = 'rgba(0,0,0,0.6)';
+    switchLabel.style.color = 'white';
+    switchLabel.style.padding = '2px 4px';
+    switchLabel.style.borderRadius = '2px';
+    switchLabel.style.fontSize = '8px';
+    switchLabel.style.fontWeight = 'bold';
+    switchLabel.textContent = '';
+    
+    // Borde decorativo
+    container.style.border = '2px solid #3388ff';
+    
+    // Manejar el clic
+    L.DomEvent.on(container, 'click', function(e) {
+      L.DomEvent.stopPropagation(e);
+      
+      if (isDarkMode) {
+        map.removeLayer(darkMatter);
+        voyager.addTo(map);
+      } else {
+        map.removeLayer(voyager);
+        darkMatter.addTo(map);
+      }
+      
+      isDarkMode = !isDarkMode;
+      updatePreview();
+    });
+    
+    // Prevenir eventos de mapa al interactuar con el control
+    L.DomEvent.disableClickPropagation(container);
+
+	
+    container.addEventListener('mouseover', function() {
+      container.style.transform = 'scale(1.15)';
+      switchLabel.style.backgroundColor = 'rgba(51, 136, 255, 0.8)';
+    });
+
+    container.addEventListener('mouseout', function() {
+      container.style.transform = 'scale(1)';
+      switchLabel.style.backgroundColor = 'rgba(0,0,0,0.6)';
+    });
+
+    // Añadir transición suave
+    container.style.transition = 'all 0.2s ease-in-out';
+    switchLabel.style.transition = 'all 0.2s ease-in-out';
+    
+    return container;
+  }
+});
+
+// Añadir el control personalizado al mapa
+map.addControl(new MapPreviewToggle());
       
       // Capa para la ruta con efecto "ant path"
       routeLayer = L.polyline.antPath(fullRoute, {
@@ -540,6 +644,7 @@ L.control.layers({
       isLocationActive = false;
     }
   }
+  
 </script>
 
 <style>
@@ -897,5 +1002,7 @@ L.control.layers({
   .hidden {
     display: none !important;
   }
+
+  
 </style>
 </div>
