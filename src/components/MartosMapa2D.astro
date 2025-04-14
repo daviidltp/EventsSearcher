@@ -1,6 +1,6 @@
 ---
 interface Props {
-  route?: Array<[number, number]>;
+  route?: { ida: Array<[number, number]>, vuelta: Array<[number, number]> };
   points?: Array<{
     position: [number, number],
     title: string,
@@ -10,7 +10,7 @@ interface Props {
 }
 
 const { 
-  route = [], 
+  route = { ida: [], vuelta: [] }, 
   points = [], 
   title = "Martos - Semana Santa" 
 } = Astro.props;
@@ -21,7 +21,7 @@ const { procesionId = 'borriquita' } = Astro.params as { procesionId: string };
 const MARTOS_CENTER = [37.7219, -3.9699];
 
 // Convertimos los datos a JSON para pasarlos al cliente
-const routeJSON = JSON.stringify(route);
+const routeJSON = JSON.stringify(route ?? { ida: [], vuelta: [] });
 const pointsJSON = JSON.stringify(points);
 
 ---
@@ -86,6 +86,9 @@ const pointsJSON = JSON.stringify(points);
   const route = JSON.parse(routeJSON);
   const points = JSON.parse(pointsJSON);
 
+  console.log("Puntos de interés recibidos:", points);
+
+
   async function checkEstadoProcesion() {
   try {
     const url = `https://owntracks-api.semanasantatracker.workers.dev/procesiones?id=${procesionId}`;
@@ -99,6 +102,7 @@ const pointsJSON = JSON.stringify(points);
       if (estado === 'Directo' || estado === 'Finalizada') {
         addLastLocationMarker(estado);
       } else {
+        addLastLocationMarker('Directo');
         console.log("Procesión no está en la calle actualmente.");
       }
     } else {
@@ -196,7 +200,7 @@ const pointsJSON = JSON.stringify(points);
       }).addTo(map);
       
       // Capa para la ruta completa con efecto "ant path"
-      routeLayer = L.polyline.antPath(route, {
+      routeLayer = L.polyline.antPath(route.ida.concat(route.vuelta), {
         color: '#3388ff',
         weight: 5,
         opacity: 0.8,
@@ -316,12 +320,14 @@ const pointsJSON = JSON.stringify(points);
         icon: createCustomIcon('red', 'Fin') 
       }).addTo(map).bindPopup('<strong>Punto Final</strong>');
       
+      console.log("puntossss: ", points);
       // Añadir puntos de interés
       if (points && points.length > 0) {
         points.forEach(point => {
           // Determinar si es una plaza u otro punto de interés basado en el título
           const isPlaza = point.title.toLowerCase().includes('plaza');
-          
+          console.log("Posición:", point.position);
+
           L.marker(point.position, {
             // Usar el icono adecuado según el tipo
             icon: isPlaza ? createPlazaIcon(point.title) : createIglesiaIcon(point.title)
@@ -365,41 +371,30 @@ const pointsJSON = JSON.stringify(points);
 
   async function addLastLocationMarker(estadoProcesion) {
   try {
-    if (estadoProcesion !== "Finalizada" && estadoProcesion !== "Directo") {
-      return;
-    } else {
-      console.log(estadoProcesion);
-    }
+    if (estadoProcesion !== "Finalizada" && estadoProcesion !== "Directo") return;
 
     const response = await fetch("https://owntracks-api.semanasantatracker.workers.dev/last-location");
     const data = await response.json();
     const { lat, lon } = data;
 
-    const start = route[0];
-    const end = route[route.length - 1];
+    const ida = route.ida ?? [];
+    const vuelta = route.vuelta ?? [];
+
+    if (ida.length === 0 || vuelta.length === 0) {
+      console.warn("No se encontró información de ruta ida/vuelta");
+      return;
+    }
+
+    // Selecciona el tramo según el estado
+    const tramo = estadoProcesion === "Finalizada" ? vuelta : ida;
 
     let closestSegmentIndex = 0;
     let minDistance = Infinity;
     let tClosest = 0;
 
-    // Configura el rango de búsqueda según el estado
-    let segmentStart = 0;
-    let segmentEnd = route.length - 1;
-
-    const excluirTramos = 5;
-
-    if (estadoProcesion === "Finalizada") {
-      segmentStart = Math.min(excluirTramos, route.length - 2);
-    }
-
-    if (estadoProcesion === "Directo") {
-      segmentEnd = Math.max(0, route.length - 1 - excluirTramos);
-    }
-
-    // Proyección sobre los segmentos permitidos
-    for (let i = segmentStart; i < segmentEnd; i++) {
-      const p1 = route[i];
-      const p2 = route[i + 1];
+    for (let i = 0; i < tramo.length - 1; i++) {
+      const p1 = tramo[i];
+      const p2 = tramo[i + 1];
 
       const dx = p2[0] - p1[0];
       const dy = p2[1] - p1[1];
@@ -410,7 +405,7 @@ const pointsJSON = JSON.stringify(points);
       const projLat = p1[0] + t * dx;
       const projLon = p1[1] + t * dy;
 
-      const distance = Math.sqrt(Math.pow(lat - projLat, 2) + Math.pow(lon - projLon, 2));
+      const distance = Math.sqrt((lat - projLat) ** 2 + (lon - projLon) ** 2);
 
       if (distance < minDistance) {
         minDistance = distance;
@@ -419,13 +414,13 @@ const pointsJSON = JSON.stringify(points);
       }
     }
 
-    // Punto corregido sobre la ruta
-    const p1 = route[closestSegmentIndex];
-    const p2 = route[closestSegmentIndex + 1];
+    // Coordenadas corregidas proyectadas sobre el tramo correcto
+    const p1 = tramo[closestSegmentIndex];
+    const p2 = tramo[closestSegmentIndex + 1];
     const correctedLat = p1[0] + tClosest * (p2[0] - p1[0]);
     const correctedLon = p1[1] + tClosest * (p2[1] - p1[1]);
 
-    // Centrar mapa solo una vez
+    // Centrar el mapa (una sola vez)
     if (!hasCenteredMap && map) {
       map.setView([correctedLat, correctedLon], 19);
       hasCenteredMap = true;
@@ -436,7 +431,7 @@ const pointsJSON = JSON.stringify(points);
       animatedMarker.setLatLng([correctedLat, correctedLon]);
     }
 
-    // Mostrar punto GPS real
+    // Mostrar marcador real del GPS
     if (!gpsRealMarker) {
       gpsRealMarker = L.marker([lat, lon], {
         icon: L.divIcon({
@@ -450,10 +445,9 @@ const pointsJSON = JSON.stringify(points);
       gpsRealMarker.setLatLng([lat, lon]);
     }
 
-    currentPosition = closestSegmentIndex;
-
+    // Construir tramo completado hasta el punto proyectado
     const completedPath = [
-      ...route.slice(0, closestSegmentIndex + 1),
+      ...tramo.slice(0, closestSegmentIndex + 1),
       [correctedLat, correctedLon]
     ];
 
@@ -463,14 +457,15 @@ const pointsJSON = JSON.stringify(points);
 
     isPaused = true;
 
+    // Llamada recurrente para mantener la posición actualizada
     setTimeout(() => addLastLocationMarker(estadoProcesion), 5000);
-    
 
   } catch (err) {
     console.error("Error obteniendo la última ubicación:", err);
     setTimeout(() => addLastLocationMarker(estadoProcesion), 30000);
   }
 }
+
 
 
 
