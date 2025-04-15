@@ -1,4 +1,6 @@
 ---
+import MapBottomSheet from '../components/MapBottomSheet';
+
 const { 
   route, 
   points, 
@@ -25,6 +27,9 @@ const pointsJSON = JSON.stringify(points);
   <div class="title-container">
     <h2 class="title-text">{title}</h2>
   </div>
+
+  <!-- Aquí va el componente React del Bottom Sheet -->
+  <MapBottomSheet client:load />
 
 <!-- Importar CSS de Leaflet -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
@@ -107,13 +112,13 @@ const pointsJSON = JSON.stringify(points);
 
     try {
       // Crear el mapa
-map = L.map('map', {
-  center: MARTOS_CENTER,
-  zoom: 16,
-  minZoom: 14,
-  maxZoom: 19,
-  attributionControl: false
-});
+	map = L.map('map', {
+	center: MARTOS_CENTER,
+	zoom: 16,
+	minZoom: 14,
+	maxZoom: 19,
+	attributionControl: false
+	});
 
 // Crear un pane personalizado para las etiquetas (para que estén por encima del trono y antPath)
 map.createPane('labelsPane');
@@ -327,18 +332,18 @@ map.addControl(new MapPreviewToggle());
         icon: createCustomIcon('red', 'Fin')
       }).addTo(map).bindPopup('<strong>Punto Final</strong>');
 
-      // Añadir puntos de interés
-      if (points && points.length > 0) {
-        points.forEach(point => {
-          const isPlaza = point.title.toLowerCase().includes('plaza');
-          L.marker(point.position, {
-            icon: isPlaza ? createPlazaIcon(point.title) : createIglesiaIcon(point.title)
-          }).addTo(map).bindPopup(`
-            <strong>${point.title}</strong>
-            ${point.description ? `<br>${point.description}` : ''}
-          `);
-        });
-      }
+    //   // Añadir puntos de interés
+    //   if (points && points.length > 0) {
+    //     points.forEach(point => {
+    //       const isPlaza = point.title.toLowerCase().includes('plaza');
+    //       L.marker(point.position, {
+    //         icon: isPlaza ? createPlazaIcon(point.title) : createIglesiaIcon(point.title)
+    //       }).addTo(map).bindPopup(`
+    //         <strong>${point.title}</strong>
+    //         ${point.description ? `<br>${point.description}` : ''}
+    //       `);
+    //     });
+    //   }
       
       // Inicializar visualización en la posición inicial
       updatePosition(0);
@@ -347,6 +352,14 @@ map.addControl(new MapPreviewToggle());
     } catch (error) {
       console.error("Error al inicializar el mapa:", error);
     }
+
+	// Exponer funciones y variables necesarias globalmente para el BottomSheet
+	window.handleLocationRequest = handleLocationRequest;
+	window.map = map;
+	window.MARTOS_CENTER = MARTOS_CENTER;
+	window.procesionId = procesionId;
+	window.hasCenteredMap = hasCenteredMap;
+	window.animatedMarker = animatedMarker;
   }
 
   async function addLastLocationMarker(estadoProcesion, locationUrl) {
@@ -525,12 +538,89 @@ map.addControl(new MapPreviewToggle());
     map.panTo([lat, lng]);
   }
   
-  function updateCurrentStreet(position) {
+function updateCurrentStreet(position) {
     const currentIndex = Math.floor(position);
     let streetName = "Recorrido procesional";
     // Lógica para actualizar el nombre de la calle, si se desea.
     // document.getElementById('current-street').textContent = streetName;
+	// Actualizar el elemento en el bottom sheet
+	const streetElement = document.getElementById('current-street');
+	if (streetElement) {
+		streetElement.textContent = streetName;
+  	}
+	// Actualizar la barra de progreso
+	const progressBar = document.getElementById('progress-bar');
+	const progressPercent = document.getElementById('progress-percent');
+	if (progressBar && progressPercent && fullRoute.length > 1) {
+		const percent = Math.round((currentIndex / (fullRoute.length - 1)) * 100);
+		progressBar.style.width = `${percent}%`;
+		progressPercent.textContent = `${percent}%`;
+	}
+
+	// Actualizar puntos de interés cercanos
+	// updateNearbyPoints(position);
+}
+
+// Nueva función para actualizar puntos de interés
+function updateNearbyPoints(position) {
+  if (!points || points.length === 0) return;
+  
+  const currentPos = fullRoute[Math.floor(position)];
+  const poiListElement = document.getElementById('poi-list');
+  
+  if (poiListElement && currentPos) {
+    // Limpiar lista anterior
+    poiListElement.innerHTML = '';
+    
+    // Ordenar puntos por cercanía
+    const sortedPoints = [...points].sort((a, b) => {
+      const distA = getDistance(currentPos, a.position);
+      const distB = getDistance(currentPos, b.position);
+      return distA - distB;
+    });
+    
+    // Mostrar los 3 más cercanos
+    sortedPoints.slice(0, 3).forEach(point => {
+      const dist = getDistance(currentPos, point.position);
+      const distText = dist < 1 ? `${Math.round(dist * 1000)} m` : `${dist.toFixed(1)} km`;
+      
+      const isChurch = point.title.toLowerCase().includes('iglesia') || 
+                     point.title.toLowerCase().includes('parroquia');
+      
+      const icon = isChurch ? '⛪' : '🏛️';
+      
+      const pointElement = document.createElement('div');
+      pointElement.className = 'bg-white p-2 rounded shadow-sm border border-gray-200 flex items-center transition-all hover:bg-gray-50';
+      pointElement.innerHTML = `
+        <div class="bg-blue-100 p-2 rounded mr-3">${icon}</div>
+        <div>
+          <p class="font-medium">${point.title}</p>
+          <p class="text-xs text-gray-600">A ${distText}</p>
+        </div>
+      `;
+      
+      poiListElement.appendChild(pointElement);
+    });
   }
+}
+
+// Función auxiliar para calcular distancia
+function getDistance(point1, point2) {
+  // Fórmula haversine para distancias en la tierra
+  const R = 6371; // Radio de la tierra en km
+  const dLat = deg2rad(point2[0] - point1[0]);
+  const dLon = deg2rad(point2[1] - point1[1]);
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(deg2rad(point1[0])) * Math.cos(deg2rad(point2[0])) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2); 
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+  return R * c; // Distancia en km
+}
+
+function deg2rad(deg) {
+  return deg * (Math.PI/180);
+}
   
   function createCustomIcon(color, title) {
     return L.divIcon({
