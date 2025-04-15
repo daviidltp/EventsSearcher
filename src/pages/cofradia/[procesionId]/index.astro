@@ -1,6 +1,6 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
-import SeccionDiaActual from '../../../components/SeccionDiaActual';
+import SeccionDiaActualSmart from '../../../components/SeccionDiaActualSmart.tsx';
 
 import diasRaw from '../../../data/dias.json';
 import disenoDiasRaw from '../../../data/disenoDias.json';
@@ -12,24 +12,23 @@ const disenoDias = disenoDiasRaw;
 
 const idBuscado = procesionId.toLowerCase();
 
+let diaIndex = -1;
 let diaProcesion = null;
 let procesion = null;
 let diseno = null;
 
 for (let i = 0; i < dias.length; i++) {
   for (const p of dias[i].procesiones) {
-    const id = p.id;
-    if (id === idBuscado) {
+    if (p.id === idBuscado) {
       diaProcesion = dias[i];
       procesion = p;
       diseno = disenoDias[i];
+      diaIndex = i;
       break;
     }
   }
   if (procesion) break;
 }
-
-const estaEnCalle = false;
 
 export async function getStaticPaths() {
   const dias = (await import('../../../data/dias.json')).default;
@@ -49,22 +48,15 @@ export async function getStaticPaths() {
 <Layout>
   {procesion && diseno && diaProcesion ? (
     <>
-      <SeccionDiaActual
-        titulo={diseno.nombre}
-        imagenNormal={procesion.imagenCaratula}
-        imagenExtendida={procesion.imagenExtendida}
-        posicionImagen={procesion.posicionImagen || 'center'}
-        hermandad={procesion.descripcion}
-        iglesia={procesion.parroquia}
-        horaSalida={procesion.horaSalida}
-        horaLlegada={procesion.horaLlegada}
-        posicionTexto={diseno.posicionTexto}
-        colorTexto={diseno.colorTexto}
-        estaEnCalle={estaEnCalle}
-        rutaId={procesion.id}
-		client:load
+      <!-- Sección principal con lógica cliente -->
+      <SeccionDiaActualSmart
+        procesion={procesion}
+        diseno={diseno}
+        diaIndex={diaIndex}
+        client:load
       />
 
+      <!-- Información adicional -->
       <section class="mx-auto py-10 md:px-15 px-5 space-y-6">
 
         {procesion.cofradia && procesion.fundacion && (
@@ -138,32 +130,33 @@ export async function getStaticPaths() {
     </section>
   )}
 
-  <!-- Después del contenido principal -->
-<script type="application/ld+json" set:html={JSON.stringify({
-	"@context": "https://schema.org",
-	"@type": "Event",
-	"name": procesion?.nombre,
-	"description": procesion?.descripcion,
-	"startDate": `2025-${procesion?.diaSalida}T${procesion?.horaSalida}`,
-	"endDate": `2025-${procesion?.diaSalida}T${procesion?.horaLlegada}`,
-	"location": {
-	  "@type": "Place",
-	  "name": procesion?.parroquia,
-	  "address": {
-		"@type": "PostalAddress",
-		"addressLocality": "Martos",
-		"addressRegion": "Jaén",
-		"addressCountry": "ES"
-	  }
-	},
-	"image": `https://tudominio.com${procesion?.imagenCaratula}`,
-	"organizer": {
-	  "@type": "Organization",
-	  "name": procesion?.cofradia,
-	  "url": `https://tudominio.com/cofradia/${procesionId}`
-	}
+  <!-- JSON-LD -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Event",
+    "name": procesion?.nombre,
+    "description": procesion?.descripcion,
+    "startDate": `2025-${procesion?.diaSalida}T${procesion?.horaSalida}`,
+    "endDate": `2025-${procesion?.diaSalida}T${procesion?.horaLlegada}`,
+    "location": {
+      "@type": "Place",
+      "name": procesion?.parroquia,
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Martos",
+        "addressRegion": "Jaén",
+        "addressCountry": "ES"
+      }
+    },
+    "image": `https://tudominio.com${procesion?.imagenCaratula}`,
+    "organizer": {
+      "@type": "Organization",
+      "name": procesion?.cofradia,
+      "url": `https://tudominio.com/cofradia/${procesionId}`
+    }
   })}>
   </script>
+
   <div class="text-center py-8">
     <a href="/" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-md transition-colors duration-200 ease-in-out">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
@@ -173,4 +166,3 @@ export async function getStaticPaths() {
     </a>
   </div>
 </Layout>
-

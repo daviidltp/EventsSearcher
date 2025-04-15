@@ -1,5 +1,6 @@
 import BotonEstado from "./BotonesEstado";
 import BotonPronostico from "./BotonPronostico";
+import { parseAlertaConEnlaces } from '../utils/parseAlertaConEnlaces';
 
 interface Props {
   titulo: string;
@@ -45,8 +46,8 @@ export default function SeccionDiaActual(props: Props) {
     colorTexto,
     estaEnCalle,
     rutaId,
-    estado = 'OK',
-    alerta,
+    estado,
+    alerta = '',
   } = props;
 
   const [loaded, setLoaded] = useState(false);
@@ -64,6 +65,42 @@ export default function SeccionDiaActual(props: Props) {
     linea1 = `${partes[0]} ${partes[1]} `;
     linea2 = partes.slice(2).join(' ');
   }
+
+  const getAlertaEstilo = (mensaje: string) => {
+    const lower = mensaje.toLowerCase();
+  
+    if (lower.includes("aviso") || lower.includes("atención")) {
+      return {
+        bg: 'bg-yellow-50',
+        text: 'text-yellow-600 text-md',
+        borderColor: 'border-yellow-700',
+        icon: (
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-yellow-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M12 9v4" />
+            <path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z" />
+            <path d="M12 16h.01" />
+          </svg>
+        )
+        
+        
+      };
+    }
+  
+    return {
+      bg: 'bg-blue-100',
+      text: 'text-blue-600 text-md',
+      borderColor: 'border-blue-500',
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+          <path d="M12 9h.01" />
+          <path d="M11 12h1v4h1" />
+        </svg>
+      )
+    };
+  };
 
   return (
     <>
@@ -129,18 +166,20 @@ export default function SeccionDiaActual(props: Props) {
 
         {/* Información */}
         <div
-          className="absolute bottom-6 left-6 z-10 text-white space-y-1 text-lg drop-shadow-[0_1px_6px_rgba(0,0,0,0.8)] max-w-[80%]"
+          className="absolute bottom-6 left-6 z-10 text-white space-y-1 drop-shadow-[0_1px_6px_rgba(0,0,0,0.8)] max-w-[80%]"
           data-aos="fade-right"
           data-aos-duration="1000"
           data-aos-delay="200"
           data-aos-anchor-placement="top-bottom"
           data-aos-offset="0"
         >
-          <p className="text-2xl font-semibold">{hermandad}</p>
-          <p className="text-base">{iglesia}</p>
-          <p className="text-base">
+          <p className="text-2xl md:text-3xl font-semibold">{hermandad}</p>
+          <p className="text-lg md:text-xl">{iglesia}</p>
+          <p className="text-lg md:text-xl">
             {horaSalida} - {horaLlegada}
           </p>
+
+
 
           {/* Botón de recorrido en móvil */}
           <div className="mt-5 md:hidden">
@@ -183,31 +222,25 @@ export default function SeccionDiaActual(props: Props) {
       </section>
 
       {/* Alerta debajo de la imagen */}
-      {alerta && (
-      <div
-        className="mt-6 mx-4 bg-blue-600 text-white px-5 py-4 rounded-xl shadow-md flex items-center gap-4"
-        data-aos="fade-up"
-        data-aos-duration="800"
-        data-aos-delay="100"
-        data-aos-once="true"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-6 w-6 mt-0.5 flex-shrink-0 text-white"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 110 20 10 10 0 010-20z"
-          />
-        </svg>
-        <p className="text-md leading-snug">{alerta}</p>
-      </div>
-    )}
+      {alerta && (() => {
+        const { bg, text, icon } = getAlertaEstilo(alerta);
+        return (
+          <div
+            className={`mt-6 mx-4 ${bg} ${text} px-5 py-4 shadow-md flex items-center gap-5 border-l-5`}
+            data-aos="fade-up"
+            data-aos-duration="800"
+            data-aos-delay="100"
+            data-aos-once="true"
+          >
+            <div className="flex-shrink-0 flex items-center justify-center w-9 h-9">
+              {icon}
+            </div>
+            <p className="text-md leading-snug">{parseAlertaConEnlaces(alerta)}</p>
+          </div>
+        );
+      })()}
+
+
 
 
     </>
