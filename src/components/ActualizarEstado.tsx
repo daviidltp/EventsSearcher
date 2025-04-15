@@ -66,7 +66,7 @@ export default function ActualizarEstado() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ id: selectedProcesion, estado, alerta, gps }),  // ← aquí se envía ahora el GPS
+        body: JSON.stringify({ id: selectedProcesion, estado, alerta, gps }),
       });
 
       if (!res.ok) {
@@ -144,39 +144,33 @@ export default function ActualizarEstado() {
             >
               <option value="OK">Mostrar recorrido</option>
               <option value="Directo">En trayecto de ida</option>
-              <option value="Cancelada por lluvia">Cancelada por lluvia</option>
-              <option value="Retrasada">Retrasada</option>
               <option value="Finalizada">En trayecto de vuelta</option>
+              <option value="Cancelada por lluvia">Cancelada por lluvia</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Alerta</label>
-            <select
+            <label className="block text-sm font-medium mb-1">Mensaje informativo</label>
+            <textarea
               value={alerta}
               onChange={(e) => setAlerta(e.target.value)}
-              className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white p-2 rounded"
-            >
-              <option value="Sin incidencias">Sin incidencias</option>
-              <option value="Incidencias leves">Incidencias leves</option>
-              <option value="Incidencias graves">Incidencias graves</option>
-              <option value="Emergencia">Emergencia</option>
-            </select>
+              rows={3}
+              placeholder="Ej. Cambios en el recorrido, hora estimada, etc."
+              className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white p-2 rounded resize-none"
+            />
           </div>
 
           <div>
-          <label className="block text-sm font-medium mb-1">GPS</label>
-          <select
-            value={gps}
-            onChange={(e) => setGps(e.target.value)}
-            className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white p-2 rounded"
-          >
-            <option value="gps-1">gps-1</option>
-            <option value="gps-2">gps-2</option>
-          </select>
-        </div>
-
-
+            <label className="block text-sm font-medium mb-1">GPS</label>
+            <select
+              value={gps}
+              onChange={(e) => setGps(e.target.value)}
+              className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white p-2 rounded"
+            >
+              <option value="gps-1">gps-1</option>
+              <option value="gps-2">gps-2</option>
+            </select>
+          </div>
 
           <button
             type="submit"

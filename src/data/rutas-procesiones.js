@@ -560,7 +560,7 @@ export const puntosInteresProcesiones = {
 		}
 	],
 
-	"nuestro-padre-jesús-cautivo":
+	"nuestro-padre-jesus-cautivo":
 	[
 		{
 		position: [37.722911133307456, -3.9661871356186444],
@@ -579,7 +579,7 @@ export const puntosInteresProcesiones = {
 		// }
 	],
 
-	"oración-en-el-huerto": 
+	"oracion-en-el-huerto": 
 	[
 		{
 			position: [37.724708152038616, -3.9636714613676225],
@@ -645,7 +645,7 @@ export const puntosInteresProcesiones = {
 		// }
 	],
 
-	"jesús-nazareno": 
+	"jesus-nazareno": 
 	[
 		{
 			position: [37.723060570092755, -3.96489097300368],
@@ -669,7 +669,7 @@ export const puntosInteresProcesiones = {
 		}
 	],
 
-	"san-juan-y-maría-magdalena": 
+	"san-juan-y-maria-magdalena": 
 	[
 		{
 			position: [37.723060570092755, -3.96489097300368],
@@ -741,7 +741,7 @@ export const puntosInteresProcesiones = {
 		// }
 	],
 
-	"resurección-y-esperanza": 
+	"resureccion-y-esperanza": 
 	[
 		{
 			position: [37.724708152038616, -3.9636714613676225],

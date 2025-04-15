@@ -26,7 +26,7 @@ export default function BotonPronostico({ rutaId }: Props) {
         // Buscar la procesión por su ID en todos los días
         for (let i = 0; i < dias.length; i++) {
           for (const p of dias[i].procesiones) {
-            const id = p.nombre.toLowerCase().replace(/\s+/g, '-');
+            const id = p.id;
             if (id === rutaId) {
               diaProcesion = dias[i];
               procesion = p;

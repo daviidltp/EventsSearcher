@@ -11,7 +11,7 @@ let diaProcesion = null;
 
 for (let i = 0; i < dias.length; i++) {
   for (const p of dias[i].procesiones) {
-    const id = p.nombre.toLowerCase().replace(/\s+/g, '-');
+    const id = p.id;
     if (id === procesionId) {
       diaProcesion = dias[i];
       procesion = p;
@@ -231,27 +231,27 @@ if (procesion && diaProcesion) {
     const procesionesDelDia = dias[indiceDiaActual].procesiones;
     // Encontrar el índice de la procesión actual
     const indiceProcesionActual = procesionesDelDia.findIndex(p => 
-      p.nombre.toLowerCase().replace(/\s+/g, '-') === procesionId
+      p.id === procesionId
     );
     
     if (indiceProcesionActual !== -1 && indiceProcesionActual < procesionesDelDia.length - 1) {
       // Si hay más procesiones en el mismo día, tomar la siguiente
       const siguienteProcesion = procesionesDelDia[indiceProcesionActual + 1];
-      siguienteProcesionId = siguienteProcesion.nombre.toLowerCase().replace(/\s+/g, '-');
+      siguienteProcesionId = siguienteProcesion.id;
       siguienteProcesionNombre = siguienteProcesion.nombre;
     } else if (indiceDiaActual < dias.length - 1) {
       // Si es la última procesión del día, tomar la primera del día siguiente
       const siguienteDia = dias[indiceDiaActual + 1];
       if (siguienteDia.procesiones && siguienteDia.procesiones.length > 0) {
         const siguienteProcesion = siguienteDia.procesiones[0];
-        siguienteProcesionId = siguienteProcesion.nombre.toLowerCase().replace(/\s+/g, '-');
+        siguienteProcesionId = siguienteProcesion.id;
         siguienteProcesionNombre = siguienteProcesion.nombre;
       }
     } else {
       // Si es la última procesión del último día, volver a la primera
       if (dias[0].procesiones && dias[0].procesiones.length > 0) {
         const primeraProcesion = dias[0].procesiones[0];
-        siguienteProcesionId = primeraProcesion.nombre.toLowerCase().replace(/\s+/g, '-');
+        siguienteProcesionId = primeraProcesion.id;
         siguienteProcesionNombre = primeraProcesion.nombre;
       }
     }

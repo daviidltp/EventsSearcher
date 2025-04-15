@@ -184,16 +184,32 @@ export default function SeccionDiaActual(props: Props) {
 
       {/* Alerta debajo de la imagen */}
       {alerta && (
-        <div
-          className="bg-green-600 text-white px-6 py-4 text-lg font-semibold shadow-md text-center"
-          data-aos="fade-up"
-          data-aos-duration="800"
-          data-aos-delay="100"
-          data-aos-once="true"
+      <div
+        className="mt-6 mx-4 bg-blue-600 text-white px-5 py-4 rounded-xl shadow-md flex items-center gap-4"
+        data-aos="fade-up"
+        data-aos-duration="800"
+        data-aos-delay="100"
+        data-aos-once="true"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-6 w-6 mt-0.5 flex-shrink-0 text-white"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
         >
-          🚨 {alerta}
-        </div>
-      )}
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 110 20 10 10 0 010-20z"
+          />
+        </svg>
+        <p className="text-md leading-snug">{alerta}</p>
+      </div>
+    )}
+
+
     </>
   );
 }

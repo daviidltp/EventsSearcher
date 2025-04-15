@@ -18,7 +18,7 @@ let diseno = null;
 
 for (let i = 0; i < dias.length; i++) {
   for (const p of dias[i].procesiones) {
-    const id = p.nombre.toLowerCase().replace(/\s+/g, '-');
+    const id = p.id;
     if (id === idBuscado) {
       diaProcesion = dias[i];
       procesion = p;
@@ -37,7 +37,7 @@ export async function getStaticPaths() {
 
   for (const dia of dias) {
     for (const procesion of dia.procesiones) {
-      const id = procesion.nombre.toLowerCase().replace(/\s+/g, '-');
+      const id = procesion.id;
       paths.push({ params: { procesionId: id } });
     }
   }
@@ -61,7 +61,7 @@ export async function getStaticPaths() {
         posicionTexto={diseno.posicionTexto}
         colorTexto={diseno.colorTexto}
         estaEnCalle={estaEnCalle}
-        rutaId={procesion.nombre.toLowerCase().replace(/\s+/g, '-')}
+        rutaId={procesion.id}
 		client:load
       />
 
