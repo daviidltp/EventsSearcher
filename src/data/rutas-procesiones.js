@@ -103,7 +103,7 @@ export const rutasProcesiones = {
 		[37.711949, -3.970595], [37.711238, -3.970949] ]
 	},
 
-	"nuestro-padre-jesús-cautivo": 
+	"nuestro-padre-jesus-cautivo": 
 	{
 		ida: [
 		[37.722912, -3.966185], [37.722959, -3.966107], [37.723033, -3.965828],
@@ -141,7 +141,7 @@ export const rutasProcesiones = {
 		[37.722783, -3.966338], [37.722855, -3.966266], [37.722889, -3.966217]]	
 		},
 
-	"oración-en-el-huerto": 
+	"oracion-en-el-huerto": 
 	{
 
 		ida : [
@@ -250,7 +250,7 @@ export const rutasProcesiones = {
 		[37.723033, -3.965842], [37.722641, -3.965595], [37.722889, -3.965128]]
 	},
 
-	"jesús-nazareno": 
+	"jesus-nazareno": 
 	{
 		ida : [
 		[37.72291, -3.965123], [37.722931, -3.965083], [37.723256, -3.965394],
@@ -287,7 +287,7 @@ export const rutasProcesiones = {
 		[37.722658, -3.965587], [37.722897, -3.965144]]
 	},
 
-	"san-juan-y-maría-magdalena": 
+	"san-juan-y-maria-magdalena": 
 	{
 		ida : [
 		[37.72291, -3.965123], [37.722931, -3.965083], [37.723256, -3.965394],
@@ -423,7 +423,7 @@ export const rutasProcesiones = {
 		[37.722957, -3.966089], [37.722944, -3.966118], [37.722904, -3.96618]]
 	},
 
-	"resurección-y-esperanza": 
+	"resureccion-y-esperanza": 
 	{
 		ida : [
 		[37.724575, -3.96349], [37.724584, -3.963152], [37.724533, -3.963103],

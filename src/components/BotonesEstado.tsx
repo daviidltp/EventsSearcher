@@ -13,6 +13,9 @@ interface Props {
         </button>
       );
     }
+    else {
+      console.log(estado);
+    }
   
     return (estaEnCalle)? (
       <button className="flex items-center gap-2 bg-white bg-opacity-80 text-black font-semibold 
