@@ -59,16 +59,33 @@ export default function BotonPronostico({ rutaId }: Props) {
           throw new Error('Fecha de procesión no encontrada');
         }
         
-        // Paso 3: Extraer la hora de salida
         const [horaSalida, minutoSalida] = procesion.horaSalida.split(':').map(Number);
-        
-        // Crear la fecha completa con día y hora
-        const fechaHoraProcesion = new Date(fechaProcesion);
-        fechaHoraProcesion.setHours(horaSalida, minutoSalida, 0, 0);
-        
-        // Formatear la fecha para la API
-        const fechaStr = `${fechaHoraProcesion.getFullYear()}-${String(fechaHoraProcesion.getMonth() + 1).padStart(2, '0')}-${String(fechaHoraProcesion.getDate()).padStart(2, '0')}`;
-        const horaStr = String(horaSalida).padStart(2, '0');
+        const [horaLlegada, minutoLlegada] = procesion.horaLlegada.split(':').map(Number);
+
+        // Partimos de la misma fecha para salida y llegada
+        const fechaHoraLlegada = new Date(fechaProcesion);
+        fechaHoraLlegada.setHours(horaLlegada, minutoLlegada, 0, 0);
+
+        // Si la hora de llegada es anterior a la de salida, asumimos que es madrugada → sumamos 1 día
+        if (
+          horaLlegada < horaSalida ||
+          (horaLlegada === horaSalida && minutoLlegada <= minutoSalida)
+        ) {
+          fechaHoraLlegada.setDate(fechaHoraLlegada.getDate() + 1);
+        }
+
+        // Validamos si ya ha pasado
+        const ahora = new Date();
+        if (fechaHoraLlegada < ahora) {
+          setWeatherData(null);
+          setIsLoading(false);
+          return;
+        }
+
+        // Para usar en la API
+        const fechaStr = `${fechaHoraLlegada.getFullYear()}-${String(fechaHoraLlegada.getMonth() + 1).padStart(2, '0')}-${String(fechaHoraLlegada.getDate()).padStart(2, '0')}`;
+        const horaStr = String(fechaHoraLlegada.getHours()).padStart(2, '0');
+
         
         // Paso 4: Consultar el pronóstico para esa fecha y hora
         const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=37.72&longitude=-3.97&hourly=temperature_2m,precipitation_probability,weathercode&forecast_days=7&timezone=Europe/Madrid`);
@@ -187,6 +204,11 @@ export default function BotonPronostico({ rutaId }: Props) {
     if (probability <= 70) return "bg-amber-600";
     return "bg-red-500";
   }
+
+  if (!isLoading && weatherData === null) {
+    return null; // no renderiza nada
+  }
+  
   
   return (
     <div className={`px-4 py-3 rounded-full shadow-md flex items-center space-x-1 text-white
