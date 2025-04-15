@@ -32,6 +32,7 @@ interface Props {
   disenoDias: DisenoDia[];
 }
 
+
 export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
   const [procesionesEnCalle, setProcesionesEnCalle] = useState<Procesion[]>([]);
   const [proximaProcesion, setProximaProcesion] = useState<Procesion | null>(null);
@@ -141,6 +142,8 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
         setProximaProcesion(enCalle.length === 0 && proxima ? proxima : null);
         setDiseno(disenoElegido);
 
+        
+
         // Luego intentar traer estado y alerta — si falla, no rompe nada.
         try {
           if (procesionesMostradas.length > 0) {
@@ -161,6 +164,7 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
 
             for (const p of procesionesMostradas) {
               const data = datosApi.find((d) => d.id === p.id);
+              console.log("Identifier" , p.id)
               if (data) {
                 p.estado = data.estado;
                 p.alerta = data.alerta;
