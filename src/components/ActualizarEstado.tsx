@@ -5,7 +5,7 @@ export default function ActualizarEstado() {
   const [selectedProcesion, setSelectedProcesion] = useState<string>("");
   const [estado, setEstado] = useState<string>("OK");
   const [alerta, setAlerta] = useState<string>("Sin incidencias");
-  const [gps, setGps] = useState<string>("Móvil 1");
+  const [gps, setGps] = useState<string>("gps-1");
   const [isSessionValid, setIsSessionValid] = useState<boolean>(false);
   const [mensaje, setMensaje] = useState<{ tipo: "error" | "success"; texto: string } | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
