@@ -1,6 +1,8 @@
 import BotonEstado from "./BotonesEstado";
 import BotonPronostico from "./BotonPronostico";
 import { parseAlertaConEnlaces } from '../utils/parseAlertaConEnlaces';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 interface Props {
   titulo: string;
@@ -51,6 +53,8 @@ export default function SeccionDiaActual(props: Props) {
   } = props;
 
   const [loaded, setLoaded] = useState(false);
+
+
 
   const claseColorTexto = colorClaseMap[colorTexto] ?? 'text-white';
   const clasePosicionTexto = posicionClaseMap[posicionTexto] ?? 'left-6';
@@ -104,6 +108,38 @@ export default function SeccionDiaActual(props: Props) {
 
   return (
     <>
+
+    {/* Notificación flotante de alerta */}
+    {alerta && (
+    <div
+      className="fixed top-6 left-3 right-3 px-4 bg-blue-500 text-white font-bold text-center text-lg py-3 rounded-xl shadow-2xl z-50 flex items-center justify-between space-x-3"
+      data-aos="fade-down"
+      data-aos-duration="800"
+      style={{ animation: 'fadeOutCustom 3s ease-in-out forwards', animationDelay: '0.8s' }}
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" className="w-6 h-6 animate-bounce" viewBox="0 0 24 24">
+        <path d="M0 0h24v24H0z" fill="none" />
+        <path d="M10 2l-.15 .005a2 2 0 0 0 -1.85 1.995v6.999l-2.586 .001a2 2 0 0 0 -1.414 3.414l6.586 6.586a2 2 0 0 0 2.828 0l6.586 -6.586a2 2 0 0 0 .434 -2.18l-.068 -.145a2 2 0 0 0 -1.78 -1.089l-2.586 -.001v-6.999a2 2 0 0 0 -2 -2h-4z" />
+      </svg>
+
+      <div className="flex flex-col items-center">
+        <span className="leading-tight">¡Hay avisos</span>
+        <span className="leading-tight">para esta procesión!</span>
+      </div>
+
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" className="w-6 h-6 animate-bounce delay-150" viewBox="0 0 24 24">
+        <path d="M0 0h24v24H0z" fill="none" />
+        <path d="M10 2l-.15 .005a2 2 0 0 0 -1.85 1.995v6.999l-2.586 .001a2 2 0 0 0 -1.414 3.414l6.586 6.586a2 2 0 0 0 2.828 0l6.586 -6.586a2 2 0 0 0 .434 -2.18l-.068 -.145a2 2 0 0 0 -1.78 -1.089l-2.586 -.001v-6.999a2 2 0 0 0 -2 -2h-4z" />
+      </svg>
+    </div>
+  )}
+
+
+  
+  
+        {/* Sección de imagen y texto */}
+
+
       <section className="relative w-full h-full overflow-hidden">
         {imagenNormal && imagenExtendida && (
           <picture
@@ -221,6 +257,9 @@ export default function SeccionDiaActual(props: Props) {
         </div>
       </section>
 
+      
+      {/* Notificación flotante de alerta */}
+
       {/* Alerta debajo de la imagen */}
       {alerta && (() => {
         const { bg, text, icon } = getAlertaEstilo(alerta);
@@ -246,3 +285,4 @@ export default function SeccionDiaActual(props: Props) {
     </>
   );
 }
+
