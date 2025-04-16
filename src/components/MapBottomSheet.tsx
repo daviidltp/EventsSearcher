@@ -14,7 +14,7 @@ declare global {
 }
 declare const L: any;
 
-export default function MapBottomSheet() {
+export default function MapBottomSheet({ procesionId }: { procesionId?: string }) {
   // Por defecto el panel está abierto
   const [panelVisible, setPanelVisible] = useState(true);
   const [procesionTitle, setProcesionTitle] = useState('');
@@ -143,20 +143,22 @@ export default function MapBottomSheet() {
 
   // Formatear el título de la procesión a partir del ID
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.procesionId) {
-      const title = window.procesionId
-        .split('-')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-      setProcesionTitle(title);
-    }
-  }, []);
+	if (procesionId) {
+	  const title = procesionId
+		.split('-')
+		.map(word => word.charAt(0).toUpperCase() + word.slice(1))
+		.join(' ');
+	  setProcesionTitle(title);
+	}
+  }, [procesionId]);
+  
 
   // Función para actualizar el nombre de la calle mediante geocodificación inversa
   const updateStreetName = () => {
     if (window.animatedMarker && typeof window.animatedMarker.getLatLng === 'function') {
       try {
         const { lat, lng } = window.animatedMarker.getLatLng();
+		
         if (!lat || !lng) return;
         fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`)
           .then(response => response.json())
@@ -185,7 +187,7 @@ export default function MapBottomSheet() {
   useEffect(() => {
     if (panelVisible) {
       updateStreetName();
-      const interval = setInterval(updateStreetName, 10000);
+      const interval = setInterval(updateStreetName, 1000);
       return () => clearInterval(interval);
     }
   }, [panelVisible]);
@@ -202,7 +204,7 @@ export default function MapBottomSheet() {
           initial={false}
           animate={{ rotate: panelVisible ? 90 : 0 }}
           transition={{ duration: 0.5 }}
-          className="h-6 w-6"
+          className="h-8 w-8"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -248,13 +250,13 @@ export default function MapBottomSheet() {
               </p>
             </div>
             {/* Contenedor de botones, con menor separación para dejar espacio */}
-            <div className="flex justify-start space-x-2">
+            <div className="flex justify-start space-x-2 ">
               <button 
                 onClick={(e) => {
                   e.stopPropagation();
                   showMyLocation();
                 }}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-full shadow-md transition-transform active:scale-95 flex items-center"
+                className=" bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-full shadow-md transition-transform active:scale-95 flex items-center"
                 aria-label="Mostrar mi ubicación"
               >
                 <svg
@@ -273,7 +275,7 @@ export default function MapBottomSheet() {
                   <path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
                   <path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0z" />
                 </svg>
-                <span className="ml-1 text-sm">Mi ubicación</span>
+                <span className="ml-1 text-lg">Mi ubicación</span>
               </button>
               <button 
                 onClick={(e) => {
@@ -298,7 +300,7 @@ export default function MapBottomSheet() {
                   <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                   <path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5" />
                 </svg>
-                <span className="ml-1 text-sm">Llévame</span>
+                <span className="ml-1 text-lg">Llévame</span>
               </button>
 			  {/* 
               <button 
