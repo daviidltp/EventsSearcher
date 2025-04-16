@@ -399,21 +399,25 @@ map.addControl(new MapPreviewToggle());
       // Capa para la ruta con efecto "ant path"
       routeLayer = L.polyline.antPath(fullRoute, {
         color: '#3388ff',
-        weight: 5,
+        weight: 8,
         opacity: 0.8,
         delay: 2500,
-        dashArray: [10, 20],
+        dashArray: [15, 25],
         pulseColor: '#FFFFFF',
         paused: false,
-        hardwareAccelerated: true
+        hardwareAccelerated: true,
+        lineCap: 'round',
+        lineJoin: 'round'
       }).addTo(map);
       
       // Capa para la parte recorrida (dorada)
       completedRouteLayer = L.polyline([], {
         color: 'gold',
-        weight: 6,
+        weight: 8,
         opacity: 0.9,
-        className: 'route-glow'
+        className: 'route-glow',
+        lineCap: 'round',
+        lineJoin: 'round'
       }).addTo(map);
       
       // Icono para el paso procesional

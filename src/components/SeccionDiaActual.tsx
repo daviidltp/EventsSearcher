@@ -235,7 +235,7 @@ export default function SeccionDiaActual(props: Props) {
             <div className="flex-shrink-0 flex items-center justify-center w-9 h-9">
               {icon}
             </div>
-            <p className="text-md leading-snug">{parseAlertaConEnlaces(alerta)}</p>
+            <p className="text-md leading-snug break-words overflow-hidden max-w-full">{parseAlertaConEnlaces(alerta)}</p>
           </div>
         );
       })()}
