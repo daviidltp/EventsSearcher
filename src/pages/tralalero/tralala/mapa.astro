@@ -1,0 +1,42 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { rutasProcesiones, puntosInteresProcesiones } from '../../../data/rutas-procesiones';
+import MartosMapaDebug from '../../../components/MartosMapaDebug.astro';
+
+// Obtener el parámetro de ruta dinámica
+const { procesionId = 'oracion-en-el-huerto' } = Astro.params as { procesionId: keyof typeof rutasProcesiones };
+
+console.log("Parámetro de ruta recibido:", procesionId);
+
+// Obtener la ruta dividida en ida y vuelta
+const rutaProcesion = rutasProcesiones[procesionId]; // ahora es { ida, vuelta }
+
+// Obtener los puntos de interés, con fallback
+const puntosInteres = (puntosInteresProcesiones[procesionId] || puntosInteresProcesiones['borriquita']).map(
+  (punto: { position: number[]; title: string; description: string }) => ({
+    ...punto,
+    position: [punto.position[0], punto.position[1]] as [number, number],
+  })
+);
+
+// Título formateado para mostrar
+const titulo = procesionId
+  .split('-')
+  .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+  .join(' ');
+
+// Definir las rutas estáticas que se deben generar
+export function getStaticPaths() {
+  return Object.keys(rutasProcesiones).map(id => ({
+    params: { procesionId: id }
+  }));
+}
+---
+
+<Layout>
+  <MartosMapaDebug
+    route={rutaProcesion}  
+    points={puntosInteres}
+    title={`Martos - Procesión de ${titulo}`}
+  />
+</Layout>

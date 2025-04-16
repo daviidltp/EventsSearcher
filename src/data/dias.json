@@ -161,7 +161,7 @@
     "titulo": "Martes Santo",
     "procesiones": [
       {
-        "id": "nuestro-padre-jesús-cautivo",
+        "id": "nuestro-padre-jesus-cautivo",
         "nombre": "Nuestro Padre Jesús Cautivo",
         "descripcion": "Nuestro Padre Jesús Cautivo y María Santísima de la Trinidad",
         "cofradia": "Cofradía de Nuestro Padre Jesús Cautivo de la Túnica Blanca y María Santísima de la Trinidad en su Mayor Dolor y Desamparo",
@@ -209,17 +209,17 @@
     "titulo": "Miércoles Santo",
     "procesiones": [
       {
-        "id": "oración-en-el-huerto",
+        "id": "oracion-en-el-huerto",
         "nombre": "Oración en el huerto",
         "descripcion": "Oración en el Huerto y María de la Amargura",
         "cofradia": "Hermandad y Cofradía de Nazarenos de la Oración de Jesús en el Huerto y María Santísima de la Amargura",
         "fundacion": "Refundada en 1980",
         "parroquia": "Iglesia parroquial de San Amador y Santa Ana",
         "diaSalida": "Miércoles Santo",
-        "horaSalida": "20:00",
-        "horaLlegada": "01:45",
-        "entradaCruzGuiaCarreraOficial": "23:40",
-        "salidaCruzGuiaCarreraOficial": "00:30",
+        "horaSalida": "19:00",
+        "horaLlegada": "00:45",
+        "entradaCruzGuiaCarreraOficial": "22:40",
+        "salidaCruzGuiaCarreraOficial": "23:30",
         "itinerario": [
           "San Amador",
           "La fuente",
@@ -383,7 +383,7 @@
     "titulo": "Viernes Santo",
     "procesiones": [
       {
-        "id": "jesús-nazareno",
+        "id": "jesus-nazareno",
         "nombre": "Jesús Nazareno",
         "descripcion": "Nuestro Padre Jesús Nazareno, María Santísima de los Dolores y María Magdalena",
         "cofradia": "Cofradía de Nuestro Padre Jesús Nazareno, María Santísima de los Dolores y María Magdalena",
@@ -561,7 +561,7 @@
     "titulo": "Domingo de Resurrección",
     "procesiones": [
       {
-        "id": "resurección-y-esperanza",
+        "id": "resureccion-y-esperanza",
         "nombre": "Resurección y Esperanza",
         "descripcion": "Cristo Resucitado y María Santísima de la Esperanza",
         "cofradia": "Cofradía de Jesús Resucitado y María Santísima de la Esperanza",

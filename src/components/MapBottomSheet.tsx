@@ -221,7 +221,7 @@ const showMyLocation = () => {
     const velocity = info.velocity.y;
 
     // Si el usuario arrastró hacia abajo rápidamente, cerrar el panel
-    if (velocity > 500) {
+    if (velocity > 600) {
       closePanel();
       return;
     }
@@ -349,7 +349,7 @@ useEffect(() => {
 		style={{ height: snapPoints.min }}
 		drag="y"
 		dragConstraints={{ top: 0, bottom: 0 }}
-		dragElastic={0.2}
+		dragElastic={0.5}
 		dragMomentum={true}
 		onDragEnd={handleDragEnd}
       >
@@ -361,13 +361,13 @@ useEffect(() => {
         {/* Contenido del BottomSheet */}
 		<div className="px-4 pb-8 overflow-y-auto" style={{ height: "calc(100% - 32px)" }}>
 		{/* Título de la procesión con estilo destacado */}
-		<h2 className="text-center text-2xl font-serif font-bold text-gray-800 mb-3 pb-2 border-b border-gray-200">
+		<h2 className="text-start text-2xl font-serif font-bold text-gray-800 mb-0 pb-1">
 			{procesionTitle}
 		</h2>
 		
 		{/* Calle actual - Colocado justo debajo del título */}
-		<div className="text-center mb-5">
-			<p className="text-gray-700 text-lg">
+		<div className="text-start mb-5">
+			<p className="text-gray-700 text-md">Ahora en: &nbsp;
 			<span id="current-street" className="font-medium">Recorrido procesional</span>
 			</p>
 		</div>
