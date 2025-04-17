@@ -23,11 +23,6 @@ const pointsJSON = JSON.stringify(points);
 <div class="map-container w-full h-full relative">
   <div id="map" class="absolute inset-0 z-10"></div>
   
-  <!-- UI overlay - Título adaptativo -->
-  <div class="title-container">
-    <h2 class="title-text">{title}</h2>
-  </div>
-
   <!-- Aquí va el componente React del Bottom Sheet -->
   <MapBottomSheet client:load />
 
@@ -70,6 +65,7 @@ const pointsJSON = JSON.stringify(points);
 
         addLastLocationMarker(estado, locationUrl);
       } else {
+        addLastLocationMarker('Directo', "https://owntracks-api.semanasantatracker.workers.dev/last-location-2");
         console.log("Procesión no está en la calle actualmente.");
       }
     } else {
@@ -159,7 +155,7 @@ labelsOnly.addTo(map);
 // Crea un control personalizado con preview del mapa alternativo
 const MapPreviewToggle = L.Control.extend({
   options: {
-    position: 'bottomleft'
+    position: 'topright'
   },
 
   onAdd: function(map) {
@@ -336,18 +332,18 @@ map.addControl(new MapPreviewToggle());
         icon: createCustomIcon('red', 'Fin')
       }).addTo(map).bindPopup('<strong>Punto Final</strong>');
 
-    //   // Añadir puntos de interés
-    //   if (points && points.length > 0) {
-    //     points.forEach(point => {
-    //       const isPlaza = point.title.toLowerCase().includes('plaza');
-    //       L.marker(point.position, {
-    //         icon: isPlaza ? createPlazaIcon(point.title) : createIglesiaIcon(point.title)
-    //       }).addTo(map).bindPopup(`
-    //         <strong>${point.title}</strong>
-    //         ${point.description ? `<br>${point.description}` : ''}
-    //       `);
-    //     });
-    //   }
+      // Añadir puntos de interés
+      if (points && points.length > 0) {
+        points.forEach(point => {
+          const isPlaza = point.title.toLowerCase().includes('plaza');
+          L.marker(point.position, {
+            icon: isPlaza ? createPlazaIcon(point.title) : createIglesiaIcon(point.title)
+          }).addTo(map).bindPopup(`
+            <strong>${point.title}</strong>
+            ${point.description ? `<br>${point.description}` : ''}
+          `);
+        });
+      }
       
       // Inicializar visualización en la posición inicial
       updatePosition(0);

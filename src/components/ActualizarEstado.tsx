@@ -4,7 +4,7 @@ export default function ActualizarEstado() {
   const [procesiones, setProcesiones] = useState<any[]>([]);
   const [selectedProcesion, setSelectedProcesion] = useState<string>("");
   const [estado, setEstado] = useState<string>("OK");
-  const [alerta, setAlerta] = useState<string>("Sin incidencias");
+  const [alerta, setAlerta] = useState<string>("");
   const [gps, setGps] = useState<string>("gps-1");
   const [isSessionValid, setIsSessionValid] = useState<boolean>(false);
   const [mensaje, setMensaje] = useState<{ tipo: "error" | "success"; texto: string } | null>(null);
@@ -43,7 +43,8 @@ export default function ActualizarEstado() {
         if (data.length > 0) {
           setSelectedProcesion(data[0].id);
           setEstado(data[0].estado);
-          setAlerta(data[0].alerta || "Sin incidencias");
+          setAlerta(data[0].alerta || "");
+          setGps(data[0].gps || "");
         }
       } catch {
         setMensaje({ tipo: "error", texto: "No se pudieron cargar las procesiones." });
@@ -121,8 +122,11 @@ export default function ActualizarEstado() {
                 setSelectedProcesion(id);
                 const p = procesiones.find((p) => p.id === id);
                 if (p) {
-                  setEstado(p.estado);
-                  setAlerta(p.alerta || "Sin incidencias");
+                  if (p) {
+                    setEstado(p.estado);
+                    setAlerta(p.alerta || "");
+                    setGps(p.gps || ""); // Usa "" si no tiene gps
+                  }                  
                 }
               }}
               className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white p-2 rounded"
