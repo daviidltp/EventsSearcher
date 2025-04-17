@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import type { PanInfo } from 'framer-motion';
 
 declare global {
   interface Window {
@@ -20,6 +21,44 @@ export default function MapBottomSheet({ procesionId }: { procesionId?: string }
   const [panelVisible, setPanelVisible] = useState(true);
   const [procesionTitle, setProcesionTitle] = useState('');
   const [mostrarTexto, setMostrarTexto] = useState('Recorrido procesional');
+
+  //Controlador alteraciones texto/anuncio
+  const [showImage, setShowImage] = useState(false);
+  // Referencia para el carrusel
+  const carouselRef = useRef<HTMLDivElement>(null);
+  // Estado para la posición del carrusel (0: texto, 1: imagen 1, 2: imagen 2)
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  // Estado para el arrastre
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Función para manejar el final del arrastre
+  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const threshold = 50; // umbral en píxeles para decidir la acción
+    
+    if (Math.abs(info.offset.x) > threshold) {
+      // Si el arrastre fue significativo
+      if (info.offset.x > 0) {
+        // Arrastre hacia la derecha: ir al panel anterior o quedarse en el primero
+        setCarouselIndex(prevIndex => Math.max(0, prevIndex - 1));
+      } else {
+        // Arrastre hacia la izquierda: ir al panel siguiente o quedarse en el último
+        setCarouselIndex(prevIndex => Math.min(2, prevIndex + 1));
+      }
+      // Actualizar showImage basado en el nuevo índice (true si no es el panel de texto)
+      setShowImage(carouselIndex !== 0);
+    }
+    
+    setIsDragging(false);
+  };
+
+  // Función para alternar contenido manualmente
+  const toggleContent = () => {
+    setCarouselIndex(prevIndex => {
+      const newIndex = (prevIndex + 1) % 3; // Cicla entre 0, 1 y 2
+      setShowImage(newIndex !== 0);
+      return newIndex;
+    });
+  };
 
   // Función que envuelve la petición de ubicación y comprueba permisos
   const handleLocationRequest = () => {
@@ -199,6 +238,17 @@ export default function MapBottomSheet({ procesionId }: { procesionId?: string }
     }
   };
 
+  // Efecto para alternar automáticamente cada 5 segundos
+  useEffect(() => {
+    if (panelVisible && !isDragging) {
+      const toggleInterval = setInterval(() => {
+        toggleContent();
+      }, 5000);
+      
+      return () => clearInterval(toggleInterval);
+    }
+  }, [panelVisible, isDragging]);
+
   // Formatear el título de la procesión a partir del ID
   useEffect(() => {
     if (procesionId) {
@@ -251,7 +301,7 @@ export default function MapBottomSheet({ procesionId }: { procesionId?: string }
           )}
         </motion.svg>
       </button>
-
+  
       <AnimatePresence>
         {panelVisible && (
           <motion.div
@@ -261,21 +311,96 @@ export default function MapBottomSheet({ procesionId }: { procesionId?: string }
             transition={{ type: "spring", damping: 20, stiffness: 100 }}
             className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40 w-11/12 max-w-sm space-y-2"
           >
-            <div className="bg-[#222222] text-white rounded-xl shadow-2xl p-4 px-6">
-              <h2 className="text-xl font-bold mb-1 text-start">
-                {procesionTitle}
-              </h2>
-              <p className="text-start">
-                Pasando por:{' '}
-                <span id="current-street" className="font-medium">
-                  {mostrarTexto}
-                </span>
-              </p>
+            {/* Contenedor del carrusel deslizable */}
+            <div className="overflow-hidden rounded-xl relative h-[100px]" ref={carouselRef}>
+              {/* Contenedor deslizable */}
+              <motion.div
+                drag="x"
+                dragConstraints={carouselRef}
+                dragElastic={0.2}
+                dragTransition={{ bounceStiffness: 600, bounceDamping: 10 }}
+                onDragStart={() => setIsDragging(true)}
+                onDragEnd={handleDragEnd}
+                animate={{ 
+                  x: carouselIndex === 0 
+                    ? 0 
+                    : carouselIndex === 1 
+                      ? '-33.33%' 
+                      : '-66.66%' 
+                }}
+                transition={{ 
+                  type: "spring", 
+                  damping: 30, 
+                  stiffness: 300
+                }}
+                className="flex w-[300%] h-full"
+              >
+                {/* Panel de texto */}
+                <div className="bg-[#222222] text-white rounded-xl shadow-2xl p-4 px-6 w-1/3 h-full">
+                  <h2 className="text-xl font-bold mb-1 text-start">
+                    {procesionTitle}
+                  </h2>
+                  <p className="text-start">
+                    Pasando por:{' '}
+                    <span id="current-street" className="font-medium">
+                      {mostrarTexto}
+                    </span>
+                  </p>
+                </div>
+                
+                {/* Panel de primera imagen */}
+                <div className="bg-[#222222] w-1/3 h-full rounded-xl shadow-2xl flex items-center justify-center">
+                  <img 
+                    src="/assets/patrocinadores/Cartel_optica_Martos.png" 
+                    alt={`Información ${procesionTitle}`} 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                
+                {/* Panel de segunda imagen */}
+                <div className="bg-[#222222] w-1/3 h-full rounded-xl shadow-2xl flex items-center justify-center">
+                  <img 
+                    src="/assets/patrocinadores/peluqueria_ismael.jpg" 
+                    alt="Patrocinador adicional" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </motion.div>
+              
+              {/* Indicadores de página (pequeños puntos) */}
+              <div className="absolute bottom-2 left-0 right-0 flex justify-center space-x-2">
+                <button 
+                  className={`w-2 h-2 rounded-full transition-colors ${carouselIndex === 0 ? 'bg-white' : 'bg-gray-400'}`}
+                  onClick={() => {
+                    setCarouselIndex(0);
+                    setShowImage(false);
+                  }}
+                  aria-label="Mostrar información"
+                />
+                <button 
+                  className={`w-2 h-2 rounded-full transition-colors ${carouselIndex === 1 ? 'bg-white' : 'bg-gray-400'}`}
+                  onClick={() => {
+                    setCarouselIndex(1);
+                    setShowImage(true);
+                  }}
+                  aria-label="Mostrar primera imagen"
+                />
+                <button 
+                  className={`w-2 h-2 rounded-full transition-colors ${carouselIndex === 2 ? 'bg-white' : 'bg-gray-400'}`}
+                  onClick={() => {
+                    setCarouselIndex(2);
+                    setShowImage(true);
+                  }}
+                  aria-label="Mostrar segunda imagen"
+                />
+              </div>
             </div>
-            <div className="flex justify-start space-x-2 ">
+  
+            {/* Botones de acción */}
+            <div className="flex justify-start space-x-2">
               <button 
                 onClick={(e) => { e.stopPropagation(); handleLocationRequest(); }}
-                className=" bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-full shadow-md transition-transform active:scale-95 flex items-center"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-full shadow-md transition-transform active:scale-95 flex items-center"
                 aria-label="Mostrar mi ubicación"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-map-pin">
@@ -296,20 +421,10 @@ export default function MapBottomSheet({ procesionId }: { procesionId?: string }
                 </svg>
                 <span className="ml-1 text-lg">Llévame</span>
               </button>
-		  {/* 
-              <button 
-                onClick={(e) => { e.stopPropagation(); centerMap(); }}
-                className="bg-gray-600 hover:bg-gray-700 text-white p-3 rounded-full shadow-md transition-transform active:scale-95 flex items-center"
-                aria-label="Centrar mapa"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm2-8a2 2 0 11-4 0 2 2 0 014 0z" clipRule="evenodd" />
-                </svg>
-              </button> */}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
     </>
-  );
-}
+  )
+};
