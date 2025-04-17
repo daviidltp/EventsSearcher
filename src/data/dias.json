@@ -216,10 +216,10 @@
         "fundacion": "Refundada en 1980",
         "parroquia": "Iglesia parroquial de San Amador y Santa Ana",
         "diaSalida": "Miércoles Santo",
-        "horaSalida": "20:00",
-        "horaLlegada": "01:45",
-        "entradaCruzGuiaCarreraOficial": "23:40",
-        "salidaCruzGuiaCarreraOficial": "00:30",
+        "horaSalida": "19:00",
+        "horaLlegada": "00:45",
+        "entradaCruzGuiaCarreraOficial": "22:40",
+        "salidaCruzGuiaCarreraOficial": "23:30",
         "itinerario": [
           "San Amador",
           "La fuente",
@@ -295,7 +295,7 @@
         "acompaniamiento-musical" : "Banda de Cornetas y Tambores Nuestro Padre Jesús Nazareno de Torredelcampo (Jaén) y Agrupación Musical Maestro Soler de Martos (Jaén)"
       },
       {
-        "id": "silencio-dolor",
+        "id": "silencio-y-dolor",
         "nombre": "Silencio y Dolor",
         "descripcion": "Nuestro Padre Jesús del Silencio y Nuestra Madre del Mayor Dolor",
         "cofradia": "Hermandad Sacramental y Seráfica de San Francisco de Asís y Cofradía de Nazarenos de Nuestro Padre Jesús del Silencio y Nuestra Madre y Señora del Mayor Dolor",
@@ -422,7 +422,7 @@
          "acompaniamiento-musical" : "Agrupación Musical Nuestro Padre Jesús Nazareno de Villanueva del Duque (Córdoba) y Agrupación Musical Maestro Soler de Martos (Jaén). Acompañada por la singular Trompeta de Juanillón"
       },
       {
-        "id": "san-juan-magadalena",
+        "id": "san-juan-y-maria-magdalena",
         "nombre": "San Juan y María Magdalena",
         "descripcion": "San Juan Evangelista y Santa María Magdalena",
         "cofradia": "Cofradía de San Juan Evangelista y Santa María Magdalena",

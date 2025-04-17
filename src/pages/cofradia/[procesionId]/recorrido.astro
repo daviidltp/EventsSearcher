@@ -2,11 +2,11 @@
 import Layout from '../../../layouts/Layout.astro';
 import MartosMapa from '../../../components/MartosMapa.astro';
 import { rutasProcesiones, puntosInteresProcesiones } from '../../../data/rutas-procesiones';
+import MartosMapa2D from '../../../components/MartosMapa2D.astro';
 
 // Obtener el parámetro de ruta dinámica
 const { procesionId = 'borriquita' } = Astro.params as { procesionId: keyof typeof rutasProcesiones };
 
-console.log("Parámetro de ruta recibido:", procesionId);
 
 // Obtener la ruta dividida en ida y vuelta
 const rutaProcesion = rutasProcesiones[procesionId]; // ahora es { ida, vuelta }
@@ -34,7 +34,7 @@ export function getStaticPaths() {
 ---
 
 <Layout>
-  <MartosMapa 
+  <MartosMapa
     route={rutaProcesion}  
     points={puntosInteres}
     title={`Martos - Procesión de ${titulo}`}

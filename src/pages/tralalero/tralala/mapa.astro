@@ -4,7 +4,7 @@ import { rutasProcesiones, puntosInteresProcesiones } from '../../../data/rutas-
 import MartosMapaDebug from '../../../components/MartosMapaDebug.astro';
 
 // Obtener el parámetro de ruta dinámica
-const { procesionId = 'borriquita' } = Astro.params as { procesionId: keyof typeof rutasProcesiones };
+const { procesionId = 'oracion-en-el-huerto' } = Astro.params as { procesionId: keyof typeof rutasProcesiones };
 
 console.log("Parámetro de ruta recibido:", procesionId);
 

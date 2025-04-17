@@ -1,4 +1,6 @@
 ---
+import MapBottomSheet from '../components/MapBottomSheet';
+
 const { 
   route, 
   points, 
@@ -21,10 +23,8 @@ const pointsJSON = JSON.stringify(points);
 <div class="map-container w-full h-full relative">
   <div id="map" class="absolute inset-0 z-10"></div>
   
-  <!-- UI overlay - Título adaptativo -->
-  <div class="title-container">
-    <h2 class="title-text">{title}</h2>
-  </div>
+  <!-- Aquí va el componente React del Bottom Sheet -->
+  <MapBottomSheet client:load />
 
 <!-- Importar CSS de Leaflet -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
@@ -47,175 +47,35 @@ const pointsJSON = JSON.stringify(points);
   console.log("Puntos de interés recibidos:", points);
 
   async function checkEstadoProcesion() {
-    try {
-      const url = `https://owntracks-api.semanasantatracker.workers.dev/procesiones?id=${procesionId}`;
-      const response = await fetch(url, { cache: 'no-cache' });
-      if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-      const data = await response.json();
+  try {
+    const url = `https://owntracks-api.semanasantatracker.workers.dev/procesiones?id=${procesionId}`;
+    const response = await fetch(url, { cache: 'no-cache' });
+    if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+    const data = await response.json();
 
-      if (Array.isArray(data) && data.length > 0) {
-        const estado = data[0].estado;
-        
-        if (estado === 'Directo' || estado === 'Finalizada') {
-          // Mostrar ambas ubicaciones GPS
-          fetchAndShowGpsLocation("https://owntracks-api.semanasantatracker.workers.dev/last-location", 1, estado);
-          fetchAndShowGpsLocation("https://owntracks-api.semanasantatracker.workers.dev/last-location-2", 2, estado);
-        } else {
-            fetchAndShowGpsLocation("https://owntracks-api.semanasantatracker.workers.dev/last-location", 1, estado);
-            fetchAndShowGpsLocation("https://owntracks-api.semanasantatracker.workers.dev/last-location-2", 2, estado);
-          console.log("Procesión no está en la calle actualmente.");
+    if (Array.isArray(data) && data.length > 0) {
+      const estado = data[0].estado;
+      const gps = data[0].gps;  // ← obtenemos gps desde la BD
+
+      if (estado === 'Directo' || estado === 'Finalizada') {
+        let locationUrl = "https://owntracks-api.semanasantatracker.workers.dev/last-location";
+        if (gps === "gps-2") {
+          locationUrl = "https://owntracks-api.semanasantatracker.workers.dev/last-location-2";
         }
+
+        addLastLocationMarker(estado, locationUrl);
       } else {
-        console.warn("No se encontró información de estado para la procesión.");
+        addLastLocationMarker('Directo', "https://owntracks-api.semanasantatracker.workers.dev/last-location-2");
+        console.log("Procesión no está en la calle actualmente.");
       }
-    } catch (error) {
-      console.error("Error al consultar estado de procesión:", error.message || error);
-    }
-  }
-
-  async function fetchAndShowGpsLocation(locationUrl, gpsNumber, estadoProcesion) {
-    try {
-      const response = await fetch(locationUrl);
-      const data = await response.json();
-      const { lat, lon } = data;
-      
-      // Decidir qué color usar según el número de GPS
-      const markerColor = gpsNumber === 1 ? "gray" : "blue";
-      
-      // Añadir el marcador de ubicación GPS
-      addGpsMarker(lat, lon, gpsNumber, markerColor);
-      
-      // Proyectar ubicación en la ruta y actualizar path
-      projectLocationToRoute(lat, lon, estadoProcesion, gpsNumber === 1);
-      
-      // Programar próxima actualización
-      setTimeout(() => fetchAndShowGpsLocation(locationUrl, gpsNumber, estadoProcesion), 5000);
-    } catch (err) {
-      console.error(`Error obteniendo la ubicación de GPS${gpsNumber}:`, err);
-      setTimeout(() => fetchAndShowGpsLocation(locationUrl, gpsNumber, estadoProcesion), 30000);
-    }
-  }
-  // Función para añadir o actualizar marcador GPS
-  function addGpsMarker(lat, lon, gpsNumber, color) {
-    // Referencia al marcador según número de GPS
-    const markerRef = gpsNumber === 1 ? 'gpsRealMarker' : 'gpsRealMarker2';
-    
-    // Crear o actualizar el marcador
-    if (!window[markerRef]) {
-      window[markerRef] = L.marker([lat, lon], {
-        icon: L.divIcon({
-          className: `gps-real-marker gps-${gpsNumber}`,
-          html: `<div style="width: 14px; height: 14px; background-color: ${color}; border: 2px solid white; border-radius: 50%; box-shadow: 0 0 6px rgba(0,0,0,0.8);"></div>`,
-          iconSize: [20, 20],
-          iconAnchor: [10, 10]
-        })
-      }).addTo(map).bindPopup(`GPS ${gpsNumber}`);
     } else {
-      window[markerRef].setLatLng([lat, lon]);
+      console.warn("No se encontró información de estado para la procesión.");
     }
-	// Centrar el mapa (solo una vez, y preferentemente en GPS1)
-    if (!hasCenteredMap && gpsNumber === 1 && map) {
-      map.setView([lat, lon], 19);
-      hasCenteredMap = true;
-    }
+  } catch (error) {
+    console.error("Error al consultar estado de procesión:", error.message || error);
   }
-  // Función para proyectar ubicación en ruta y actualizar path
-  function projectLocationToRoute(lat, lon, estadoProcesion, isMainGps) {
-    // Obtener las partes de la ruta
-    const ida = route.ida ?? [];
-    const vuelta = route.vuelta ?? [];
+}
 
-    if (ida.length === 0 || vuelta.length === 0) {
-      console.warn("No se encontró información de ruta ida/vuelta");
-      return;
-    }
-
-    let completedPath = [];
-    let correctedLat = 0, correctedLon = 0;
-    
-    // El mismo código que antes para calcular la proyección en la ruta
-    if (estadoProcesion === "Finalizada") {
-      // Para "Finalizada", colorea toda la ruta de ida más parte de la vuelta
-      completedPath = ida.slice();
-      
-      // Proyecta la posición en la ruta de vuelta
-      const tramoVuelta = vuelta;
-      let closestSegmentIndex = 0;
-      let minDistance = Infinity;
-      let tClosest = 0;
-      
-      // Resto del código para calcular proyección igual que antes
-      for (let i = 0; i < tramoVuelta.length - 1; i++) {
-        const p1 = tramoVuelta[i];
-        const p2 = tramoVuelta[i + 1];
-        const dx = p2[0] - p1[0];
-        const dy = p2[1] - p1[1];
-        let t = ((lat - p1[0]) * dx + (lon - p1[1]) * dy) / (dx * dx + dy * dy);
-        t = Math.max(0, Math.min(1, t));
-        const projLat = p1[0] + t * dx;
-        const projLon = p1[1] + t * dy;
-        const distance = Math.sqrt((lat - projLat) ** 2 + (lon - projLon) ** 2);
-        if (distance < minDistance) {
-          minDistance = distance;
-          closestSegmentIndex = i;
-          tClosest = t;
-        }
-      }
-      
-      const p1 = tramoVuelta[closestSegmentIndex];
-      const p2 = tramoVuelta[closestSegmentIndex + 1];
-      correctedLat = p1[0] + tClosest * (p2[0] - p1[0]);
-      correctedLon = p1[1] + tClosest * (p2[1] - p1[1]);
-      
-      // Agregar la parte completada de la vuelta
-      const vueltaCompleted = tramoVuelta.slice(0, closestSegmentIndex + 1).concat([[correctedLat, correctedLon]]);
-      completedPath = completedPath.concat(vueltaCompleted);
-    } else {
-      // Para "Directo", solo la parte de ida
-      const tramoIda = ida;
-      let closestSegmentIndex = 0;
-      let minDistance = Infinity;
-      let tClosest = 0;
-      
-      // Código de proyección igual que antes
-      for (let i = 0; i < tramoIda.length - 1; i++) {
-        const p1 = tramoIda[i];
-        const p2 = tramoIda[i + 1];
-        const dx = p2[0] - p1[0];
-        const dy = p2[1] - p1[1];
-        let t = ((lat - p1[0]) * dx + (lon - p1[1]) * dy) / (dx * dx + dy * dy);
-        t = Math.max(0, Math.min(1, t));
-        const projLat = p1[0] + t * dx;
-        const projLon = p1[1] + t * dy;
-        const distance = Math.sqrt((lat - projLat) ** 2 + (lon - projLon) ** 2);
-        if (distance < minDistance) {
-          minDistance = distance;
-          closestSegmentIndex = i;
-          tClosest = t;
-        }
-      }
-      
-      const p1 = tramoIda[closestSegmentIndex];
-      const p2 = tramoIda[closestSegmentIndex + 1];
-      correctedLat = p1[0] + tClosest * (p2[0] - p1[0]);
-      correctedLon = p1[1] + tClosest * (p2[1] - p1[1]);
-      
-      completedPath = tramoIda.slice(0, closestSegmentIndex + 1).concat([[correctedLat, correctedLon]]);
-    }
-    
-    // Solo actualizar la posición del marcador animado y la ruta completada si es el GPS principal
-    if (isMainGps) {
-      // Mover el marcador animado a la posición proyectada
-      if (animatedMarker) {
-        animatedMarker.setLatLng([correctedLat, correctedLon]);
-      }
-      
-      // Actualizar la ruta completada
-      if (completedRouteLayer) {
-        completedRouteLayer.setLatLngs(completedPath);
-      }
-    }
-  }
 
   // Variables globales del mapa
   let map;
@@ -223,7 +83,6 @@ const pointsJSON = JSON.stringify(points);
   let completedRouteLayer;
   let animatedMarker;
   let gpsRealMarker = null;
-  let gpsRealMarker2 = null; // Añadido segundo marcador GPS
   let isPaused = true;
   let animationId = null;
   let animationSpeed = 0.05;
@@ -249,13 +108,13 @@ const pointsJSON = JSON.stringify(points);
 
     try {
       // Crear el mapa
-map = L.map('map', {
-  center: MARTOS_CENTER,
-  zoom: 16,
-  minZoom: 14,
-  maxZoom: 19,
-  attributionControl: false
-});
+	map = L.map('map', {
+	center: MARTOS_CENTER,
+	zoom: 16,
+	minZoom: 14,
+	maxZoom: 19,
+	attributionControl: false
+	});
 
 // Crear un pane personalizado para las etiquetas (para que estén por encima del trono y antPath)
 map.createPane('labelsPane');
@@ -296,7 +155,7 @@ labelsOnly.addTo(map);
 // Crea un control personalizado con preview del mapa alternativo
 const MapPreviewToggle = L.Control.extend({
   options: {
-    position: 'bottomleft'
+    position: 'topright'
   },
 
   onAdd: function(map) {
@@ -399,21 +258,25 @@ map.addControl(new MapPreviewToggle());
       // Capa para la ruta con efecto "ant path"
       routeLayer = L.polyline.antPath(fullRoute, {
         color: '#3388ff',
-        weight: 5,
+        weight: 8,
         opacity: 0.8,
         delay: 2500,
-        dashArray: [10, 20],
+        dashArray: [15, 25],
         pulseColor: '#FFFFFF',
         paused: false,
-        hardwareAccelerated: true
+        hardwareAccelerated: true,
+        lineCap: 'round',
+        lineJoin: 'round'
       }).addTo(map);
       
       // Capa para la parte recorrida (dorada)
       completedRouteLayer = L.polyline([], {
         color: 'gold',
-        weight: 6,
+        weight: 8,
         opacity: 0.9,
-        className: 'route-glow'
+        className: 'route-glow',
+        lineCap: 'round',
+        lineJoin: 'round'
       }).addTo(map);
       
       // Icono para el paso procesional
@@ -489,6 +352,14 @@ map.addControl(new MapPreviewToggle());
     } catch (error) {
       console.error("Error al inicializar el mapa:", error);
     }
+
+	// Exponer funciones y variables necesarias globalmente para el BottomSheet
+	window.handleLocationRequest = handleLocationRequest;
+	window.map = map;
+	window.MARTOS_CENTER = MARTOS_CENTER;
+	window.procesionId = procesionId;
+	window.hasCenteredMap = hasCenteredMap;
+	window.animatedMarker = animatedMarker;
   }
 
   async function addLastLocationMarker(estadoProcesion, locationUrl) {
@@ -667,12 +538,89 @@ map.addControl(new MapPreviewToggle());
     map.panTo([lat, lng]);
   }
   
-  function updateCurrentStreet(position) {
+function updateCurrentStreet(position) {
     const currentIndex = Math.floor(position);
     let streetName = "Recorrido procesional";
     // Lógica para actualizar el nombre de la calle, si se desea.
     // document.getElementById('current-street').textContent = streetName;
+	// Actualizar el elemento en el bottom sheet
+	const streetElement = document.getElementById('current-street');
+	if (streetElement) {
+		streetElement.textContent = streetName;
+  	}
+	// Actualizar la barra de progreso
+	const progressBar = document.getElementById('progress-bar');
+	const progressPercent = document.getElementById('progress-percent');
+	if (progressBar && progressPercent && fullRoute.length > 1) {
+		const percent = Math.round((currentIndex / (fullRoute.length - 1)) * 100);
+		progressBar.style.width = `${percent}%`;
+		progressPercent.textContent = `${percent}%`;
+	}
+
+	// Actualizar puntos de interés cercanos
+	// updateNearbyPoints(position);
+}
+
+// Nueva función para actualizar puntos de interés
+function updateNearbyPoints(position) {
+  if (!points || points.length === 0) return;
+  
+  const currentPos = fullRoute[Math.floor(position)];
+  const poiListElement = document.getElementById('poi-list');
+  
+  if (poiListElement && currentPos) {
+    // Limpiar lista anterior
+    poiListElement.innerHTML = '';
+    
+    // Ordenar puntos por cercanía
+    const sortedPoints = [...points].sort((a, b) => {
+      const distA = getDistance(currentPos, a.position);
+      const distB = getDistance(currentPos, b.position);
+      return distA - distB;
+    });
+    
+    // Mostrar los 3 más cercanos
+    sortedPoints.slice(0, 3).forEach(point => {
+      const dist = getDistance(currentPos, point.position);
+      const distText = dist < 1 ? `${Math.round(dist * 1000)} m` : `${dist.toFixed(1)} km`;
+      
+      const isChurch = point.title.toLowerCase().includes('iglesia') || 
+                     point.title.toLowerCase().includes('parroquia');
+      
+      const icon = isChurch ? '⛪' : '🏛️';
+      
+      const pointElement = document.createElement('div');
+      pointElement.className = 'bg-white p-2 rounded shadow-sm border border-gray-200 flex items-center transition-all hover:bg-gray-50';
+      pointElement.innerHTML = `
+        <div class="bg-blue-100 p-2 rounded mr-3">${icon}</div>
+        <div>
+          <p class="font-medium">${point.title}</p>
+          <p class="text-xs text-gray-600">A ${distText}</p>
+        </div>
+      `;
+      
+      poiListElement.appendChild(pointElement);
+    });
   }
+}
+
+// Función auxiliar para calcular distancia
+function getDistance(point1, point2) {
+  // Fórmula haversine para distancias en la tierra
+  const R = 6371; // Radio de la tierra en km
+  const dLat = deg2rad(point2[0] - point1[0]);
+  const dLon = deg2rad(point2[1] - point1[1]);
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(deg2rad(point1[0])) * Math.cos(deg2rad(point2[0])) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2); 
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+  return R * c; // Distancia en km
+}
+
+function deg2rad(deg) {
+  return deg * (Math.PI/180);
+}
   
   function createCustomIcon(color, title) {
     return L.divIcon({
