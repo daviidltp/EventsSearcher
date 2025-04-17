@@ -225,14 +225,14 @@ export default function MapBottomSheet({ procesionId }: { procesionId?: string }
       {/* Botón de abrir/cerrar, ubicado en la esquina inferior derecha */}
       <button
         onClick={() => setPanelVisible(v => !v)}
-        className="fixed bottom-5 right-5 z-50 bg-blue-600 hover:bg-blue-700 text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-transform active:scale-95"
+        className="fixed bottom-6 right-5 z-50 bg-blue-600 hover:bg-blue-700 text-white w-10 h-10 rounded-full shadow-lg flex items-center justify-center transition-transform active:scale-95"
         aria-label="Alternar panel de información"
       >
         <motion.svg
           initial={false}
           animate={{ rotate: panelVisible ? 90 : 0 }}
           transition={{ duration: 0.5 }}
-          className="h-8 w-8"
+          className="h-7 w-7"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -283,7 +283,7 @@ export default function MapBottomSheet({ procesionId }: { procesionId?: string }
                   <path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
                   <path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0z" />
                 </svg>
-                <span className="ml-1 text-lg">Mi ubicación</span>
+                <span className="ml-1 text-md">Mi ubicación</span>
               </button>
               <button 
                 onClick={(e) => { e.stopPropagation(); showDirectionsToTrono(); }}
@@ -294,7 +294,7 @@ export default function MapBottomSheet({ procesionId }: { procesionId?: string }
                   <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                   <path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5" />
                 </svg>
-                <span className="ml-1 text-lg">Llévame</span>
+                <span className="ml-1 text-md">Llévame</span>
               </button>
 		  {/* 
               <button 
