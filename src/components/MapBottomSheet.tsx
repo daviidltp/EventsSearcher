@@ -21,7 +21,7 @@ export default function MapBottomSheet({ procesionId }: { procesionId?: string }
   const [panelVisible, setPanelVisible] = useState(true);
   const [procesionTitle, setProcesionTitle] = useState('');
   const [mostrarTexto, setMostrarTexto] = useState('Recorrido procesional');
-
+  
   //Controlador alteraciones texto/anuncio
   const [showImage, setShowImage] = useState(false);
   // Referencia para el carrusel
@@ -36,25 +36,20 @@ export default function MapBottomSheet({ procesionId }: { procesionId?: string }
     const threshold = 50; // umbral en píxeles para decidir la acción
     
     if (Math.abs(info.offset.x) > threshold) {
-      // Si el arrastre fue significativo
       if (info.offset.x > 0) {
-        // Arrastre hacia la derecha: ir al panel anterior o quedarse en el primero
         setCarouselIndex(prevIndex => Math.max(0, prevIndex - 1));
       } else {
-        // Arrastre hacia la izquierda: ir al panel siguiente o quedarse en el último
         setCarouselIndex(prevIndex => Math.min(2, prevIndex + 1));
       }
-      // Actualizar showImage basado en el nuevo índice (true si no es el panel de texto)
       setShowImage(carouselIndex !== 0);
     }
-    
     setIsDragging(false);
   };
 
   // Función para alternar contenido manualmente
   const toggleContent = () => {
     setCarouselIndex(prevIndex => {
-      const newIndex = (prevIndex + 1) % 3; // Cicla entre 0, 1 y 2
+      const newIndex = (prevIndex + 1) % 3;
       setShowImage(newIndex !== 0);
       return newIndex;
     });
@@ -66,8 +61,6 @@ export default function MapBottomSheet({ procesionId }: { procesionId?: string }
       alert('Tu navegador no soporta geolocalización');
       return;
     }
-
-    // Si Permissions API está disponible, comprobamos el estado antes de solicitar ubicación
     if (navigator.permissions && navigator.permissions.query) {
       navigator.permissions.query({ name: 'geolocation' as PermissionName }).then(result => {
         if (result.state === 'denied') {
@@ -79,11 +72,9 @@ export default function MapBottomSheet({ procesionId }: { procesionId?: string }
           showMyLocation();
         }
       }).catch(() => {
-        // En caso de que falle Permissions API
         showMyLocation();
       });
     } else {
-      // Fallback si no existe Permissions API
       showMyLocation();
     }
   };
@@ -202,12 +193,14 @@ export default function MapBottomSheet({ procesionId }: { procesionId?: string }
     }
   };
 
-  // Función para actualizar el nombre de la calle mediante geocodificación inversa
+  // Función para actualizar el nombre de la calle mediante geocodificación inversa,
+  // y elegir endpoint según el valor de gps en la respuesta
   const updateStreetName = async () => {
     const el = document.getElementById('current-street');
     if (!el || !procesionId) return;
 
     try {
+      // Obtener datos de la procesión (estado, parroquia y gps)
       const infoRes = await fetch(
         `https://owntracks-api.semanasantatracker.workers.dev/procesiones?id=${procesionId}`
       );
@@ -215,21 +208,28 @@ export default function MapBottomSheet({ procesionId }: { procesionId?: string }
       const procesion = infoData?.[0];
       if (!procesion) {
         el.textContent = 'Recorrido procesional';
+        setMostrarTexto('Recorrido procesional');
         return;
       }
 
-      const { estado, parroquia } = procesion;
+      const { estado, parroquia, gps } = procesion;
 
+      // Si la procesión está en directo o finalizada, hacemos fetch de la calle
       if (estado === 'Directo' || estado === 'Finalizada') {
-        const streetRes = await fetch(
-          'https://owntracks-api.semanasantatracker.workers.dev/streetName'
-        );
+        // Determinar URL según gps
+        let streetUrl = 'https://owntracks-api.semanasantatracker.workers.dev/streetName';
+        if (gps === 'gps-2') {
+          streetUrl = 'https://owntracks-api.semanasantatracker.workers.dev/streetName-2';
+        } // si gps es 'gps-1' o cualquier otro, dejamos streetName
+
+        const streetRes = await fetch(streetUrl);
         if (!streetRes.ok) throw new Error('No se pudo obtener calle');
         const streetData = await streetRes.json();
         const nombreCalle = streetData.streetName?.trim();
         el.textContent = nombreCalle || 'Recorrido procesional';
         setMostrarTexto(nombreCalle || 'Recorrido procesional');
       } else {
+        // Si no está en directo, mostramos la parroquia
         el.textContent = parroquia || 'Parroquia';
         setMostrarTexto(parroquia || 'Parroquia');
       }
@@ -244,7 +244,6 @@ export default function MapBottomSheet({ procesionId }: { procesionId?: string }
       const toggleInterval = setInterval(() => {
         toggleContent();
       }, 5000);
-      
       return () => clearInterval(toggleInterval);
     }
   }, [panelVisible, isDragging]);
