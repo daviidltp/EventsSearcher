@@ -33,22 +33,32 @@ export default function MapBottomSheet({ procesionId }: { procesionId?: string }
 
   // Función para manejar el final del arrastre
   const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    const threshold = 50; // umbral en píxeles para decidir la acción
-    
-    if (Math.abs(info.offset.x) > threshold) {
-      // Si el arrastre fue significativo
-      if (info.offset.x > 0) {
-        // Arrastre hacia la derecha: ir al panel anterior o quedarse en el primero
-        setCarouselIndex(prevIndex => Math.max(0, prevIndex - 1));
-      } else {
-        // Arrastre hacia la izquierda: ir al panel siguiente o quedarse en el último
-        setCarouselIndex(prevIndex => Math.min(2, prevIndex + 1));
-      }
-      // Actualizar showImage basado en el nuevo índice (true si no es el panel de texto)
-      setShowImage(carouselIndex !== 0);
-    }
-    
-    setIsDragging(false);
+	const threshold = 20; // Umbral más bajo para mayor sensibilidad
+	
+	if (Math.abs(info.offset.x) > threshold) {
+	  // Si el arrastre fue significativo
+	  if (info.offset.x > 0) {
+		// Arrastre hacia la derecha: ir al panel anterior
+		setCarouselIndex(prevIndex => {
+		  const newIndex = Math.max(0, prevIndex - 1);
+		  // Actualizar showImage basado en el NUEVO índice
+		  setShowImage(newIndex !== 0);
+		  return newIndex;
+		});
+	  } else {
+		// Arrastre hacia la izquierda: ir al panel siguiente
+		setCarouselIndex(prevIndex => {
+		  const newIndex = Math.min(2, prevIndex + 1);
+		  // Actualizar showImage basado en el NUEVO índice
+		  setShowImage(newIndex !== 0);
+		  return newIndex;
+		});
+	  }
+	} else {
+	  // Si el arrastre no fue significativo, mantener el estado actual
+	}
+	
+	setIsDragging(false);
   };
 
   // Función para alternar contenido manualmente
@@ -312,29 +322,29 @@ export default function MapBottomSheet({ procesionId }: { procesionId?: string }
             className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40 w-11/12 max-w-sm space-y-2"
           >
             {/* Contenedor del carrusel deslizable */}
-            <div className="overflow-hidden rounded-xl relative h-[100px]" ref={carouselRef}>
-              {/* Contenedor deslizable */}
-              <motion.div
-                drag="x"
-                dragConstraints={carouselRef}
-                dragElastic={0.2}
-                dragTransition={{ bounceStiffness: 600, bounceDamping: 10 }}
-                onDragStart={() => setIsDragging(true)}
-                onDragEnd={handleDragEnd}
-                animate={{ 
-                  x: carouselIndex === 0 
-                    ? 0 
-                    : carouselIndex === 1 
-                      ? '-33.33%' 
-                      : '-66.66%' 
-                }}
-                transition={{ 
-                  type: "spring", 
-                  damping: 30, 
-                  stiffness: 300
-                }}
-                className="flex w-[300%] h-full"
-              >
+			<div className="overflow-hidden rounded-xl relative h-[100px] cursor-grab active:cursor-grabbing" ref={carouselRef}>
+			{/* Contenedor deslizable */}
+			<motion.div
+				drag="x"
+				dragConstraints={{ left: -(carouselRef.current?.offsetWidth || 0) * 2, right: 0 }}
+				dragElastic={0.1}
+				dragTransition={{ bounceStiffness: 600, bounceDamping: 20, power: 0.5 }}
+				onDragStart={() => setIsDragging(true)}
+				onDragEnd={handleDragEnd}
+				animate={{ 
+				x: carouselIndex === 0 
+					? 0 
+					: carouselIndex === 1 
+					? '-33.33%' 
+					: '-66.66%' 
+				}}
+				transition={{ 
+				type: "spring", 
+				damping: 25, 
+				stiffness: 250
+				}}
+				className="flex w-[300%] h-full"
+			>
                 {/* Panel de texto */}
                 <div className="bg-[#222222] text-white rounded-xl shadow-2xl p-4 px-6 w-1/3 h-full">
                   <h2 className="text-xl font-bold mb-1 text-start">
@@ -349,22 +359,24 @@ export default function MapBottomSheet({ procesionId }: { procesionId?: string }
                 </div>
                 
                 {/* Panel de primera imagen */}
-                <div className="bg-[#222222] w-1/3 h-full rounded-xl shadow-2xl flex items-center justify-center">
-                  <img 
-                    src="/assets/patrocinadores/Cartel_optica_Martos.png" 
-                    alt={`Información ${procesionTitle}`} 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                
-                {/* Panel de segunda imagen */}
-                <div className="bg-[#222222] w-1/3 h-full rounded-xl shadow-2xl flex items-center justify-center">
-                  <img 
-                    src="/assets/patrocinadores/peluqueria_ismael.jpg" 
-                    alt="Patrocinador adicional" 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+				<div className="bg-[#ffffff] w-1/3 h-full rounded-xl shadow-2xl flex items-center justify-center p-2">
+				<img 
+					src="/assets/patrocinadores/Cartel_optica_Martos.png" 
+					alt={`Información ${procesionTitle}`} 
+					className="w-full h-full object-contain select-none pointer-events-none" // Añadidas estas clases
+					draggable="false" // Evita el arrastre nativo de imágenes
+				/>
+				</div>
+
+				{/* Panel de segunda imagen */}
+				<div className="bg-[#1b1b18] w-1/3 h-full rounded-xl shadow-2xl flex items-center justify-center p-2">
+				<img 
+					src="/assets/patrocinadores/peluqueria_ismael.jpg" 
+					alt="Patrocinador adicional" 
+					className="w-full h-full object-contain select-none pointer-events-none" // Añadidas estas clases
+					draggable="false" // Evita el arrastre nativo de imágenes
+				/>
+				</div>
               </motion.div>
               
               {/* Indicadores de página (pequeños puntos) */}
