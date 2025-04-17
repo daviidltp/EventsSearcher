@@ -23,1079 +23,1138 @@ const pointsJSON = JSON.stringify(points);
 <div class="map-container w-full h-full relative">
   <div id="map" class="absolute inset-0 z-10"></div>
   
-  <!-- UI overlay - Título adaptativo -->
-  <div class="title-container">
-    <h2 class="title-text">{title}</h2>
-  </div>
-
   <!-- Aquí va el componente React del Bottom Sheet -->
-  <MapBottomSheet client:load />
+  <MapBottomSheet client:load procesionId={procesionId} />
 
-<!-- Importar CSS de Leaflet -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <!-- Importar CSS de Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <!-- Scripts necesarios -->
+  <script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script is:inline src="https://unpkg.com/leaflet-ant-path/dist/leaflet-ant-path.js"></script>
 
-<!-- Scripts necesarios -->
-<script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script is:inline src="https://unpkg.com/leaflet-ant-path/dist/leaflet-ant-path.js"></script>
+  <script type="module" is:inline src="../../src/lib/kalman.js"></script>  
 
-<script define:vars={{ routeJSON, pointsJSON, MARTOS_CENTER, procesionId}}>
-  // Parsear datos JSON
-  const route = JSON.parse(routeJSON);
-  const points = JSON.parse(pointsJSON);
+  <script 
+  type="module"
+  is:inline
+  define:vars={{ routeJSON, pointsJSON, MARTOS_CENTER, procesionId }}>
 
-  // Crear una única ruta combinada con "ida" y "vuelta"
-  const fullRoute = route.ida.concat(route.vuelta);
-  if (!route || fullRoute.length < 2) {
-    console.error("No se proporcionó una ruta válida");
-  }
+    import { KalmanFilter } from '../../src/lib/kalman.js';
 
-  console.log("Puntos de interés recibidos:", points);
+    const kfLat = new KalmanFilter({ R: 0.0001, Q: 0.01 });
+    const kfLon = new KalmanFilter({ R: 0.0001, Q: 0.01 });
 
-  async function checkEstadoProcesion() {
-  try {
-    const url = `https://owntracks-api.semanasantatracker.workers.dev/procesiones?id=${procesionId}`;
-    const response = await fetch(url, { cache: 'no-cache' });
-    if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-    const data = await response.json();
+    // Parsear datos JSON
+    const route = JSON.parse(routeJSON);
+    const points = JSON.parse(pointsJSON);
 
-    if (Array.isArray(data) && data.length > 0) {
-      const estado = data[0].estado;
-      const gps = data[0].gps;  // ← obtenemos gps desde la BD
+    // Declarar modo virgen y extraMeters
+    const modo_virgen = false; // Cambia a true para activar el modo virgen
+    const extraMeters = 30;    // Distancia extra en metros a avanzar
 
-      if (estado === 'Directo' || estado === 'Finalizada') {
-        let locationUrl = "https://owntracks-api.semanasantatracker.workers.dev/last-location";
-        if (gps === "gps-2") {
-          locationUrl = "https://owntracks-api.semanasantatracker.workers.dev/last-location-2";
-        }
-
-        addLastLocationMarker(estado, locationUrl);
-      } else {
-        console.log("Procesión no está en la calle actualmente.");
-      }
-    } else {
-      console.warn("No se encontró información de estado para la procesión.");
-    }
-  } catch (error) {
-    console.error("Error al consultar estado de procesión:", error.message || error);
-  }
-}
-
-
-  // Variables globales del mapa
-  let map;
-  let routeLayer;
-  let completedRouteLayer;
-  let animatedMarker;
-  let gpsRealMarker = null;
-  let isPaused = true;
-  let animationId = null;
-  let animationSpeed = 0.05;
-  let currentPosition = 0;
-  let userLocationMarker = null;
-  let isLocationActive = false;
-  let hasCenteredMap = false;
-
-  document.addEventListener('DOMContentLoaded', () => {
-    hasCenteredMap = false;
-  });
-
-  window.onload = () => {
-    initMap();
-    checkEstadoProcesion();
-  };
-
-  function initMap() {
-    if (!fullRoute || fullRoute.length < 2) {
+    // Crear una única ruta combinada con "ida" y "vuelta"
+    const fullRoute = route.ida.concat(route.vuelta);
+    if (!route || fullRoute.length < 2) {
       console.error("No se proporcionó una ruta válida");
-      return;
     }
 
-    try {
-      // Crear el mapa
-	map = L.map('map', {
-	center: MARTOS_CENTER,
-	zoom: 16,
-	minZoom: 14,
-	maxZoom: 19,
-	attributionControl: false
-	});
+    console.log("Puntos de interés recibidos:", points);
 
-// Crear un pane personalizado para las etiquetas (para que estén por encima del trono y antPath)
-map.createPane('labelsPane');
-map.getPane('labelsPane').style.zIndex = 650;
+    async function checkEstadoProcesion() {
+      try {
+        const url = `https://owntracks-api.semanasantatracker.workers.dev/procesiones?id=${procesionId}`;
+        const response = await fetch(url, { cache: 'no-cache' });
+        if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+        const data = await response.json();
 
-// Capas base
-const voyager = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-  attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
-  subdomains: 'abcd',
-  maxZoom: 19
-});
+        if (Array.isArray(data) && data.length > 0) {
+          const estado = data[0].estado;
+          const gps = data[0].gps;  // ← obtenemos gps desde la BD
 
-const satelite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-  attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-  maxZoom: 19
-});
-
-// Capa de etiquetas separadas (se añaden encima del mapa base)
-const labelsOnly = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/light_only_labels/{z}/{x}/{y}{r}.png', {
-  subdomains: 'abcd',
-  maxZoom: 19,
-  opacity: 1.0,
-  pane: 'labelsPane'
-});
-
-// Añadir por defecto
-voyager.addTo(map);
-labelsOnly.addTo(map);
-
-// Control de capas
-// L.control.layers({
-//   "Voyager (Claro)": voyager,
-//   "Dark Matter (Oscuro)": darkMatter
-// }, {}, {
-//   position: 'bottomleft' // Cambia esto según la posición deseada
-// }).addTo(map);
-
-// Crea un control personalizado con preview del mapa alternativo
-const MapPreviewToggle = L.Control.extend({
-  options: {
-    position: 'bottomleft'
-  },
-
-  onAdd: function(map) {
-    // Crear el contenedor principal
-    const container = L.DomUtil.create('div', 'map-style-preview leaflet-bar leaflet-control');
-    container.style.width = '60px';
-    container.style.height = '60px';
-    container.style.padding = '2px';
-    container.style.backgroundColor = 'white';
-    container.style.cursor = 'pointer';
-    container.style.borderRadius = '4px';
-    container.style.boxShadow = '0 2px 5px rgba(0,0,0,0.3)';
-    container.style.overflow = 'hidden';
-    container.title = 'Cambiar estilo de mapa';
-
-    // Crear el div para el mini-mapa de previsualización
-    const previewDiv = L.DomUtil.create('div', 'preview-map', container);
-    previewDiv.style.width = '100%';
-    previewDiv.style.height = '100%';
-    previewDiv.style.borderRadius = '2px';
-    previewDiv.style.backgroundSize = 'cover';
-    previewDiv.style.backgroundPosition = 'center';
-    
-    // Inicializar variable para seguimiento del estado actual
-    let isDarkMode = false;
-    
-    // Actualizar la vista previa según el modo actual
-    function updatePreview() {
-      if (isDarkMode) {
-        // Si estamos en modo oscuro, mostrar vista previa del mapa claro
-        previewDiv.style.backgroundImage = "url('https://a.basemaps.cartocdn.com/rastertiles/voyager/4/8/5.png')";
-        container.title = "Cambiar a mapa claro";
-      } else {
-        // Si estamos en modo claro, mostrar vista previa del mapa oscuro
-        previewDiv.style.backgroundImage = "url('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}')";
-        container.title = "Cambiar a vista satélite";
-      }
-    }
-    
-    // Configuración inicial
-    updatePreview();
-    
-    // Etiqueta de cambio
-    const switchLabel = L.DomUtil.create('div', 'switch-label', container);
-    switchLabel.style.position = 'absolute';
-    switchLabel.style.bottom = '2px';
-    switchLabel.style.right = '2px';
-    switchLabel.style.backgroundColor = 'rgba(0,0,0,0.6)';
-    switchLabel.style.color = 'white';
-    switchLabel.style.padding = '2px 4px';
-    switchLabel.style.borderRadius = '2px';
-    switchLabel.style.fontSize = '8px';
-    switchLabel.style.fontWeight = 'bold';
-    switchLabel.textContent = '';
-    
-    // Borde decorativo
-    container.style.border = '2px solid #3388ff';
-    
-    // Manejar el clic
-    L.DomEvent.on(container, 'click', function(e) {
-      L.DomEvent.stopPropagation(e);
-      
-      if (isDarkMode) {
-        map.removeLayer(satelite);
-        voyager.addTo(map);
-      } else {
-        map.removeLayer(voyager);
-        satelite.addTo(map);
-      }
-      
-      isDarkMode = !isDarkMode;
-      updatePreview();
-    });
-    
-    // Prevenir eventos de mapa al interactuar con el control
-    L.DomEvent.disableClickPropagation(container);
-
-	
-    container.addEventListener('mouseover', function() {
-      container.style.transform = 'scale(1.15)';
-      switchLabel.style.backgroundColor = 'rgba(51, 136, 255, 0.8)';
-    });
-
-    container.addEventListener('mouseout', function() {
-      container.style.transform = 'scale(1)';
-      switchLabel.style.backgroundColor = 'rgba(0,0,0,0.6)';
-    });
-
-    // Añadir transición suave
-    container.style.transition = 'all 0.2s ease-in-out';
-    switchLabel.style.transition = 'all 0.2s ease-in-out';
-    
-    return container;
-  }
-});
-
-// Añadir el control personalizado al mapa
-map.addControl(new MapPreviewToggle());
-      
-      // Capa para la ruta con efecto "ant path"
-      routeLayer = L.polyline.antPath(fullRoute, {
-        color: '#3388ff',
-        weight: 8,
-        opacity: 0.8,
-        delay: 2500,
-        dashArray: [15, 25],
-        pulseColor: '#FFFFFF',
-        paused: false,
-        hardwareAccelerated: true,
-        lineCap: 'round',
-        lineJoin: 'round'
-      }).addTo(map);
-      
-      // Capa para la parte recorrida (dorada)
-      completedRouteLayer = L.polyline([], {
-        color: 'gold',
-        weight: 8,
-        opacity: 0.9,
-        className: 'route-glow',
-        lineCap: 'round',
-        lineJoin: 'round'
-      }).addTo(map);
-      
-      // Icono para el paso procesional
-      const pasoColoridoSVG = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120" width="60" height="72">
-          <!-- Base dorada y estructura del trono -->
-          <rect x="15" y="90" width="70" height="12" fill="#B8860B" stroke="#8B4513" stroke-width="1"/>
-          <rect x="20" y="85" width="60" height="5" fill="#DAA520" stroke="#B8860B" stroke-width="0.5"/>
-          <!-- Patas ornamentadas -->
-          <rect x="20" y="90" width="5" height="12" fill="#8B4513" stroke="#5D2906" stroke-width="0.5" rx="1"/>
-          <rect x="75" y="90" width="5" height="12" fill="#8B4513" stroke="#5D2906" stroke-width="0.5" rx="1"/>
-          <!-- Nivel medio del trono -->
-          <rect x="22" y="70" width="56" height="15" fill="#800020" stroke="#4B0010" stroke-width="1"/>
-          <!-- Bordes dorados -->
-          <rect x="20" y="70" width="60" height="2" fill="#DAA520" stroke="#B8860B" stroke-width="0.5"/>
-          <rect x="20" y="83" width="60" height="2" fill="#DAA520" stroke="#B8860B" stroke-width="0.5"/>
-          <!-- Cruz principal -->
-          <rect x="48" y="20" width="4" height="50" fill="#8B4513" stroke="#5D2906" stroke-width="1"/>
-          <rect x="35" y="30" width="30" height="4" fill="#8B4513" stroke="#5D2906" stroke-width="1"/>
-          <!-- Cristo en la cruz (simplificado) -->
-          <path d="M50,30 Q48,35 45,40 L50,40 L55,40 Q52,35 50,30" fill="#FFE4C4" stroke="#8B4513" stroke-width="0.5"/>
-          <path d="M45,40 L41,55 M55,40 L59,55" stroke="#FFE4C4" stroke-width="2" stroke-linecap="round"/>
-          <circle cx="50" cy="27" r="3" fill="#FFE4C4" stroke="#8B4513" stroke-width="0.5"/>
-          <!-- Corona de espinas -->
-          <path d="M47,25 Q50,22 53,25" stroke="#8B4513" stroke-width="0.5" fill="none"/>
-        </svg>
-      `;
-      const tronoIcon = L.divIcon({
-        className: 'custom-paso-marker',
-        html: `
-          <div class="paso-container" aria-label="Paso procesional avanzando por el recorrido">
-            ${pasoColoridoSVG}
-            <div class="paso-shadow" role="presentation"></div>
-          </div>
-        `,
-        iconSize: [60, 72],
-        iconAnchor: [30, 45],
-        zIndexOffset: 1000
-      });
-      
-      // Crear el marcador animado en la posición inicial usando fullRoute
-      animatedMarker = L.marker(fullRoute[0], {
-        icon: tronoIcon,
-        zIndexOffset: 1000
-      }).addTo(map);
-      
-      // Marcadores de inicio y fin (usando fullRoute)
-      L.marker(fullRoute[0], {
-        icon: createCustomIcon('green', 'Inicio')
-      }).addTo(map).bindPopup('<strong>Punto de Inicio</strong><p>Comienza el recorrido procesional</p>');
-
-      L.marker(fullRoute[fullRoute.length - 1], {
-        icon: createCustomIcon('red', 'Fin')
-      }).addTo(map).bindPopup('<strong>Punto Final</strong>');
-
-    //   // Añadir puntos de interés
-    //   if (points && points.length > 0) {
-    //     points.forEach(point => {
-    //       const isPlaza = point.title.toLowerCase().includes('plaza');
-    //       L.marker(point.position, {
-    //         icon: isPlaza ? createPlazaIcon(point.title) : createIglesiaIcon(point.title)
-    //       }).addTo(map).bindPopup(`
-    //         <strong>${point.title}</strong>
-    //         ${point.description ? `<br>${point.description}` : ''}
-    //       `);
-    //     });
-    //   }
-      
-      // Inicializar visualización en la posición inicial
-      updatePosition(0);
-      updateCurrentStreet(0);
-      
-    } catch (error) {
-      console.error("Error al inicializar el mapa:", error);
-    }
-
-	// Exponer funciones y variables necesarias globalmente para el BottomSheet
-	window.handleLocationRequest = handleLocationRequest;
-	window.map = map;
-	window.MARTOS_CENTER = MARTOS_CENTER;
-	window.procesionId = procesionId;
-	window.hasCenteredMap = hasCenteredMap;
-	window.animatedMarker = animatedMarker;
-  }
-
-  async function addLastLocationMarker(estadoProcesion, locationUrl) {
-  try {
-    const response = await fetch(locationUrl);
-    const data = await response.json();
-    const { lat, lon } = data;
-
-    // Obtener las partes de la ruta
-    const ida = route.ida ?? [];
-    const vuelta = route.vuelta ?? [];
-
-    if (ida.length === 0 || vuelta.length === 0) {
-      console.warn("No se encontró información de ruta ida/vuelta");
-      return;
-    }
-
-    let completedPath = [];
-    
-    if (estadoProcesion === "Finalizada") {
-      // Para "Finalizada", se colorea toda la ruta de ida
-      completedPath = ida.slice();
-      
-      // Y también se proyecta la posición actual en la ruta de vuelta
-      const tramoVuelta = vuelta;
-      let closestSegmentIndex = 0;
-      let minDistance = Infinity;
-      let tClosest = 0;
-      
-      for (let i = 0; i < tramoVuelta.length - 1; i++) {
-        const p1 = tramoVuelta[i];
-        const p2 = tramoVuelta[i + 1];
-        const dx = p2[0] - p1[0];
-        const dy = p2[1] - p1[1];
-        let t = ((lat - p1[0]) * dx + (lon - p1[1]) * dy) / (dx * dx + dy * dy);
-        t = Math.max(0, Math.min(1, t));
-        const projLat = p1[0] + t * dx;
-        const projLon = p1[1] + t * dy;
-        const distance = Math.sqrt((lat - projLat) ** 2 + (lon - projLon) ** 2);
-        if (distance < minDistance) {
-          minDistance = distance;
-          closestSegmentIndex = i;
-          tClosest = t;
-        }
-      }
-      
-      const p1 = tramoVuelta[closestSegmentIndex];
-      const p2 = tramoVuelta[closestSegmentIndex + 1];
-      const correctedLat = p1[0] + tClosest * (p2[0] - p1[0]);
-      const correctedLon = p1[1] + tClosest * (p2[1] - p1[1]);
-      
-      // Agregar la parte completada de la vuelta hasta el punto proyectado
-      const vueltaCompleted = tramoVuelta.slice(0, closestSegmentIndex + 1).concat([[correctedLat, correctedLon]]);
-      completedPath = completedPath.concat(vueltaCompleted);
-      
-      // Mover el marcador animado a la posición proyectada (opcional)
-      if (animatedMarker) {
-        animatedMarker.setLatLng([correctedLat, correctedLon]);
-      }
-    } else {
-      // Para otros estados (ej.: "Directo"), se trabaja sólo con la parte de ida
-      const tramoIda = ida;
-      let closestSegmentIndex = 0;
-      let minDistance = Infinity;
-      let tClosest = 0;
-      
-      for (let i = 0; i < tramoIda.length - 1; i++) {
-        const p1 = tramoIda[i];
-        const p2 = tramoIda[i + 1];
-        const dx = p2[0] - p1[0];
-        const dy = p2[1] - p1[1];
-        let t = ((lat - p1[0]) * dx + (lon - p1[1]) * dy) / (dx * dx + dy * dy);
-        t = Math.max(0, Math.min(1, t));
-        const projLat = p1[0] + t * dx;
-        const projLon = p1[1] + t * dy;
-        const distance = Math.sqrt((lat - projLat) ** 2 + (lon - projLon) ** 2);
-        if (distance < minDistance) {
-          minDistance = distance;
-          closestSegmentIndex = i;
-          tClosest = t;
-        }
-      }
-      
-      const p1 = tramoIda[closestSegmentIndex];
-      const p2 = tramoIda[closestSegmentIndex + 1];
-      const correctedLat = p1[0] + tClosest * (p2[0] - p1[0]);
-      const correctedLon = p1[1] + tClosest * (p2[1] - p1[1]);
-      
-      // Para "Directo", la ruta completada es sólo la parte de la ida hasta el punto proyectado
-      completedPath = tramoIda.slice(0, closestSegmentIndex + 1).concat([[correctedLat, correctedLon]]);
-      
-      // Mover el marcador animado a la posición proyectada (opcional)
-      if (animatedMarker) {
-        animatedMarker.setLatLng([correctedLat, correctedLon]);
-      }
-    }
-    
-    // Centramos el mapa (una sola vez)
-    if (!hasCenteredMap && map) {
-      map.setView([lat, lon], 19);
-      hasCenteredMap = true;
-    }
-    
-    // Mostrar o actualizar el marcador real del GPS
-    if (!gpsRealMarker) {
-      gpsRealMarker = L.marker([lat, lon], {
-        icon: L.divIcon({
-          className: 'gps-real-marker',
-          html: `<div style="width: 14px; height: 14px; background-color: gray; border: 2px solid white; border-radius: 50%; box-shadow: 0 0 6px rgba(0,0,0,0.8);"></div>`,
-          iconSize: [20, 20],
-          iconAnchor: [10, 10]
-        })
-      }).addTo(map);
-    } else {
-      gpsRealMarker.setLatLng([lat, lon]);
-    }
-    
-    // Actualizar la capa de la ruta completada
-    if (completedRouteLayer) {
-      completedRouteLayer.setLatLngs(completedPath);
-    }
-    
-    isPaused = true;
-    setTimeout(() => addLastLocationMarker(estadoProcesion, locationUrl), 5000);
-  } catch (err) {
-    console.error("Error obteniendo la última ubicación:", err);
-    setTimeout(() => addLastLocationMarker(estadoProcesion, locationUrl), 30000);
-  }
-}
-
-
-  function toggleAnimation() {
-    const playIcon = document.getElementById('play-icon');
-    const pauseIcon = document.getElementById('pause-icon');
-    isPaused = !isPaused;
-    if (isPaused) {
-      playIcon.classList.remove('hidden');
-      pauseIcon.classList.add('hidden');
-      cancelAnimationFrame(animationId);
-    } else {
-      playIcon.classList.add('hidden');
-      pauseIcon.classList.remove('hidden');
-      if (currentPosition >= fullRoute.length - 1) {
-        currentPosition = 0;
-        completedRouteLayer.setLatLngs([]);
-      }
-      animateRoute();
-    }
-  }
-  
-  function animateRoute() {
-    if (isPaused) return;
-    currentPosition += animationSpeed;
-    if (currentPosition >= fullRoute.length - 1) {
-      currentPosition = fullRoute.length - 1;
-      isPaused = true;
-      document.getElementById('play-icon').classList.remove('hidden');
-      document.getElementById('pause-icon').classList.add('hidden');
-    } else {
-      animationId = requestAnimationFrame(animateRoute);
-    }
-    updatePosition(currentPosition);
-    updateCurrentStreet(currentPosition);
-  }
-  
-  function updatePosition(position) {
-    if (!map || !fullRoute || fullRoute.length < 2 || !completedRouteLayer || !animatedMarker) return;
-    const currentIndex = Math.floor(position);
-    const nextIndex = Math.min(currentIndex + 1, fullRoute.length - 1);
-    const fraction = position - currentIndex;
-    const lat = fullRoute[currentIndex][0] + fraction * (fullRoute[nextIndex][0] - fullRoute[currentIndex][0]);
-    const lng = fullRoute[currentIndex][1] + fraction * (fullRoute[nextIndex][1] - fullRoute[currentIndex][1]);
-    animatedMarker.setLatLng([lat, lng]);
-    const completedPath = fullRoute.slice(0, currentIndex + 1).concat([[lat, lng]]);
-    completedRouteLayer.setLatLngs(completedPath);
-    map.panTo([lat, lng]);
-  }
-  
-function updateCurrentStreet(position) {
-    const currentIndex = Math.floor(position);
-    let streetName = "Recorrido procesional";
-    // Lógica para actualizar el nombre de la calle, si se desea.
-    // document.getElementById('current-street').textContent = streetName;
-	// Actualizar el elemento en el bottom sheet
-	const streetElement = document.getElementById('current-street');
-	if (streetElement) {
-		streetElement.textContent = streetName;
-  	}
-	// Actualizar la barra de progreso
-	const progressBar = document.getElementById('progress-bar');
-	const progressPercent = document.getElementById('progress-percent');
-	if (progressBar && progressPercent && fullRoute.length > 1) {
-		const percent = Math.round((currentIndex / (fullRoute.length - 1)) * 100);
-		progressBar.style.width = `${percent}%`;
-		progressPercent.textContent = `${percent}%`;
-	}
-
-	// Actualizar puntos de interés cercanos
-	// updateNearbyPoints(position);
-}
-
-// Nueva función para actualizar puntos de interés
-function updateNearbyPoints(position) {
-  if (!points || points.length === 0) return;
-  
-  const currentPos = fullRoute[Math.floor(position)];
-  const poiListElement = document.getElementById('poi-list');
-  
-  if (poiListElement && currentPos) {
-    // Limpiar lista anterior
-    poiListElement.innerHTML = '';
-    
-    // Ordenar puntos por cercanía
-    const sortedPoints = [...points].sort((a, b) => {
-      const distA = getDistance(currentPos, a.position);
-      const distB = getDistance(currentPos, b.position);
-      return distA - distB;
-    });
-    
-    // Mostrar los 3 más cercanos
-    sortedPoints.slice(0, 3).forEach(point => {
-      const dist = getDistance(currentPos, point.position);
-      const distText = dist < 1 ? `${Math.round(dist * 1000)} m` : `${dist.toFixed(1)} km`;
-      
-      const isChurch = point.title.toLowerCase().includes('iglesia') || 
-                     point.title.toLowerCase().includes('parroquia');
-      
-      const icon = isChurch ? '⛪' : '🏛️';
-      
-      const pointElement = document.createElement('div');
-      pointElement.className = 'bg-white p-2 rounded shadow-sm border border-gray-200 flex items-center transition-all hover:bg-gray-50';
-      pointElement.innerHTML = `
-        <div class="bg-blue-100 p-2 rounded mr-3">${icon}</div>
-        <div>
-          <p class="font-medium">${point.title}</p>
-          <p class="text-xs text-gray-600">A ${distText}</p>
-        </div>
-      `;
-      
-      poiListElement.appendChild(pointElement);
-    });
-  }
-}
-
-// Función auxiliar para calcular distancia
-function getDistance(point1, point2) {
-  // Fórmula haversine para distancias en la tierra
-  const R = 6371; // Radio de la tierra en km
-  const dLat = deg2rad(point2[0] - point1[0]);
-  const dLon = deg2rad(point2[1] - point1[1]);
-  const a = 
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(deg2rad(point1[0])) * Math.cos(deg2rad(point2[0])) * 
-    Math.sin(dLon/2) * Math.sin(dLon/2); 
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-  return R * c; // Distancia en km
-}
-
-function deg2rad(deg) {
-  return deg * (Math.PI/180);
-}
-  
-  function createCustomIcon(color, title) {
-    return L.divIcon({
-      className: 'custom-marker',
-      html: `<div style="background-color: ${color}; width: 14px; height: 14px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.8);"></div>`,
-      iconSize: [20, 20],
-      iconAnchor: [10, 10],
-      popupAnchor: [0, -10]
-    });
-  }
-  
-  function createIglesiaIcon(title) {
-    const imageUrl = '/assets/icons/iglesia.png';
-    return L.divIcon({
-      className: 'plaza-marker',
-      html: `
-        <div class="plaza-container">
-          <img src="${imageUrl}" alt="${title}" style="width: 40px; height:32px;"/>
-          <div class="marker-title"></div>
-        </div>
-      `
-    });
-  }
-  
-  function createPlazaIcon(title) {
-    const imageUrl = '/assets/icons/fuente-nueva.png';
-    return L.divIcon({
-      className: 'plaza-marker',
-      html: `
-        <div class="plaza-container">
-          <img src="${imageUrl}" alt="${title}" style="width: 40px; height:32px;"/>
-          <div class="marker-title"></div>
-        </div>
-      `
-    });
-  }
-  
-  let isGpsRequestInProgress = false;
-  function handleLocationRequest() {
-    if (!map || isGpsRequestInProgress) return;
-    if (!isLocationActive) {
-      if ("geolocation" in navigator) {
-        isGpsRequestInProgress = true;
-        document.getElementById('location-btn').classList.add('active-btn');
-        navigator.geolocation.getCurrentPosition(
-          function(position) {
-            const userLat = position.coords.latitude;
-            const userLng = position.coords.longitude;
-            isGpsRequestInProgress = false;
-            if (!userLocationMarker) {
-              const userIcon = L.divIcon({
-                className: 'user-location-marker',
-                html: `
-                  <div class="user-dot">
-                    <div class="user-pulse"></div>
-                  </div>
-                `,
-                iconSize: [24, 24],
-                iconAnchor: [12, 12]
-              });
-              userLocationMarker = L.marker([userLat, userLng], {
-                icon: userIcon,
-                zIndexOffset: 2000
-              }).addTo(map);
-              userLocationMarker.bindPopup('¡Estás aquí!').openPopup();
-            } else {
-              userLocationMarker.setLatLng([userLat, userLng]);
-              userLocationMarker.openPopup();
+          if (estado === 'Directo' || estado === 'Finalizada') {
+            let locationUrl = "https://owntracks-api.semanasantatracker.workers.dev/last-location";
+            if (gps !== "gps-2") {
+              locationUrl = "https://owntracks-api.semanasantatracker.workers.dev/last-location-2";
             }
-            map.flyTo([userLat, userLng], 17);
-            isLocationActive = true;
-          },
-          function(error) {
-            let errorMsg;
-            isGpsRequestInProgress = false;
-            switch(error.code) {
-              case error.PERMISSION_DENIED:
-                errorMsg = "Necesitas permitir el acceso a tu ubicación para usar esta función.";
-                break;
-              case error.POSITION_UNAVAILABLE:
-                errorMsg = "No se puede determinar tu ubicación actual.";
-                break;
-              case error.TIMEOUT:
-                errorMsg = "Se agotó el tiempo para obtener tu ubicación.";
-                break;
-              default:
-                errorMsg = "Ocurrió un error al intentar obtener tu ubicación.";
-            }
-            alert(errorMsg);
-            document.getElementById('location-btn').classList.remove('active-btn');
-          },
-          {
-            enableHighAccuracy: true,
-            timeout: 5000,
-            maximumAge: 0
+
+            addLastLocationMarker(estado, locationUrl);
+          } else {
+            console.log("Procesión no está en la calle actualmente.");
           }
-        );
-      } else {
-        alert("Tu navegador no soporta geolocalización");
-        isGpsRequestInProgress = false;
+        } else {
+          console.warn("No se encontró información de estado para la procesión.");
+        }
+      } catch (error) {
+        console.error("Error al consultar estado de procesión:", error.message || error);
       }
-    } else {
-      if (userLocationMarker) {
-        userLocationMarker.closePopup();
-        map.removeLayer(userLocationMarker);
-        userLocationMarker = null;
-        isGpsRequestInProgress = false;
-      }
-      document.getElementById('location-btn').classList.remove('active-btn');
-      isLocationActive = false;
     }
-  }
-  
-</script>
 
-<style>
-  /* Estilos (igual que en tu código original) */
-  :global(.street-labels-layer) {
-    filter: brightness(0.8) contrast(1.8) saturate(1.2) !important;
-    opacity: 1 !important;
-    mix-blend-mode: normal;
-  }
-  :global(.leaflet-tile-loaded) {
-    font-family: 'Roboto', 'Arial', sans-serif;
-    font-weight: 900;
-    font-size: 1.1em;
-    -webkit-text-stroke: 0.2px black;
-  }
-  :global(.leaflet-tile-pane text),
-  :global(.leaflet-tile-container path) {
-    fill: #000000 !important;
-    stroke: none !important;
-    paint-order: normal;
-    text-shadow: 0px 0px 2px rgba(255,255,255,0.5);
-  }
-  :global(.leaflet-tile-container img) {
-    filter: brightness(1.05) !important;
-  }
-  :global(body), :global(html) {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    overflow: hidden;
-  }
-  :global(.leaflet-popup-content-wrapper) {
-    border-radius: 8px;
-  }
-  :global(.leaflet-popup-content) {
-    margin: 12px;
-  }
-  :global(.paso-container) {
-    position: relative;
-    animation: paso-motion 1.5s infinite alternate ease-in-out;
-    z-index: 1000;
-    transform: translateY(-20px);
-  }
-  :global(.paso-shadow) {
-    position: absolute;
-    bottom: -4px;
-    left: 25%;
-    width: 50%;
-    height: 6px;
-    background: rgba(0,0,0,0.3);
-    border-radius: 50%;
-    z-index: -1;
-  }
-  @keyframes paso-motion {
-    0% { transform: translate(-2px, -20px) rotate(-1deg); }
-    50% { transform: translate(0, -21px); }
-    100% { transform: translate(2px, -20px) rotate(1deg); }
-  }
-  :global(.light-pulse) {
-    animation: light-pulse 2s infinite alternate;
-  }
-  @keyframes light-pulse {
-    0% { opacity: 0.4; r: 1.8; }
-    50% { opacity: 0.8; r: 2.2; }
-    100% { opacity: 1; r: 2.5; }
-  }
-  :global(.ambient-light) {
-    animation: glow 3s infinite alternate ease-in-out;
-  }
-  @keyframes glow {
-    0% { opacity: 0.2; r: 2; }
-    100% { opacity: 0.4; r: 2.5; }
-  }
-  :global(.route-glow) {
-    filter: drop-shadow(0 0 3px gold);
-  }
-  :global(.iglesia-container) {
-    position: relative;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
-    transition: transform 0.2s ease;
-  }
-  :global(.iglesia-container:hover) {
-    transform: translateY(-3px);
-    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.7));
-  }
-  :global(.marker-title) {
-    position: absolute;
-    bottom: -22px;
-    left: 50%;
-    transform: translateX(-50%);
-    white-space: nowrap;
-    background-color: rgba(0,0,0,0.7);
-    color: white;
-    font-size: 11px;
-    padding: 3px 6px;
-    border-radius: 3px;
-    visibility: hidden;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-  }
-  :global(.iglesia-container:hover .marker-title),
-  :global(.plaza-container:hover .marker-title) {
-    visibility: visible;
-  }
-  :global(.leaflet-control-zoom) {
-    margin-bottom: 140px !important;
-  }
-  @media (max-width: 640px) {
-    :global(.leaflet-control-zoom) {
-      display: none !important;
+    // Variables globales del mapa
+    let map;
+    let routeLayer;
+    let completedRouteLayer;
+    let animatedMarker;
+    let gpsRealMarker = null;
+    let isPaused = true;
+    let animationId = null;
+    let animationSpeed = 0.05;
+    let currentPosition = 0;
+    let userLocationMarker = null;
+    let isLocationActive = false;
+    let hasCenteredMap = false;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      hasCenteredMap = false;
+    });
+
+    window.onload = () => {
+      initMap();
+      checkEstadoProcesion();
+    };
+
+    function initMap() {
+      if (!fullRoute || fullRoute.length < 2) {
+        console.error("No se proporcionó una ruta válida");
+        return;
+      }
+
+      try {
+        // Crear el mapa
+        map = L.map('map', {
+          center: MARTOS_CENTER,
+          zoom: 16,
+          minZoom: 14,
+          maxZoom: 19,
+          attributionControl: false
+        });
+
+        // Crear un pane personalizado para las etiquetas (para que estén por encima del trono y antPath)
+        map.createPane('labelsPane');
+        map.getPane('labelsPane').style.zIndex = 650;
+
+        // Capas base
+        const voyager = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+          attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
+          subdomains: 'abcd',
+          maxZoom: 19
+        });
+
+        const satelite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+          attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+          maxZoom: 19
+        });
+
+        // Capa de etiquetas separadas (se añaden encima del mapa base)
+        const labelsOnly = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/light_only_labels/{z}/{x}/{y}{r}.png', {
+          subdomains: 'abcd',
+          maxZoom: 19,
+          opacity: 1.0,
+          pane: 'labelsPane'
+        });
+
+        // Añadir por defecto
+        voyager.addTo(map);
+        labelsOnly.addTo(map);
+
+        // Control de capas (comentado)
+        /*
+        L.control.layers({
+          "Voyager (Claro)": voyager,
+          "Dark Matter (Oscuro)": darkMatter
+        }, {}, {
+          position: 'bottomleft'
+        }).addTo(map);
+        */
+
+        // Control personalizado con preview del mapa alternativo
+        const MapPreviewToggle = L.Control.extend({
+          options: {
+            position: 'topright'
+          },
+
+          onAdd: function(map) {
+            const container = L.DomUtil.create('div', 'map-style-preview leaflet-bar leaflet-control');
+            container.style.width = '60px';
+            container.style.height = '60px';
+            container.style.padding = '2px';
+            container.style.backgroundColor = 'white';
+            container.style.cursor = 'pointer';
+            container.style.borderRadius = '4px';
+            container.style.boxShadow = '0 2px 5px rgba(0,0,0,0.3)';
+            container.style.overflow = 'hidden';
+            container.title = 'Cambiar estilo de mapa';
+
+            const previewDiv = L.DomUtil.create('div', 'preview-map', container);
+            previewDiv.style.width = '100%';
+            previewDiv.style.height = '100%';
+            previewDiv.style.borderRadius = '2px';
+            previewDiv.style.backgroundSize = 'cover';
+            previewDiv.style.backgroundPosition = 'center';
+
+            let isDarkMode = false;
+            
+            function updatePreview() {
+              if (isDarkMode) {
+                previewDiv.style.backgroundImage = "url('https://a.basemaps.cartocdn.com/rastertiles/voyager/4/8/5.png')";
+                container.title = "Cambiar a mapa claro";
+              } else {
+                previewDiv.style.backgroundImage = "url('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}')";
+                container.title = "Cambiar a vista satélite";
+              }
+            }
+            
+            updatePreview();
+            
+            const switchLabel = L.DomUtil.create('div', 'switch-label', container);
+            switchLabel.style.position = 'absolute';
+            switchLabel.style.bottom = '2px';
+            switchLabel.style.right = '2px';
+            switchLabel.style.backgroundColor = 'rgba(0,0,0,0.6)';
+            switchLabel.style.color = 'white';
+            switchLabel.style.padding = '2px 4px';
+            switchLabel.style.borderRadius = '2px';
+            switchLabel.style.fontSize = '8px';
+            switchLabel.style.fontWeight = 'bold';
+            switchLabel.textContent = '';
+            
+            container.style.border = '2px solid #3388ff';
+            
+            L.DomEvent.on(container, 'click', function(e) {
+              L.DomEvent.stopPropagation(e);
+              
+              if (isDarkMode) {
+                map.removeLayer(satelite);
+                voyager.addTo(map);
+              } else {
+                map.removeLayer(voyager);
+                satelite.addTo(map);
+              }
+              
+              isDarkMode = !isDarkMode;
+              updatePreview();
+            });
+            
+            L.DomEvent.disableClickPropagation(container);
+
+            container.addEventListener('mouseover', function() {
+              container.style.transform = 'scale(1.15)';
+              switchLabel.style.backgroundColor = 'rgba(51, 136, 255, 0.8)';
+            });
+
+            container.addEventListener('mouseout', function() {
+              container.style.transform = 'scale(1)';
+              switchLabel.style.backgroundColor = 'rgba(0,0,0,0.6)';
+            });
+
+            container.style.transition = 'all 0.2s ease-in-out';
+            switchLabel.style.transition = 'all 0.2s ease-in-out';
+            
+            return container;
+          }
+        });
+
+        map.addControl(new MapPreviewToggle());
+        
+        // Capa para la ruta con efecto "ant path"
+        routeLayer = L.polyline.antPath(fullRoute, {
+          color: '#3388ff',
+          weight: 8,
+          opacity: 0.8,
+          delay: 2500,
+          dashArray: [15, 25],
+          pulseColor: '#FFFFFF',
+          paused: false,
+          hardwareAccelerated: true,
+          lineCap: 'round',
+          lineJoin: 'round'
+        }).addTo(map);
+        
+        // Capa para la parte recorrida (dorada)
+        completedRouteLayer = L.polyline([], {
+          color: 'gold',
+          weight: 8,
+          opacity: 0.9,
+          className: 'route-glow',
+          lineCap: 'round',
+          lineJoin: 'round'
+        }).addTo(map);
+        
+        // Icono para el paso procesional
+        const pasoColoridoSVG = `
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120" width="60" height="72">
+            <rect x="15" y="90" width="70" height="12" fill="#B8860B" stroke="#8B4513" stroke-width="1"/>
+            <rect x="20" y="85" width="60" height="5" fill="#DAA520" stroke="#B8860B" stroke-width="0.5"/>
+            <rect x="20" y="90" width="5" height="12" fill="#8B4513" stroke="#5D2906" stroke-width="0.5" rx="1"/>
+            <rect x="75" y="90" width="5" height="12" fill="#8B4513" stroke="#5D2906" stroke-width="0.5" rx="1"/>
+            <rect x="22" y="70" width="56" height="15" fill="#800020" stroke="#4B0010" stroke-width="1"/>
+            <rect x="20" y="70" width="60" height="2" fill="#DAA520" stroke="#B8860B" stroke-width="0.5"/>
+            <rect x="20" y="83" width="60" height="2" fill="#DAA520" stroke="#B8860B" stroke-width="0.5"/>
+            <rect x="48" y="20" width="4" height="50" fill="#8B4513" stroke="#5D2906" stroke-width="1"/>
+            <rect x="35" y="30" width="30" height="4" fill="#8B4513" stroke="#5D2906" stroke-width="1"/>
+            <path d="M50,30 Q48,35 45,40 L50,40 L55,40 Q52,35 50,30" fill="#FFE4C4" stroke="#8B4513" stroke-width="0.5"/>
+            <path d="M45,40 L41,55 M55,40 L59,55" stroke="#FFE4C4" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="50" cy="27" r="3" fill="#FFE4C4" stroke="#8B4513" stroke-width="0.5"/>
+            <path d="M47,25 Q50,22 53,25" stroke="#8B4513" stroke-width="0.5" fill="none"/>
+          </svg>
+        `;
+        const tronoIcon = L.divIcon({
+          className: 'custom-paso-marker',
+          html: `
+            <div class="paso-container" aria-label="Paso procesional avanzando por el recorrido">
+              ${pasoColoridoSVG}
+              <div class="paso-shadow" role="presentation"></div>
+            </div>
+          `,
+          iconSize: [60, 72],
+          iconAnchor: [30, 45],
+          zIndexOffset: 1000
+        });
+        
+        animatedMarker = L.marker(fullRoute[0], {
+          icon: tronoIcon,
+          zIndexOffset: 1000
+        }).addTo(map);
+        
+        // Marcadores de inicio y fin
+        L.marker(fullRoute[0], {
+          icon: createCustomIcon('green', 'Inicio')
+        }).addTo(map).bindPopup('<strong>Punto de Inicio</strong><p>Comienza el recorrido procesional</p>');
+
+        L.marker(fullRoute[fullRoute.length - 1], {
+          icon: createCustomIcon('red', 'Fin')
+        }).addTo(map).bindPopup('<strong>Punto Final</strong>');
+
+        // Añadir puntos de interés
+        if (points && points.length > 0) {
+          points.forEach(point => {
+            const isPlaza = point.title.toLowerCase().includes('plaza');
+            L.marker(point.position, {
+              icon: isPlaza ? createPlazaIcon(point.title) : createIglesiaIcon(point.title)
+            }).addTo(map).bindPopup(`
+              <strong>${point.title}</strong>
+              ${point.description ? `<br>${point.description}` : ''}
+            `);
+          });
+        }
+        
+        // Inicializar visualización en la posición inicial
+        updatePosition(0);
+        updateCurrentStreet(0);
+        
+      } catch (error) {
+        console.error("Error al inicializar el mapa:", error);
+      }
+
+      // Exponer funciones y variables globalmente para el BottomSheet
+      window.handleLocationRequest = handleLocationRequest;
+      window.map = map;
+      window.MARTOS_CENTER = MARTOS_CENTER;
+      window.procesionId = procesionId;
+      window.hasCenteredMap = hasCenteredMap;
+      window.animatedMarker = animatedMarker;
     }
-    :global(.leaflet-control-attribution) {
-      display: none !important;
+
+    // Función auxiliar para convertir de km a metros
+    function getDistanceMeters(p1, p2) {
+      return getDistance(p1, p2) * 1000;
     }
-  }
-  :global(.user-location-marker) {
-    background: transparent;
-    border: none;
-  }
-  :global(.user-dot) {
-    position: relative;
-    width: 24px;
-    height: 24px;
-  }
-  :global(.user-dot::before) {
-    content: '';
-    position: absolute;
-    top: 8px;
-    left: 8px;
-    width: 8px;
-    height: 8px;
-    background-color: #3b82f6;
-    border-radius: 50%;
-    box-shadow: 0 0 0 2px white;
-    z-index: 10;
-  }
-  :global(.user-pulse) {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 24px;
-    height: 24px;
-    background-color: rgba(59, 130, 246, 0.4);
-    border-radius: 50%;
-    opacity: 1;
-    animation: pulse 2s infinite ease-out;
-  }
-  @keyframes pulse {
-    0% { transform: scale(0.5); opacity: 1; }
-    100% { transform: scale(2); opacity: 0; }
-  }
-  :global(.plaza-container) {
-    position: relative;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
-    transition: transform 0.2s ease;
-  }
-  :global(.plaza-container:hover) {
-    transform: translateY(-3px);
-    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.7));
-  }
-  :global(.water-drop) {
-    animation: water-pulse 2s infinite alternate ease-in-out;
-  }
-  @keyframes water-pulse {
-    0% { opacity: 0.4; r: 0.8; }
-    100% { opacity: 0.9; r: 1.5; }
-  }
-  .title-container {
-    position: absolute;
-    z-index: 20;
-    padding: 0.75rem 1rem;
-    background: linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.8));
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-    top: 1rem;
-    right: 1rem;
-    max-width: 80%;
-    backdrop-filter: blur(2px);
-    border-left: 3px solid black;
-    transition: all 0.3s ease;
-  }
-  .title-text {
-    font-size: 1.25rem;
-    font-weight: bold;
-    color: white;
-    margin: 0;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .bottom-sheet-container {
-    position: absolute;
-    z-index: 50;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background-color: rgba(17, 24, 39, 0.85);
-    backdrop-filter: blur(10px);
-    padding: 1rem 1.5rem 1.5rem;
-    border-top-left-radius: 16px;
-    border-top-right-radius: 16px;
-    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.3);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.25rem;
-    transition: transform 0.3s ease-in-out, height 0.3s ease-in-out;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-  }
-  .bottom-sheet-container.expanded {
-    overflow-y: auto;
-    height: 80vh !important;
-  }
-  .drag-handle {
-    width: 100%;
-    padding-bottom: 0.5rem;
-    display: flex;
-    justify-content: center;
-    cursor: default;
-    pointer-events: auto !important;
-  }
-  .drag-indicator {
-    width: 40px;
-    height: 5px;
-    background-color: rgba(255, 255, 255, 0.5);
-    border-radius: 2.5px;
-    pointer-events: none;
-  }
-  .bottom-sheet-container.peeking .drag-handle {
-    padding-top: 8px;
-    padding-bottom: 12px;
-  }
-  @media (min-width: 769px) {
-    .bottom-sheet-container {
-      max-height: unset;
-      height: auto;
-      border-radius: 10px !important;
-      max-width: 500px;
-      margin: 0 auto;
-      left: 0;
-      right: 0;
-      transform: none;
-      background-color: rgba(17, 24, 39, 0.8);
-      bottom: 1rem;
-      width: 90%;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+
+    // Función auxiliar para calcular el punto avanzado en el tramo
+    function getAdvancedPoint(routeSegment, currentSegmentIndex, t, extraMetersRemaining) {
+      const p1 = routeSegment[currentSegmentIndex];
+      const p2 = routeSegment[currentSegmentIndex + 1];
+      const currentPoint = [
+        p1[0] + t * (p2[0] - p1[0]),
+        p1[1] + t * (p2[1] - p1[1])
+      ];
+      let remaining = getDistanceMeters(currentPoint, p2);
+      if (remaining >= extraMetersRemaining) {
+        const frac = extraMetersRemaining / remaining;
+        const advancedLat = currentPoint[0] + frac * (p2[0] - currentPoint[0]);
+        const advancedLon = currentPoint[1] + frac * (p2[1] - currentPoint[1]);
+        return {
+          advancedPoint: [advancedLat, advancedLon],
+          newSegmentIndex: currentSegmentIndex,
+          newT: t + (1 - t) * frac
+        };
+      }
+      extraMetersRemaining -= remaining;
+      let nextIndex = currentSegmentIndex + 1;
+      while (nextIndex < routeSegment.length - 1 && extraMetersRemaining > 0) {
+        const segStart = routeSegment[nextIndex];
+        const segEnd = routeSegment[nextIndex + 1];
+        const segDistance = getDistanceMeters(segStart, segEnd);
+        if (segDistance >= extraMetersRemaining) {
+          const frac = extraMetersRemaining / segDistance;
+          const advancedLat = segStart[0] + frac * (segEnd[0] - segStart[0]);
+          const advancedLon = segStart[1] + frac * (segEnd[1] - segStart[1]);
+          return {
+            advancedPoint: [advancedLat, advancedLon],
+            newSegmentIndex: nextIndex,
+            newT: frac
+          };
+        } else {
+          extraMetersRemaining -= segDistance;
+          nextIndex++;
+        }
+      }
+      return {
+        advancedPoint: routeSegment[routeSegment.length - 1],
+        newSegmentIndex: routeSegment.length - 2,
+        newT: 1
+      };
     }
-    .drag-handle {
-      display: none;
+
+    async function addLastLocationMarker(estadoProcesion, locationUrl) {
+      try {
+        const response = await fetch(locationUrl);
+        const data = await response.json();
+        //const { lat, lon } = data;
+        let rawLat = data.lat;
+        let rawLon = data.lon;
+
+        // 2) Suaviza con Kalman
+        const smoothLat = kfLat.filter(rawLat);
+        const smoothLon = kfLon.filter(rawLon);
+
+        let lat = smoothLat;
+        let lon = smoothLon;
+
+        const ida = route.ida ?? [];
+        const vuelta = route.vuelta ?? [];
+
+        if (ida.length === 0 || vuelta.length === 0) {
+          console.warn("No se encontró información de ruta ida/vuelta");
+          return;
+        }
+
+        let completedPath = [];
+        
+        if (estadoProcesion === "Finalizada") {
+          // En estado "Finalizada" se colorea toda la ruta de ida y se proyecta en la vuelta
+          completedPath = ida.slice();
+          const tramoVuelta = vuelta;
+          let closestSegmentIndex = 0;
+          let minDistance = Infinity;
+          let tClosest = 0;
+          
+          for (let i = 0; i < tramoVuelta.length - 1; i++) {
+            const p1 = tramoVuelta[i];
+            const p2 = tramoVuelta[i + 1];
+            const dx = p2[0] - p1[0];
+            const dy = p2[1] - p1[1];
+            let t = ((lat - p1[0]) * dx + (lon - p1[1]) * dy) / (dx * dx + dy * dy);
+            t = Math.max(0, Math.min(1, t));
+            const projLat = p1[0] + t * dx;
+            const projLon = p1[1] + t * dy;
+            const distance = Math.sqrt((lat - projLat) ** 2 + (lon - projLon) ** 2);
+            if (distance < minDistance) {
+              minDistance = distance;
+              closestSegmentIndex = i;
+              tClosest = t;
+            }
+          }
+          
+          const p1 = tramoVuelta[closestSegmentIndex];
+          const p2 = tramoVuelta[closestSegmentIndex + 1];
+          let correctedLat = p1[0] + tClosest * (p2[0] - p1[0]);
+          let correctedLon = p1[1] + tClosest * (p2[1] - p1[1]);
+          
+          if (modo_virgen) {
+            // Con modo_virgen se calcula el punto avanzado
+            const result = getAdvancedPoint(tramoVuelta, closestSegmentIndex, tClosest, extraMeters);
+            correctedLat = result.advancedPoint[0];
+            correctedLon = result.advancedPoint[1];
+            let vueltaAdvanced = tramoVuelta.slice(0, result.newSegmentIndex + 1);
+            vueltaAdvanced.push(result.advancedPoint);
+            completedPath = ida.slice().concat(vueltaAdvanced);
+          } else {
+            const vueltaCompleted = tramoVuelta.slice(0, closestSegmentIndex + 1).concat([[lat, lon]]);
+            completedPath = ida.slice().concat(vueltaCompleted);
+          }
+          
+          if (animatedMarker) {
+            animatedMarker.setLatLng([lat, lon]);
+          }
+          window.projectedCoordinate = [lat, lon];
+    
+        } else {
+          // En estado "Directo" se trabaja sólo con la ruta de ida
+          const tramoIda = ida;
+          let closestSegmentIndex = 0;
+          let minDistance = Infinity;
+          let tClosest = 0;
+          
+          for (let i = 0; i < tramoIda.length - 1; i++) {
+            const p1 = tramoIda[i];
+            const p2 = tramoIda[i + 1];
+            const dx = p2[0] - p1[0];
+            const dy = p2[1] - p1[1];
+            let t = ((lat - p1[0]) * dx + (lon - p1[1]) * dy) / (dx * dx + dy * dy);
+            t = Math.max(0, Math.min(1, t));
+            const projLat = p1[0] + t * dx;
+            const projLon = p1[1] + t * dy;
+            const distance = Math.sqrt((lat - projLat) ** 2 + (lon - projLon) ** 2);
+            if (distance < minDistance) {
+              minDistance = distance;
+              closestSegmentIndex = i;
+              tClosest = t;
+            }
+          }
+          
+          const p1 = tramoIda[closestSegmentIndex];
+          const p2 = tramoIda[closestSegmentIndex + 1];
+          let correctedLat = p1[0] + tClosest * (p2[0] - p1[0]);
+          let correctedLon = p1[1] + tClosest * (p2[1] - p1[1]);
+          
+          if (modo_virgen) {
+            const result = getAdvancedPoint(tramoIda, closestSegmentIndex, tClosest, extraMeters);
+            correctedLat = result.advancedPoint[0];
+            correctedLon = result.advancedPoint[1];
+            let idaAdvanced = tramoIda.slice(0, result.newSegmentIndex + 1);
+            idaAdvanced.push(result.advancedPoint);
+            completedPath = idaAdvanced;
+          } else {
+            c//ompletedPath = tramoIda.slice(0, closestSegmentIndex + 1).concat([[correctedLat, correctedLon]]);
+            completedPath = tramoIda.slice(0, closestSegmentIndex + 1).concat([[lat, lon]]);
+          }
+          
+          if (animatedMarker) {
+            //animatedMarker.setLatLng([correctedLat, correctedLon]);
+            animatedMarker.setLatLng([lat, lon]);
+          }
+        }
+        
+        if (!hasCenteredMap && map) {
+          map.setView([lat, lon], 19);
+          hasCenteredMap = true;
+        }
+        
+        if (!gpsRealMarker) {
+          gpsRealMarker = L.marker(completedPath[completedPath.length - 1], {
+            icon: L.divIcon({
+              className: 'gps-real-marker',
+              html: `
+                <div class="gps-dot" style="position: relative;">
+                  <div class="gps-pulse"></div>
+                  <div style="width: 20px; height: 20px; background-color: #ef4444; border: 2px solid white; border-radius: 50%;"></div>
+                </div>
+              `,
+              iconSize: [20, 20],
+              iconAnchor: [10, 10]
+            })
+          }).addTo(map);
+        } else {
+          gpsRealMarker.setLatLng(completedPath[completedPath.length - 1]);
+        }
+        
+        if (completedRouteLayer) {
+          completedRouteLayer.setLatLngs(completedPath);
+        }
+        
+        isPaused = true;
+        setTimeout(() => addLastLocationMarker(estadoProcesion, locationUrl), 5000);
+      } catch (err) {
+        console.error("Error obteniendo la última ubicación:", err);
+        setTimeout(() => addLastLocationMarker(estadoProcesion, locationUrl), 30000);
+      }
     }
-    .bottom-sheet-container.expanded {
-      height: auto !important;
+
+    function toggleAnimation() {
+      const playIcon = document.getElementById('play-icon');
+      const pauseIcon = document.getElementById('pause-icon');
+      isPaused = !isPaused;
+      if (isPaused) {
+        playIcon.classList.remove('hidden');
+        pauseIcon.classList.add('hidden');
+        cancelAnimationFrame(animationId);
+      } else {
+        playIcon.classList.add('hidden');
+        pauseIcon.classList.remove('hidden');
+        if (currentPosition >= fullRoute.length - 1) {
+          currentPosition = 0;
+          completedRouteLayer.setLatLngs([]);
+        }
+        animateRoute();
+      }
     }
-  }
-  .current-street-text {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: white;
-    margin: 0;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-    text-align: center;
-  }
-  .buttons-container {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    max-width: 300px;
-    margin: 0 auto;
-    padding: 0 1rem;
-  }
-  .control-btn {
-    background-color: rgba(255, 255, 255, 0.9);
-    border: none;
-    border-radius: 50%;
-    width: 52px;
-    height: 52px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    transition: all 0.2s ease;
-  }
-  .control-btn:hover {
-    background-color: rgba(255, 255, 255, 1);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  }
-  .control-btn:active {
-    transform: translateY(0);
-    background-color: rgba(235, 235, 235, 1);
-  }
-  .control-btn svg {
-    stroke: #333;
-    width: 28px;
-    height: 28px;
-  }
-  .active-btn {
-    background-color: #3b82f6 !important;
-  }
-  .active-btn svg {
-    stroke: white !important;
-  }
-  @media (max-width: 640px) {
-    .title-container {
+    
+    function animateRoute() {
+      if (isPaused) return;
+      currentPosition += animationSpeed;
+      if (currentPosition >= fullRoute.length - 1) {
+        currentPosition = fullRoute.length - 1;
+        isPaused = true;
+        document.getElementById('play-icon').classList.remove('hidden');
+        document.getElementById('pause-icon').classList.add('hidden');
+      } else {
+        animationId = requestAnimationFrame(animateRoute);
+      }
+      updatePosition(currentPosition);
+      updateCurrentStreet(currentPosition);
+    }
+    
+    function updatePosition(position) {
+      if (!map || !fullRoute || fullRoute.length < 2 || !completedRouteLayer || !animatedMarker) return;
+      const currentIndex = Math.floor(position);
+      const nextIndex = Math.min(currentIndex + 1, fullRoute.length - 1);
+      const fraction = position - currentIndex;
+      const lat = fullRoute[currentIndex][0] + fraction * (fullRoute[nextIndex][0] - fullRoute[currentIndex][0]);
+      const lng = fullRoute[currentIndex][1] + fraction * (fullRoute[nextIndex][1] - fullRoute[currentIndex][1]);
+      animatedMarker.setLatLng([lat, lng]);
+      const completedPath = fullRoute.slice(0, currentIndex + 1).concat([[lat, lng]]);
+      completedRouteLayer.setLatLngs(completedPath);
+      map.panTo([lat, lng]);
+    }
+    
+    function updateCurrentStreet(position) {
+      const currentIndex = Math.floor(position);
+      let streetName = "Recorrido procesional";
+      const streetElement = document.getElementById('current-street');
+      if (streetElement) {
+        streetElement.textContent = streetName;
+      }
+      const progressBar = document.getElementById('progress-bar');
+      const progressPercent = document.getElementById('progress-percent');
+      if (progressBar && progressPercent && fullRoute.length > 1) {
+        const percent = Math.round((currentIndex / (fullRoute.length - 1)) * 100);
+        progressBar.style.width = `${percent}%`;
+        progressPercent.textContent = `${percent}%`;
+      }
+    }
+
+    function updateNearbyPoints(position) {
+      if (!points || points.length === 0) return;
+      
+      const currentPos = fullRoute[Math.floor(position)];
+      const poiListElement = document.getElementById('poi-list');
+      
+      if (poiListElement && currentPos) {
+        poiListElement.innerHTML = '';
+        
+        const sortedPoints = [...points].sort((a, b) => {
+          const distA = getDistance(currentPos, a.position);
+          const distB = getDistance(currentPos, b.position);
+          return distA - distB;
+        });
+        
+        sortedPoints.slice(0, 3).forEach(point => {
+          const dist = getDistance(currentPos, point.position);
+          const distText = dist < 1 ? `${Math.round(dist * 1000)} m` : `${dist.toFixed(1)} km`;
+          
+          const isChurch = point.title.toLowerCase().includes('iglesia') || 
+                           point.title.toLowerCase().includes('parroquia');
+          
+          const icon = isChurch ? '⛪' : '🏛️';
+          
+          const pointElement = document.createElement('div');
+          pointElement.className = 'bg-white p-2 rounded shadow-sm border border-gray-200 flex items-center transition-all hover:bg-gray-50';
+          pointElement.innerHTML = `
+            <div class="bg-blue-100 p-2 rounded mr-3">${icon}</div>
+            <div>
+              <p class="font-medium">${point.title}</p>
+              <p class="text-xs text-gray-600">A ${distText}</p>
+            </div>
+          `;
+          
+          poiListElement.appendChild(pointElement);
+        });
+      }
+    }
+
+    function getDistance(point1, point2) {
+      const R = 6371;
+      const dLat = deg2rad(point2[0] - point1[0]);
+      const dLon = deg2rad(point2[1] - point1[1]);
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(deg2rad(point1[0])) * Math.cos(deg2rad(point2[0])) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2); 
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+      return R * c;
+    }
+
+    function deg2rad(deg) {
+      return deg * (Math.PI/180);
+    }
+      
+    function createCustomIcon(color, title) {
+      return L.divIcon({
+        className: 'custom-marker',
+        html: `<div style="background-color: ${color}; width: 14px; height: 14px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.8);"></div>`,
+        iconSize: [20, 20],
+        iconAnchor: [10, 10],
+        popupAnchor: [0, -10]
+      });
+    }
+      
+    function createIglesiaIcon(title) {
+      const imageUrl = '/assets/icons/iglesia.png';
+      return L.divIcon({
+        className: 'plaza-marker',
+        html: `
+          <div class="plaza-container">
+            <img src="${imageUrl}" alt="${title}" style="width: 40px; height:32px;"/>
+            <div class="marker-title"></div>
+          </div>
+        `
+      });
+    }
+      
+    function createPlazaIcon(title) {
+      const imageUrl = '/assets/icons/fuente-nueva.png';
+      return L.divIcon({
+        className: 'plaza-marker',
+        html: `
+          <div class="plaza-container">
+            <img src="${imageUrl}" alt="${title}" style="width: 40px; height:32px;"/>
+            <div class="marker-title"></div>
+          </div>
+        `
+      });
+    }
+      
+    let isGpsRequestInProgress = false;
+    function handleLocationRequest() {
+      if (!map || isGpsRequestInProgress) return;
+      if (!isLocationActive) {
+        if ("geolocation" in navigator) {
+          isGpsRequestInProgress = true;
+          document.getElementById('location-btn').classList.add('active-btn');
+          navigator.geolocation.getCurrentPosition(
+            function(position) {
+              const userLat = position.coords.latitude;
+              const userLng = position.coords.longitude;
+              isGpsRequestInProgress = false;
+              if (!userLocationMarker) {
+                const userIcon = L.divIcon({
+                  className: 'user-location-marker',
+                  html: `
+                    <div class="user-dot">
+                      <div class="user-pulse"></div>
+                    </div>
+                  `,
+                  iconSize: [24, 24],
+                  iconAnchor: [12, 12]
+                });
+                userLocationMarker = L.marker([userLat, userLng], {
+                  icon: userIcon,
+                  zIndexOffset: 2000
+                }).addTo(map);
+                userLocationMarker.bindPopup('¡Estás aquí!').openPopup();
+              } else {
+                userLocationMarker.setLatLng([userLat, userLng]);
+                userLocationMarker.openPopup();
+              }
+              map.flyTo([userLat, userLng], 17);
+              isLocationActive = true;
+            },
+            function(error) {
+              let errorMsg;
+              isGpsRequestInProgress = false;
+              switch(error.code) {
+                case error.PERMISSION_DENIED:
+                  errorMsg = "Necesitas permitir el acceso a tu ubicación para usar esta función.";
+                  break;
+                case error.POSITION_UNAVAILABLE:
+                  errorMsg = "No se puede determinar tu ubicación actual.";
+                  break;
+                case error.TIMEOUT:
+                  errorMsg = "Se agotó el tiempo para obtener tu ubicación.";
+                  break;
+                default:
+                  errorMsg = "Ocurrió un error al intentar obtener tu ubicación.";
+              }
+              alert(errorMsg);
+              document.getElementById('location-btn').classList.remove('active-btn');
+            },
+            {
+              enableHighAccuracy: true,
+              timeout: 5000,
+              maximumAge: 0
+            }
+          );
+        } else {
+          alert("Tu navegador no soporta geolocalización");
+          isGpsRequestInProgress = false;
+        }
+      } else {
+        if (userLocationMarker) {
+          userLocationMarker.closePopup();
+          map.removeLayer(userLocationMarker);
+          userLocationMarker = null;
+          isGpsRequestInProgress = false;
+        }
+        document.getElementById('location-btn').classList.remove('active-btn');
+        isLocationActive = false;
+      }
+    }
+      
+  </script>
+
+  <style>
+    :global(.gps-pulse) {
+      position: absolute;
+      top: -5px;
+      left: -5px;
+      width: 24px;
+      height: 24px;
+      background-color: rgba(239, 68, 68, 0.4);
+      border-radius: 50%;
+      opacity: 1;
+      animation: pulse 2s infinite ease-out;
+    }
+    :global(.street-labels-layer) {
+      filter: brightness(0.8) contrast(1.8) saturate(1.2) !important;
+      opacity: 1 !important;
+      mix-blend-mode: normal;
+    }
+    :global(.leaflet-tile-loaded) {
+      font-family: 'Roboto', 'Arial', sans-serif;
+      font-weight: 900;
+      font-size: 1.1em;
+      -webkit-text-stroke: 0.2px black;
+    }
+    :global(.leaflet-tile-pane text),
+    :global(.leaflet-tile-container path) {
+      fill: #000000 !important;
+      stroke: none !important;
+      paint-order: normal;
+      text-shadow: 0px 0px 2px rgba(255,255,255,0.5);
+    }
+    :global(.leaflet-tile-container img) {
+      filter: brightness(1.05) !important;
+    }
+    :global(body), :global(html) {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+    :global(.leaflet-popup-content-wrapper) {
+      border-radius: 8px;
+    }
+    :global(.leaflet-popup-content) {
+      margin: 12px;
+    }
+    :global(.paso-container) {
+      position: relative;
+      animation: paso-motion 1.5s infinite alternate ease-in-out;
+      z-index: 1000;
+      transform: translateY(-20px);
+    }
+    :global(.paso-shadow) {
+      position: absolute;
+      bottom: -4px;
+      left: 25%;
+      width: 50%;
+      height: 6px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 50%;
+      z-index: -1;
+    }
+    @keyframes paso-motion {
+      0% { transform: translate(-2px, -20px) rotate(-1deg); }
+      50% { transform: translate(0, -21px); }
+      100% { transform: translate(2px, -20px) rotate(1deg); }
+    }
+    :global(.light-pulse) {
+      animation: light-pulse 2s infinite alternate;
+    }
+    @keyframes light-pulse {
+      0% { opacity: 0.4; r: 1.8; }
+      50% { opacity: 0.8; r: 2.2; }
+      100% { opacity: 1; r: 2.5; }
+    }
+    :global(.ambient-light) {
+      animation: glow 3s infinite alternate ease-in-out;
+    }
+    @keyframes glow {
+      0% { opacity: 0.2; r: 2; }
+      100% { opacity: 0.4; r: 2.5; }
+    }
+    :global(.route-glow) {
+      filter: drop-shadow(0 0 3px gold);
+    }
+    :global(.iglesia-container) {
+      position: relative;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+      transition: transform 0.2s ease;
+    }
+    :global(.iglesia-container:hover) {
+      transform: translateY(-3px);
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.7));
+    }
+    :global(.marker-title) {
+      position: absolute;
+      bottom: -22px;
       left: 50%;
-      right: auto;
       transform: translateX(-50%);
-      text-align: center;
-      width: 90%;
-      max-width: 90%;
-      background: rgba(0,0,0,0.75);
-      padding: 0.5rem 0.75rem;
-      border-left: none;
-      border-bottom: 2px solid black;
+      white-space: nowrap;
+      background-color: rgba(0,0,0,0.7);
+      color: white;
+      font-size: 11px;
+      padding: 3px 6px;
+      border-radius: 3px;
+      visibility: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+    :global(.iglesia-container:hover .marker-title),
+    :global(.plaza-container:hover .marker-title) {
+      visibility: visible;
+    }
+    :global(.leaflet-control-zoom) {
+      margin-bottom: 140px !important;
+    }
+    @media (max-width: 640px) {
+      :global(.leaflet-control-zoom) {
+        display: none !important;
+      }
+      :global(.leaflet-control-attribution) {
+        display: none !important;
+      }
+    }
+    :global(.user-location-marker) {
+      background: transparent;
+      border: none;
+    }
+    :global(.user-dot) {
+      position: relative;
+      width: 24px;
+      height: 24px;
+    }
+    :global(.user-dot::before) {
+      content: '';
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      width: 8px;
+      height: 8px;
+      background-color: #3b82f6;
+      border-radius: 50%;
+      box-shadow: 0 0 0 2px white;
+      z-index: 10;
+    }
+    :global(.user-pulse) {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 24px;
+      height: 24px;
+      background-color: rgba(59, 130, 246, 0.4);
+      border-radius: 50%;
+      opacity: 1;
+      animation: pulse 2s infinite ease-out;
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.5); opacity: 1; }
+      100% { transform: scale(2); opacity: 0; }
+    }
+    :global(.plaza-container) {
+      position: relative;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+      transition: transform 0.2s ease;
+    }
+    :global(.plaza-container:hover) {
+      transform: translateY(-3px);
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.7));
+    }
+    :global(.water-drop) {
+      animation: water-pulse 2s infinite alternate ease-in-out;
+    }
+    @keyframes water-pulse {
+      0% { opacity: 0.4; r: 0.8; }
+      100% { opacity: 0.9; r: 1.5; }
+    }
+    .title-container {
+      position: absolute;
+      z-index: 20;
+      padding: 0.75rem 1rem;
+      background: linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.8));
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+      top: 1rem;
+      right: 1rem;
+      max-width: 80%;
+      backdrop-filter: blur(2px);
+      border-left: 3px solid black;
+      transition: all 0.3s ease;
     }
     .title-text {
-      font-size: 1.1rem;
-      white-space: normal;
-      line-height: 1.3;
+      font-size: 1.25rem;
+      font-weight: bold;
+      color: white;
+      margin: 0;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .bottom-sheet-container {
-      padding: 0.75rem 1rem 1.25rem;
+      position: absolute;
+      z-index: 50;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: rgba(17, 24, 39, 0.85);
+      backdrop-filter: blur(10px);
+      padding: 1rem 1.5rem 1.5rem;
+      border-top-left-radius: 16px;
+      border-top-right-radius: 16px;
+      box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.25rem;
+      transition: transform 0.3s ease-in-out, height 0.3s ease-in-out;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .bottom-sheet-container.expanded {
+      overflow-y: auto;
+      height: 80vh !important;
+    }
+    .drag-handle {
+      width: 100%;
+      padding-bottom: 0.5rem;
+      display: flex;
+      justify-content: center;
+      cursor: default;
+      pointer-events: auto !important;
+    }
+    .drag-indicator {
+      width: 40px;
+      height: 5px;
+      background-color: rgba(255, 255, 255, 0.5);
+      border-radius: 2.5px;
+      pointer-events: none;
+    }
+    .bottom-sheet-container.peeking .drag-handle {
+      padding-top: 8px;
+      padding-bottom: 12px;
+    }
+    @media (min-width: 769px) {
+      .bottom-sheet-container {
+        max-height: unset;
+        height: auto;
+        border-radius: 10px !important;
+        max-width: 500px;
+        margin: 0 auto;
+        left: 0;
+        right: 0;
+        transform: none;
+        background-color: rgba(17, 24, 39, 0.8);
+        bottom: 1rem;
+        width: 90%;
+        box-shadow: 0 0 15px rgba(0,0,0,0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .drag-handle {
+        display: none;
+      }
+      .bottom-sheet-container.expanded {
+        height: auto !important;
+      }
+    }
+    .current-street-text {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: white;
+      margin: 0;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+      text-align: center;
+    }
+    .buttons-container {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 300px;
+      margin: 0 auto;
+      padding: 0 1rem;
     }
     .control-btn {
-      width: 46px;
-      height: 46px;
+      background-color: rgba(255, 255, 255, 0.9);
+      border: none;
+      border-radius: 50%;
+      width: 52px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      transition: all 0.2s ease;
     }
-  }
-  .show-bottom-btn {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background-color: #3b82f6;
-    color: white;
-    font-size: 24px;
-    border: 2px solid white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.7);
-    z-index: 9999;
-    cursor: pointer;
-    animation: pulse-button 2s infinite alternate;
-  }
-  @keyframes pulse-button {
-    0% { transform: translateX(-50%) scale(1); }
-    100% { transform: translateX(-50%) scale(1.1); }
-  }
-  .hidden {
-    display: none !important;
-  }
-
-  
-</style>
+    .control-btn:hover {
+      background-color: rgba(255, 255, 255, 1);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+    .control-btn:active {
+      transform: translateY(0);
+      background-color: rgba(235, 235, 235, 1);
+    }
+    .control-btn svg {
+      stroke: #333;
+      width: 28px;
+      height: 28px;
+    }
+    .active-btn {
+      background-color: #3b82f6 !important;
+    }
+    .active-btn svg {
+      stroke: white !important;
+    }
+    @media (max-width: 640px) {
+      .title-container {
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        text-align: center;
+        width: 90%;
+        max-width: 90%;
+        background: rgba(0,0,0,0.75);
+        padding: 0.5rem 0.75rem;
+        border-left: none;
+        border-bottom: 2px solid black;
+      }
+      .title-text {
+        font-size: 1.1rem;
+        white-space: normal;
+        line-height: 1.3;
+      }
+      .bottom-sheet-container {
+        padding: 0.75rem 1rem 1.25rem;
+      }
+      .control-btn {
+        width: 46px;
+        height: 46px;
+      }
+    }
+    .show-bottom-btn {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: #3b82f6;
+      color: white;
+      font-size: 24px;
+      border: 2px solid white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.7);
+      z-index: 9999;
+      cursor: pointer;
+      animation: pulse-button 2s infinite alternate;
+    }
+    @keyframes pulse-button {
+      0% { transform: translateX(-50%) scale(1); }
+      100% { transform: translateX(-50%) scale(1.1); }
+    }
+    .hidden {
+      display: none !important;
+    }
+  </style>
 </div>
