@@ -144,6 +144,7 @@ export default function MapBottomSheet({ procesionId }: { procesionId?: string }
   // Formatear el título de la procesión a partir del ID
   useEffect(() => {
 	if (procesionId) {
+    updateStreetName();
 	  const title = procesionId
 		.split('-')
 		.map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -154,40 +155,36 @@ export default function MapBottomSheet({ procesionId }: { procesionId?: string }
   
 
   // Función para actualizar el nombre de la calle mediante geocodificación inversa
-  const updateStreetName = () => {
-    if (window.animatedMarker && typeof window.animatedMarker.getLatLng === 'function') {
-      try {
-        const { lat, lng } = window.animatedMarker.getLatLng();
-		
-        if (!lat || !lng) return;
-        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`)
-          .then(response => response.json())
-          .then(data => {
-            let streetName = 'Recorrido procesional';
-            if (data.address) {
-              if (data.address.road) {
-                streetName = data.address.road;
-              } else if (data.address.pedestrian) {
-                streetName = data.address.pedestrian;
-              } else if (data.address.square) {
-                streetName = `Plaza ${data.address.square}`;
-              }
-            }
-            const el = document.getElementById('current-street');
-            if (el) el.textContent = streetName;
-          })
-          .catch(error => console.error('Error al obtener nombre de la calle:', error));
-      } catch (error) {
-        console.error('Error al acceder a la posición del trono:', error);
-      }
-    }
-  };
+  // Dentro de la función updateStreetName
+
+    const updateStreetName = () => {
+      const el = document.getElementById('current-street');
+      if (!el) return;
+    
+      fetch('https://owntracks-api.semanasantatracker.workers.dev/streetName', {
+        method: 'GET',
+        credentials: 'include',
+        headers: { 'Accept': 'application/json' }
+      })
+        .then(response => {
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          return response.json() as Promise<{ streetName: string }>;
+        })
+        .then(data => {
+          el.textContent = data.streetName || 'Recorrido procesional';
+        })
+        .catch(error => {
+          console.error('Error al obtener nombre de calle desde /streetName:', error);
+        });
+    };
+    
+
 
   // Actualiza el nombre de la calle cada 10 segundos cuando el panel está visible
   useEffect(() => {
     if (panelVisible) {
-      updateStreetName();
-      const interval = setInterval(updateStreetName, 1000);
+      
+      const interval = setInterval(updateStreetName, 10000);
       return () => clearInterval(interval);
     }
   }, [panelVisible]);
