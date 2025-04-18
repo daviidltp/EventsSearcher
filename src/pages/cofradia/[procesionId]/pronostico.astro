@@ -63,7 +63,13 @@ try {
     }
     
     weatherData = await response.json();
-    const fechaStr = `${fechaProcesion.getFullYear()}-${String(fechaProcesion.getMonth() + 1).padStart(2, '0')}-${String(fechaProcesion.getDate()).padStart(2, '0')}`;
+    let fechaHoraSalida = new Date(fechaProcesion);
+    if (horaSalida < 3) {
+      // Si la hora es entre medianoche y las 6h, asumimos que es la madrugada del día siguiente
+      fechaHoraSalida.setDate(fechaHoraSalida.getDate() + 1);
+    }
+    const fechaStr = `${fechaHoraSalida.getFullYear()}-${String(fechaHoraSalida.getMonth() + 1).padStart(2, '0')}-${String(fechaHoraSalida.getDate()).padStart(2, '0')}`;
+
     
     // Recogemos datos para varias horas durante la procesión
 	let horasProcesion = [];

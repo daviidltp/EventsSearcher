@@ -412,7 +412,8 @@ export const rutasProcesiones = {
 		[37.722206, -3.970233]], 
 		
 		vuelta : [
-			
+
+
 			[37.722102, -3.96993], [37.722057, -3.969844],
 			[37.72138, -3.969128], [37.721323, -3.969031], [37.721158, -3.968771],
 			[37.721018, -3.968634], [37.720585, -3.968328], [37.719851, -3.968199],
@@ -724,6 +725,11 @@ export const puntosInteresProcesiones = {
 		// 	description: "Punto destacado del recorrido"
 		// },
 		{
+			position: [37.722212, -3.970279],
+			title: "Plaza Fuente Nueva",
+			description: "Lugar tradicional de encuentro de fieles"
+		},
+		{
 			position: [37.72347505124692, -3.9655904939993407],
 			title: "Plaza de la Constitución",
 			description: "Punto central del recorrido"
@@ -742,6 +748,11 @@ export const puntosInteresProcesiones = {
 		// 	title: "Cuesta del Caño",
 		// 	description: "Tramo de máxima devoción y recogimiento"
 		// },
+		{
+			position: [37.722212, -3.970279],
+			title: "Plaza Fuente Nueva",
+			description: "Lugar tradicional de encuentro de fieles"
+		},
 		{
 			position: [37.72347505124692, -3.9655904939993407],
 			title: "Plaza de la Constitución",
