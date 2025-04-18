@@ -240,14 +240,7 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
   if (procesionesEnCalle.length > 1) {
     return (
       <div className="relative w-full h-full overflow-hidden">
-        {puedeScrollIzq && (
-          <button
-            onClick={() => scrollCarrusel('left')}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/60 rounded-full p-2 shadow-lg hover:scale-105 transition"
-          >
-            <img src="/assets/icons/chevron-left.svg" alt="Izquierda" className="w-6 h-6 pr-0.5" />
-          </button>
-        )}
+        
 
         <div
           ref={carruselRef}
@@ -275,10 +268,19 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
           ))}
         </div>
 
+        {puedeScrollIzq && (
+          <button
+            onClick={() => scrollCarrusel('left')}
+            className="cursor-pointer absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/60 rounded-full p-2 shadow-lg hover:scale-105 transition"
+          >
+            <img src="/assets/icons/chevron-left.svg" alt="Izquierda" className="w-6 h-6 pr-0.5" />
+          </button>
+        )}
+
         {puedeScrollDer && (
           <button
             onClick={() => scrollCarrusel('right')}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/60 rounded-full p-2 shadow-lg hover:scale-105 transition"
+            className="cursor-pointer absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/60 rounded-full p-2 shadow-lg hover:scale-105 transition"
           >
             <img src="/assets/icons/chevron-right.svg" alt="Derecha" className="w-6 h-6" />
           </button>
