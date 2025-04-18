@@ -384,7 +384,7 @@ export default function MapBottomSheet({ procesionId }: { procesionId?: string }
               </motion.div>
               
               {/* Indicadores de página (pequeños puntos) */}
-              <div className="absolute bottom-2 left-0 right-0 flex justify-center space-x-2">
+              {/* <div className="absolute bottom-2 left-0 right-0 flex justify-center space-x-2">
                 <button 
                   className={`w-2 h-2 rounded-full transition-colors ${carouselIndex === 0 ? 'bg-white' : 'bg-gray-400'}`}
                   onClick={() => {
@@ -409,8 +409,8 @@ export default function MapBottomSheet({ procesionId }: { procesionId?: string }
                   }}
                   aria-label="Mostrar segunda imagen"
                 />
-              </div>
-            </div>
+              </div>*/}
+            </div> 
   
             {/* Botones de acción */}
             <div className="flex justify-start space-x-2">

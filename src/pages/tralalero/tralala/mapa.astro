@@ -2,9 +2,10 @@
 import Layout from '../../../layouts/Layout.astro';
 import { rutasProcesiones, puntosInteresProcesiones } from '../../../data/rutas-procesiones';
 import MartosMapaDebug from '../../../components/MartosMapaDebug.astro';
+import MartosMapa2D from '../../../components/MartosMapa2D.astro';
 
 // Obtener el parámetro de ruta dinámica
-const { procesionId = 'oracion-en-el-huerto' } = Astro.params as { procesionId: keyof typeof rutasProcesiones };
+const { procesionId = 'fe-y-consuelo' } = Astro.params as { procesionId: keyof typeof rutasProcesiones };
 
 console.log("Parámetro de ruta recibido:", procesionId);
 
@@ -34,7 +35,7 @@ export function getStaticPaths() {
 ---
 
 <Layout>
-  <MartosMapaDebug
+  <MartosMapa2D
     route={rutaProcesion}  
     points={puntosInteres}
     title={`Martos - Procesión de ${titulo}`}

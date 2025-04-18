@@ -28,22 +28,12 @@ const pointsJSON = JSON.stringify(points);
 
   <!-- Importar CSS de Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+
   <!-- Scripts necesarios -->
   <script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script is:inline src="https://unpkg.com/leaflet-ant-path/dist/leaflet-ant-path.js"></script>
 
-  <script type="module" is:inline src="../../src/lib/kalman.js"></script>  
-
-  <script 
-  type="module"
-  is:inline
-  define:vars={{ routeJSON, pointsJSON, MARTOS_CENTER, procesionId }}>
-
-    import { KalmanFilter } from '../../src/lib/kalman.js';
-
-    const kfLat = new KalmanFilter({ R: 0.0001, Q: 0.01 });
-    const kfLon = new KalmanFilter({ R: 0.0001, Q: 0.01 });
-
+  <script define:vars={{ routeJSON, pointsJSON, MARTOS_CENTER, procesionId }}>
     // Parsear datos JSON
     const route = JSON.parse(routeJSON);
     const points = JSON.parse(pointsJSON);
@@ -73,7 +63,7 @@ const pointsJSON = JSON.stringify(points);
 
           if (estado === 'Directo' || estado === 'Finalizada') {
             let locationUrl = "https://owntracks-api.semanasantatracker.workers.dev/last-location";
-            if (gps !== "gps-2") {
+            if (gps === "gps-2") {
               locationUrl = "https://owntracks-api.semanasantatracker.workers.dev/last-location-2";
             }
 
@@ -409,16 +399,7 @@ const pointsJSON = JSON.stringify(points);
       try {
         const response = await fetch(locationUrl);
         const data = await response.json();
-        //const { lat, lon } = data;
-        let rawLat = data.lat;
-        let rawLon = data.lon;
-
-        // 2) Suaviza con Kalman
-        const smoothLat = kfLat.filter(rawLat);
-        const smoothLon = kfLon.filter(rawLon);
-
-        let lat = smoothLat;
-        let lon = smoothLon;
+        const { lat, lon } = data;
 
         const ida = route.ida ?? [];
         const vuelta = route.vuelta ?? [];
@@ -469,14 +450,14 @@ const pointsJSON = JSON.stringify(points);
             vueltaAdvanced.push(result.advancedPoint);
             completedPath = ida.slice().concat(vueltaAdvanced);
           } else {
-            const vueltaCompleted = tramoVuelta.slice(0, closestSegmentIndex + 1).concat([[lat, lon]]);
+            const vueltaCompleted = tramoVuelta.slice(0, closestSegmentIndex + 1).concat([[correctedLat, correctedLon]]);
             completedPath = ida.slice().concat(vueltaCompleted);
           }
           
           if (animatedMarker) {
-            animatedMarker.setLatLng([lat, lon]);
+            animatedMarker.setLatLng([correctedLat, correctedLon]);
           }
-          window.projectedCoordinate = [lat, lon];
+          window.projectedCoordinate = [correctedLat, correctedLon];
     
         } else {
           // En estado "Directo" se trabaja sólo con la ruta de ida
@@ -515,13 +496,11 @@ const pointsJSON = JSON.stringify(points);
             idaAdvanced.push(result.advancedPoint);
             completedPath = idaAdvanced;
           } else {
-            c//ompletedPath = tramoIda.slice(0, closestSegmentIndex + 1).concat([[correctedLat, correctedLon]]);
-            completedPath = tramoIda.slice(0, closestSegmentIndex + 1).concat([[lat, lon]]);
+            completedPath = tramoIda.slice(0, closestSegmentIndex + 1).concat([[correctedLat, correctedLon]]);
           }
           
           if (animatedMarker) {
-            //animatedMarker.setLatLng([correctedLat, correctedLon]);
-            animatedMarker.setLatLng([lat, lon]);
+            animatedMarker.setLatLng([correctedLat, correctedLon]);
           }
         }
         
