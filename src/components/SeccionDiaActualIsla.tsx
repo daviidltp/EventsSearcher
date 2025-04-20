@@ -80,7 +80,7 @@ export default function SeccionDiaActualIsla({ dias, disenoDias }: Props) {
           8: new Date(2025, 3, 20),
         };
 
-        const fechaFinSemanaSanta = new Date(fechasPorDia[7]);
+        const fechaFinSemanaSanta = new Date(fechasPorDia[8]);
         fechaFinSemanaSanta.setHours(23, 59, 59, 999);
 
         if (ahora > fechaFinSemanaSanta) {
